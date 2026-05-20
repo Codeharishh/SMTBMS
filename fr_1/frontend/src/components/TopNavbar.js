@@ -5,14 +5,29 @@ const TopNavbar = ({ darkMode, setDarkMode, onLogout }) => {
 
   const userData = useMemo(() => {
     const raw = localStorage.getItem('smtbms_user');
-    return raw ? JSON.parse(raw) : { name: 'Admin' };
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          name: parsed.name || 'Admin',
+          role: parsed.role || 'User',
+          department: parsed.department || 'General',
+        };
+      } catch {
+        return { name: 'Admin', role: 'User', department: 'General' };
+      }
+    }
+
+    return { name: 'Admin', role: 'User', department: 'General' };
   }, []);
 
   return (
     <header className="topbar px-4 py-3 d-flex align-items-center justify-content-between">
       <div>
         <h5 className="mb-0">Welcome back, {userData.name || 'Leader'}</h5>
-        <small className="text-muted">Manage your operations, inventory and sales in one dashboard.</small>
+        <small className="text-muted d-block">
+          Role: {userData.role || 'User'} | Department: {userData.department || 'General'}
+        </small>
       </div>
       <div className="d-flex align-items-center gap-2">
         <button type="button" className={`btn btn-sm ${buttonVariant}`} onClick={() => setDarkMode(!darkMode)}>

@@ -3,18 +3,31 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
 const signToken = (user) => {
-  return jwt.sign({ id: user.id, role: user.role, name: user.name, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
+  return jwt.sign(
+    {
+      id: user.id,
+      role: user.role,
+      name: user.name,
+      email: user.email,
+      department: user.department || 'General',
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '7d',
+    }
+  );
 };
 
 exports.register = async (req, res) => {
   const connection = await pool.getConnection();
   try {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, password, role, phone, department } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
+
+    const normalizedDepartment = department ? department.toString().trim() : 'General';
+    const userDepartment = normalizedDepartment === '' ? 'General' : normalizedDepartment;
 
     const [exists] = await connection.query('SELECT id FROM users WHERE email = ?', [email]);
     if (exists.length) {
@@ -27,8 +40,8 @@ exports.register = async (req, res) => {
 
     await connection.beginTransaction();
     const [result] = await connection.query(
-      'INSERT INTO users (name, email, password, role, phone, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-      [name, email, hashedPassword, userRole, phone || '']
+      'INSERT INTO users (name, email, password, role, phone, department, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+      [name, email, hashedPassword, userRole, phone || '', userDepartment]
     );
 
     const user = {
@@ -36,6 +49,7 @@ exports.register = async (req, res) => {
       name,
       email,
       role: userRole,
+      department: userDepartment,
       phone: phone || '',
     };
 
@@ -45,12 +59,12 @@ exports.register = async (req, res) => {
       if (!existingEmployee.length) {
         const [employeeResult] = await connection.query(
           'INSERT INTO employees (user_id, department, designation, salary, join_date, attendance_status, leave_balance) VALUES (?, ?, ?, ?, NOW(), ?, ?)',
-          [user.id, '', '', 0, 'Present', 0]
+          [user.id, userDepartment, '', 0, 'Present', 0]
         );
         employeeRecord = {
           id: employeeResult.insertId,
           user_id: user.id,
-          department: '',
+          department: userDepartment,
           designation: '',
           salary: 0,
           attendance_status: 'Present',
@@ -93,7 +107,17 @@ exports.login = async (req, res) => {
     }
 
     const token = signToken(user);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone }, token });
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department || 'General',
+        phone: user.phone || '',
+      },
+      token,
+    });
   } catch (error) {
     console.error('Login error', error);
     res.status(500).json({ message: 'Login failed' });

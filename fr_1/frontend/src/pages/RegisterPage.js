@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { register } from '../services/authService';
 
 const RegisterPage = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'Employee', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'Employee', department: 'Administration', phone: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
@@ -56,6 +56,18 @@ const RegisterPage = () => {
               <option value="Manager">Manager</option>
               <option value="Employee">Employee</option>
               <option value="Sales">Sales</option>
+            </select>
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Department</label>
+            <select name="department" className="form-select" value={formData.department} onChange={handleChange} required>
+              <option value="Administration">Administration</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Operations">Operations</option>
+              <option value="Sales">Sales</option>
+              <option value="IT">IT</option>
+              <option value="Inventory">Inventory</option>
+              <option value="Finance">Finance</option>
             </select>
           </div>
           <div className="mb-4">

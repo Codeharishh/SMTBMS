@@ -2,7 +2,14 @@ export const getCurrentUser = () => {
   const raw = localStorage.getItem('smtbms_user');
   if (raw) {
     try {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      return {
+        id: parsed.id,
+        role: parsed.role,
+        email: parsed.email,
+        name: parsed.name,
+        department: parsed.department || 'General',
+      };
     } catch {
       localStorage.removeItem('smtbms_user');
     }
@@ -18,6 +25,7 @@ export const getCurrentUser = () => {
       role: payload.role,
       email: payload.email,
       name: payload.name,
+      department: payload.department || 'General',
     };
   } catch {
     return null;

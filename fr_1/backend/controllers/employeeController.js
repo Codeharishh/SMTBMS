@@ -2,8 +2,17 @@ const pool = require('../config/db');
 
 exports.getAllEmployees = async (req, res) => {
   try {
+    await pool.query(
+      `UPDATE employees e
+       JOIN users u ON e.user_id = u.id
+       SET e.department = u.department
+       WHERE (e.department IS NULL OR e.department = '')
+         AND (u.department IS NOT NULL AND u.department != '')`
+    );
+
     const [rows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role
+      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+              COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
        ORDER BY e.join_date DESC`
@@ -18,7 +27,8 @@ exports.getAllEmployees = async (req, res) => {
 exports.getEmployeeById = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT e.*, u.id as user_id, u.name as name, u.email as email, u.role as user_role
+      `SELECT e.*, u.id as user_id, u.name as name, u.email as email, u.role as user_role,
+              COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
        WHERE e.id = ?`,
@@ -43,7 +53,8 @@ exports.getEmployeeById = async (req, res) => {
 exports.getMyProfile = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT e.*, u.id as user_id, u.name as name, u.email as email, u.role as user_role
+      `SELECT e.*, u.id as user_id, u.name as name, u.email as email, u.role as user_role,
+              COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
        WHERE u.id = ?`,
@@ -67,7 +78,8 @@ exports.createEmployee = async (req, res) => {
       [user_id || null, department, designation, salary || 0, join_date || new Date(), attendance_status || 'Present', leave_balance || 0]
     );
     const [rows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role
+      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+              COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
        WHERE e.id = ?`,
@@ -88,7 +100,8 @@ exports.updateEmployee = async (req, res) => {
       [department, designation, salary || 0, join_date, attendance_status || 'Present', leave_balance || 0, req.params.id]
     );
     const [rows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role
+      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+              COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
        WHERE e.id = ?`,
@@ -129,7 +142,8 @@ exports.punchAttendance = async (req, res) => {
     await pool.query('UPDATE employees SET attendance_status = ? WHERE id = ?', [updatedStatus, employeeId]);
 
     const [updatedRows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role
+      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+              COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
        WHERE e.id = ?`,

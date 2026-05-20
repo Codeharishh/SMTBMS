@@ -193,9 +193,143 @@ const DashboardPage = () => {
         ))}
       </div>
 
-      {user?.role === 'Employee' && (
+      {user?.role === 'Admin' && (
+        <div className="row g-4 mb-4">
+          <div className="col-lg-4">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Admin User Summary</h5>
+              <p className="text-muted">Users, roles, and department coverage across your organization.</p>
+              <div className="d-flex flex-column gap-2">
+                <span>Total Users: {stats.total_users || 0}</span>
+                <span>Users with Role: {stats.users_with_role || 0}</span>
+                <span>Users with Department: {stats.users_with_department || 0}</span>
+              </div>
+            </div>
+          </div>
+          <div className="col-lg-4">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Department Counts</h5>
+              <p className="text-muted">Active department distribution for all user accounts.</p>
+              <ul className="list-group list-group-flush">
+                {(stats.users_by_department || []).map((item) => (
+                  <li key={item.department} className="list-group-item d-flex justify-content-between align-items-center">
+                    {item.department || 'General'}
+                    <span>{item.count || 0}</span>
+                  </li>
+                ))}
+                {!(stats.users_by_department || []).length && (
+                  <li className="list-group-item text-muted">No departments yet.</li>
+                )}
+              </ul>
+            </div>
+          </div>
+          <div className="col-lg-4">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Role Distribution</h5>
+              <p className="text-muted">Current user count by assigned system role.</p>
+              <ul className="list-group list-group-flush">
+                {(stats.users_by_role || []).map((item) => (
+                  <li key={item.role} className="list-group-item d-flex justify-content-between align-items-center">
+                    {item.role || 'General'}
+                    <span>{item.count || 0}</span>
+                  </li>
+                ))}
+                {!(stats.users_by_role || []).length && (
+                  <li className="list-group-item text-muted">No role data available.</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {user?.role === 'HR' && (
+        <div className="row g-4 mb-4">
+          <div className="col-lg-12">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Employee Department Breakdown</h5>
+              <p className="text-muted">Employee counts by department from HR records.</p>
+              <ul className="list-group list-group-flush">
+                {(stats.employee_department_counts || []).map((item) => (
+                  <li key={item.department} className="list-group-item d-flex justify-content-between align-items-center">
+                    {item.department || 'General'}
+                    <span>{item.count || 0}</span>
+                  </li>
+                ))}
+                {!(stats.employee_department_counts || []).length && (
+                  <li className="list-group-item text-muted">No employee department data available.</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {user?.role === 'Manager' && (
         <div className="row g-4 mb-4">
           <div className="col-lg-6">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Team Department Distribution</h5>
+              <p className="text-muted">Operational team breakdown by department.</p>
+              <ul className="list-group list-group-flush">
+                {(stats.employee_department_counts || []).map((item) => (
+                  <li key={item.department} className="list-group-item d-flex justify-content-between align-items-center">
+                    {item.department || 'General'}
+                    <span className="badge bg-primary">{item.count || 0}</span>
+                  </li>
+                ))}
+                {!(stats.employee_department_counts || []).length && (
+                  <li className="list-group-item text-muted">No team department data available.</li>
+                )}
+              </ul>
+            </div>
+          </div>
+          <div className="col-lg-6">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Operational Metrics by Department</h5>
+              <p className="text-muted">Department-wise resource and capacity overview.</p>
+              <div className="d-flex flex-column gap-2">
+                <div className="d-flex justify-content-between">
+                  <span>Total Team Size:</span>
+                  <strong>{stats.total_employees || 0}</strong>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <span>Active Departments:</span>
+                  <strong>{(stats.users_by_department || []).length}</strong>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <span>Organization Units:</span>
+                  <strong>{(stats.employee_department_counts || []).length}</strong>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <span>Material Supply:</span>
+                  <strong>{stats.total_materials || 0}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {user?.role === 'Employee' && (
+        <div className="row g-4 mb-4">
+          <div className="col-lg-4">
+            <div className="card card-custom p-4">
+              <h5 className="card-title">Your Profile</h5>
+              <p className="text-muted">Role and department assignment.</p>
+              <div className="d-flex flex-column gap-3">
+                <div>
+                  <small className="text-muted d-block">Role</small>
+                  <strong>{user?.role || 'N/A'}</strong>
+                </div>
+                <div>
+                  <small className="text-muted d-block">Department</small>
+                  <strong>{user?.department || 'General'}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-lg-8">
             <div className="card card-custom p-4">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="card-title mb-0">Today's Attendance</h5>
@@ -229,7 +363,12 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
-          <div className="col-lg-6">
+        </div>
+      )}
+
+      {user?.role === 'Employee' && (
+        <div className="row g-4 mb-4">
+          <div className="col-lg-12">
             <div className="card card-custom p-4">
               <h5 className="card-title">Attendance History</h5>
               <div className="table-responsive">

@@ -30,7 +30,15 @@ const HRMSPage = () => {
   const totalSalary = useMemo(() => employees.reduce((sum, e) => sum + (e.salary || 0), 0), [employees]);
   const averageSalary = employees.length ? Math.round(totalSalary / employees.length) : 0;
   const totalLeaveBalance = useMemo(() => employees.reduce((sum, e) => sum + (e.leave_balance || 0), 0), [employees]);
-  const departments = useMemo(() => Array.from(new Set(employees.map((item) => item.department || 'Unassigned'))), [employees]);
+  const departments = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          employees.map((item) => item.department || item.user_department || 'Unassigned')
+        )
+      ),
+    [employees]
+  );
 
   const handlePunch = async (employeeId) => {
     setLoadingAttendance(true);
@@ -85,7 +93,7 @@ const HRMSPage = () => {
               {departments.map((department) => (
                 <li key={department} className="list-group-item d-flex justify-content-between align-items-center">
                   {department}
-                  <span>{employees.filter((item) => (item.department || 'Unassigned') === department).length}</span>
+                  <span>{employees.filter((item) => (item.department || item.user_department || 'Unassigned') === department).length}</span>
                 </li>
               ))}
             </ul>
@@ -97,7 +105,7 @@ const HRMSPage = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h5>Employee Roster</h5>
-            <p className="text-muted mb-0">Quick view of attendance, salary, designation, and leave status.</p>
+            <p className="text-muted mb-0">Quick view of attendance, salary, and leave status.</p>
           </div>
           {canManageAttendance && (
             <div>
@@ -113,7 +121,6 @@ const HRMSPage = () => {
               <tr>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Designation</th>
                 <th>Salary</th>
                 <th>Attendance</th>
                 <th>Leave Balance</th>
@@ -125,8 +132,7 @@ const HRMSPage = () => {
               {employees.map((employee) => (
                 <tr key={employee.id}>
                   <td>{employee.name || `Employee ${employee.id}`}</td>
-                  <td>{employee.department || 'Unassigned'}</td>
-                  <td>{employee.designation || 'N/A'}</td>
+                  <td>{employee.department || employee.user_department || 'Unassigned'}</td>
                   <td>${(employee.salary || 0).toLocaleString()}</td>
                   <td>{employee.attendance_status || 'Unknown'}</td>
                   <td>{employee.leave_balance || 0}</td>
