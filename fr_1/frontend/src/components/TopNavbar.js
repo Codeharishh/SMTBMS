@@ -1,7 +1,17 @@
-import { useMemo } from 'react';
+// src/components/TopNavbar.js
+import React, { useMemo, useEffect } from 'react';
 
 const TopNavbar = ({ darkMode, setDarkMode, onLogout }) => {
   const buttonVariant = darkMode ? 'btn-light' : 'btn-outline-dark';
+
+  // 🟢 DIRECT SYNC LAYER: Explicitly coordinates the body node's document classes on mount/toggle
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
 
   const userData = useMemo(() => {
     const raw = localStorage.getItem('smtbms_user');
@@ -11,29 +21,25 @@ const TopNavbar = ({ darkMode, setDarkMode, onLogout }) => {
         return {
           name: parsed.name || 'Admin',
           role: parsed.role || 'User',
-          department: parsed.department || 'General',
         };
       } catch {
-        return { name: 'Admin', role: 'User', department: 'General' };
+        return { name: 'Admin', role: 'User' };
       }
     }
-
-    return { name: 'Admin', role: 'User', department: 'General' };
+    return { name: 'Admin', role: 'User' };
   }, []);
 
   return (
     <header className="topbar px-4 py-3 d-flex align-items-center justify-content-between">
       <div>
-        <h5 className="mb-0">Welcome back, {userData.name || 'Leader'}</h5>
+        <h5 className="mb-0 fw-bold">Welcome back, {userData.name}</h5>
         <small className="text-muted d-block">
-          Role: {userData.role || 'User'} | Department: {userData.department || 'General'}
+          Role: {userData.role}
         </small>
       </div>
       <div className="d-flex align-items-center gap-2">
-        <button type="button" className={`btn btn-sm ${buttonVariant}`} onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
-        </button>
-        <button type="button" className="btn btn-primary btn-sm" onClick={onLogout}>
+
+        <button type="button" className="btn btn-primary btn-sm fw-semibold shadow-sm px-3" onClick={onLogout}>
           Logout
         </button>
       </div>

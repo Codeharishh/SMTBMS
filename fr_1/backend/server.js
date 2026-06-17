@@ -12,6 +12,8 @@ const salesRoutes = require('./routes/salesRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const payrollRoutes = require('./routes/payrollRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const materialMovementRoutes = require('./routes/materialMovementRoutes');
+
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
@@ -32,13 +34,22 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/leaves', require('./routes/leaveRoutes'));
+app.use('/api/material-movements', materialMovementRoutes);
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/hr', require('./routes/hrRoutes'));
+app.use('/api/manager', require('./routes/managerRoutes'));
+app.use('/api/leads', require('./routes/leadRoutes'));
+app.use('/api/customers', require('./routes/customerRoutes'));
+
+
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`SMTBMS backend listening on port ${PORT}`);
 });

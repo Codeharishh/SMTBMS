@@ -24,18 +24,61 @@ exports.getVendorById = async (req, res) => {
 };
 
 exports.createVendor = async (req, res) => {
+
   try {
-    const { vendor_name, contact_person, email, phone, address, status, rating } = req.body;
-    const [result] = await pool.query(
-      'INSERT INTO vendors (vendor_name, contact_person, email, phone, address, status, rating, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-      [vendor_name, contact_person, email, phone, address, status || 'Active', rating || null]
+
+    const {
+      vendor_name,
+      contact_person,
+      email,
+      phone,
+      address,
+      category,
+      rating,
+      status
+    } = req.body;
+
+    await pool.query(
+      `
+      INSERT INTO vendors
+      (
+        vendor_name,
+        contact_person,
+        email,
+        phone,
+        address,
+        category,
+        rating,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        vendor_name,
+        contact_person,
+        email,
+        phone,
+        address,
+        category,
+        rating,
+        status
+      ]
     );
-    const [rows] = await pool.query('SELECT * FROM vendors WHERE id = ?', [result.insertId]);
-    res.status(201).json(rows[0]);
+
+    res.status(201).json({
+      message: 'Vendor added successfully'
+    });
+
   } catch (error) {
-    console.error('Create vendor error', error);
-    res.status(500).json({ message: 'Unable to create vendor' });
+
+    console.error(error);
+
+    res.status(500).json({
+      message: 'Unable to create vendor'
+    });
+
   }
+
 };
 
 exports.updateVendor = async (req, res) => {

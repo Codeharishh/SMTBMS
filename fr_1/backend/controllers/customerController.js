@@ -1,8 +1,10 @@
+// backend/controllers/customerController.js
 const pool = require('../config/db');
 
+// 1. Fetch data specifically for your Customer Ledger
 exports.getAllCustomers = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM customers ORDER BY customer_name ASC');
+    const [rows] = await pool.query('SELECT * FROM customers ORDER BY id DESC');
     res.json(rows);
   } catch (error) {
     console.error('Get customers error', error);
@@ -13,9 +15,7 @@ exports.getAllCustomers = async (req, res) => {
 exports.getCustomerById = async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM customers WHERE id = ?', [req.params.id]);
-    if (!rows.length) {
-      return res.status(404).json({ message: 'Customer not found' });
-    }
+    if (!rows.length) return res.status(404).json({ message: 'Customer not found' });
     res.json(rows[0]);
   } catch (error) {
     console.error('Get customer error', error);
@@ -53,12 +53,13 @@ exports.updateCustomer = async (req, res) => {
   }
 };
 
+// 🟢 FIXED: This now clears out rows from your customers table perfectly!
 exports.deleteCustomer = async (req, res) => {
   try {
     await pool.query('DELETE FROM customers WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Customer deleted successfully' });
+    res.json({ message: 'Customer permanently dropped from ledger indices.' });
   } catch (error) {
-    console.error('Delete customer error', error);
-    res.status(500).json({ message: 'Unable to delete customer' });
+    console.error('Delete customer error:', error);
+    res.status(500).json({ message: 'Unable to delete customer record.' });
   }
 };

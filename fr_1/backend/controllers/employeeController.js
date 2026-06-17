@@ -73,6 +73,19 @@ exports.getMyProfile = async (req, res) => {
 exports.createEmployee = async (req, res) => {
   try {
     const { user_id, department, designation, salary, join_date, attendance_status, leave_balance } = req.body;
+
+    if (user_id) {
+      const [userCheck] = await pool.query('SELECT id, name FROM users WHERE id = ?', [user_id]);
+      if (!userCheck.length) {
+        return res.status(404).json({ message: `No user account found for user_id: ${user_id}. Register the user first.` });
+      }
+
+      const [dupCheck] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [user_id]);
+      if (dupCheck.length > 0) {
+        return res.status(409).json({ message: `Employee profile already exists for this user (Employee ID: ${dupCheck[0].id}). Use Edit to update their record.` });
+      }
+    }
+
     const [result] = await pool.query(
       'INSERT INTO employees (user_id, department, designation, salary, join_date, attendance_status, leave_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [user_id || null, department, designation, salary || 0, join_date || new Date(), attendance_status || 'Present', leave_balance || 0]
@@ -154,5 +167,51 @@ exports.punchAttendance = async (req, res) => {
   } catch (error) {
     console.error('Punch attendance error', error);
     res.status(500).json({ message: 'Unable to update attendance' });
+  }
+};
+
+// ─── NEW: fetch tasks assigned to the logged-in employee ──────────────────────
+// The manager_tasks table uses assigned_to = employees.id (not users.id),
+// so we first resolve the employee row for the current user, then query tasks.
+exports.getMyTasks = async (req, res) => {
+  try {
+    // Step 1: find the employee record that belongs to this user
+    const [empRows] = await pool.query(
+      'SELECT id FROM employees WHERE user_id = ?',
+      [req.user.id]
+    );
+
+    if (!empRows.length) {
+      // User exists but has no employee profile yet — return empty list gracefully
+      return res.json([]);
+    }
+
+    const employeeId = empRows[0].id;
+
+    // Step 2: fetch tasks assigned to that employee, joining assigner name
+    const [tasks] = await pool.query(
+      `SELECT
+         t.id,
+         t.title,
+         t.description,
+         t.priority,
+         t.status,
+         t.due_date,
+         t.created_at,
+         u.name AS assigned_by_name
+       FROM manager_tasks t
+       LEFT JOIN users u ON t.assigned_by = u.id
+       WHERE t.assigned_to = ?
+       ORDER BY
+         FIELD(t.priority, 'High', 'Medium', 'Low'),
+         t.due_date ASC,
+         t.created_at DESC`,
+      [employeeId]
+    );
+
+    res.json(tasks);
+  } catch (error) {
+    console.error('Get my tasks error', error);
+    res.status(500).json({ message: 'Unable to fetch tasks' });
   }
 };

@@ -74,6 +74,9 @@ const MaterialForm = ({ activeMaterial, onSave, onCancel }) => {
               <option value="Active">Active</option>
               <option value="Pending">Pending</option>
               <option value="Inactive">Inactive</option>
+              <option value="Available">Available</option>
+              <option value="Low Stock">Low Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
             </select>
           </div>
           <div className="col-12 d-flex gap-2">

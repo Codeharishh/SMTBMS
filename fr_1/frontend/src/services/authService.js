@@ -1,3 +1,4 @@
+// frontend/src/services/authService.js
 import api from './api';
 
 export const login = async (credentials) => {
@@ -18,4 +19,10 @@ export const fetchProfile = async () => {
 export const logout = () => {
   localStorage.removeItem('smtbms_token');
   localStorage.removeItem('smtbms_user');
+};
+
+// Sends Google access_token to backend, gets back JWT + user object
+export const googleLogin = async (tokenPayload) => {
+  const response = await api.post('/auth/google', tokenPayload);
+  return response.data;
 };

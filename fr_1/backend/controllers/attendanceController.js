@@ -1,10 +1,15 @@
+// backend/controllers/attendanceController.js
 const pool = require('../config/db');
 
+// Helper function to resolve employee relation references
 const getEmployeeIdFromUser = async (userId) => {
   const [rows] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [userId]);
   return rows.length ? rows[0].id : null;
 };
 
+// ==========================================
+// 1. GET TODAY'S ATTENDANCE STATUS
+// ==========================================
 exports.getTodayAttendance = async (req, res) => {
   try {
     const employeeId = await getEmployeeIdFromUser(req.user.id);
@@ -17,18 +22,34 @@ exports.getTodayAttendance = async (req, res) => {
       [employeeId]
     );
 
-    res.json({ attendance: rows[0] || null });
+    // 🟢 FRONTEND MAPPING FIX: Ensures keys match the component expectations
+    const record = rows[0] || null;
+    res.json({
+      success: true,
+      punchedIn: record ? !!record.check_in : false,
+      punchedOut: record ? !!record.check_out : false,
+      attendance: record
+    });
   } catch (error) {
     console.error('Get today attendance error', error);
     res.status(500).json({ message: 'Unable to fetch today attendance' });
   }
 };
 
+// ==========================================
+// 2. GET ATTENDANCE HISTORY (ROLES ADAPTIVE)
+// ==========================================
 exports.getAttendanceHistory = async (req, res) => {
   try {
-    let query = 'SELECT a.* FROM attendance a';
+    // 🟢 ENHANCED: Joint query resolves human-readable names for Managers automatically
+    let query = `
+      SELECT a.*, e.name as employee_name, e.department 
+      FROM attendance a
+      LEFT JOIN employees e ON a.employee_id = e.id
+    `;
     const params = [];
 
+    // If standard Employee, isolate down to their specific database mapping array index
     if (req.user.role === 'Employee') {
       const employeeId = await getEmployeeIdFromUser(req.user.id);
       if (!employeeId) {
@@ -37,6 +58,7 @@ exports.getAttendanceHistory = async (req, res) => {
       query += ' WHERE a.employee_id = ?';
       params.push(employeeId);
     } else {
+      // Admin, HR, or Manager can pass a query string filter parameter
       const { employeeId } = req.query;
       if (employeeId) {
         query += ' WHERE a.employee_id = ?';
@@ -53,6 +75,9 @@ exports.getAttendanceHistory = async (req, res) => {
   }
 };
 
+// ==========================================
+// 3. PUNCH IN SESSION REGISTRATION
+// ==========================================
 exports.punchIn = async (req, res) => {
   try {
     const employeeId = await getEmployeeIdFromUser(req.user.id);
@@ -75,13 +100,20 @@ exports.punchIn = async (req, res) => {
     );
 
     const [rows] = await pool.query('SELECT * FROM attendance WHERE id = ?', [result.insertId]);
-    res.status(201).json(rows[0]);
+    res.status(201).json({
+      success: true,
+      message: 'Punched in smoothly! Shift session tracking initialized.',
+      record: rows[0]
+    });
   } catch (error) {
     console.error('Punch in error', error);
     res.status(500).json({ message: 'Unable to punch in' });
   }
 };
 
+// ==========================================
+// 4. PUNCH OUT SESSION REGISTRATION
+// ==========================================
 exports.punchOut = async (req, res) => {
   try {
     const employeeId = await getEmployeeIdFromUser(req.user.id);
@@ -105,7 +137,12 @@ exports.punchOut = async (req, res) => {
 
     await pool.query('UPDATE attendance SET check_out = NOW() WHERE id = ?', [attendance.id]);
     const [updatedRows] = await pool.query('SELECT * FROM attendance WHERE id = ?', [attendance.id]);
-    res.json(updatedRows[0]);
+
+    res.json({
+      success: true,
+      message: 'Shift closed smoothly! Punched out successfully.',
+      record: updatedRows[0]
+    });
   } catch (error) {
     console.error('Punch out error', error);
     res.status(500).json({ message: 'Unable to punch out' });
