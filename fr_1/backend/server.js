@@ -14,9 +14,19 @@ const payrollRoutes = require('./routes/payrollRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const materialMovementRoutes = require('./routes/materialMovementRoutes');
 
-
 const app = express();
-app.use(cors({ origin: ['http://localhost:3000', 'https://smtbms-git-main-sriharish-ss-projects.vercel.app'], credentials: true }));
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || origin.endsWith('.vercel.app') || origin === 'http://localhost:3000') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -41,8 +51,6 @@ app.use('/api/hr', require('./routes/hrRoutes'));
 app.use('/api/manager', require('./routes/managerRoutes'));
 app.use('/api/leads', require('./routes/leadRoutes'));
 app.use('/api/customers', require('./routes/customerRoutes'));
-
-
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
