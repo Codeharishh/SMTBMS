@@ -2,6 +2,32 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { fetchAuditLogs } from '../services/adminService';
 
+// ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
+const COLORS = {
+  indigo: '#5B8DEF',
+  emerald: '#2ED9C3',
+  amber: '#FFC542',
+  rose: '#FF6B9D',
+  sky: '#4FC3F7',
+  violet: '#9B7EDE',
+  slate: '#64748B',
+  primary: '#FF7A45',
+  alert: '#FF6B6B'
+};
+
+// ── HEADER ICON ──────────────────────────────────────────────────────────
+const ICONS = {
+  clipboard: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect vectorEffect="non-scaling-stroke" x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <line vectorEffect="non-scaling-stroke" x1="8" y1="11" x2="16" y2="11" />
+      <line vectorEffect="non-scaling-stroke" x1="8" y1="15" x2="16" y2="15" />
+      <line vectorEffect="non-scaling-stroke" x1="8" y1="19" x2="12" y2="19" />
+    </svg>
+  )
+};
+
 const AuditLogsPage = () => {
   const [logs, setLogs] = useState([]);
   const [logSearch, setLogSearch] = useState('');
@@ -68,90 +94,104 @@ const AuditLogsPage = () => {
   };
 
   return (
-    <div className="theme-admin container-fluid px-4 py-4" style={{ minHeight: '100vh', backgroundColor: 'var(--bg)' }}>
+    <div className="theme-admin container-fluid px-4 py-4" style={{
+      background: 'linear-gradient(160deg, #F5F2FF 0%, #FDF0F2 45%, #FFF7EC 100%)',
+      minHeight: '100vh', color: '#1e293b', fontFamily: '"Inter", sans-serif'
+    }}>
 
-      {/* 🔴 SCOPED HIGH-END CONTROL & INPUT HOVER LAYERS */}
       <style>{`
-        .lux-audit-card {
+        .hover-premium-card {
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease !important;
+          background-color: #ffffff !important;
+          box-shadow: 0 8px 24px rgba(31,41,55,0.06) !important;
+        }
+        .hover-premium-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 14px 28px rgba(31,41,55,0.09) !important;
+        }
+        .hover-input-lux {
+          transition: all 0.2s ease !important;
           background: #ffffff !important;
-          border: 1px solid rgba(0, 0, 0, 0.08) !important;
-          border-radius: 16px !important;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01) !important;
-          overflow: hidden !important;
+          color: #1e293b !important;
+          border: 1px solid rgba(165, 175, 200, 0.25) !important;
         }
-        .filter-control-strip {
-          background-color: #f8f9fa !important;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-          padding: 1.25rem 1.5rem !important;
+        .hover-input-lux:focus {
+          box-shadow: 0 0 0 4px rgba(255, 122, 69, 0.12) !important;
+          outline: none;
+          border-color: #FF7A45 !important;
         }
-        .lux-interactive-input {
-          background-color: #ffffff !important;
-          border: 1px solid #ced4da !important;
-          color: #212529 !important;
-          transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.15s ease !important;
+        .hover-btn-lux {
+          transition: all 0.2s ease !important;
         }
-        .lux-interactive-input:hover {
-          border-color: #198754 !important;
+        .hover-btn-lux:hover {
+          filter: brightness(1.05);
+          box-shadow: 0 6px 16px rgba(255, 122, 69, 0.28) !important;
         }
-        .lux-interactive-input:focus {
-          border-color: #198754 !important;
-          box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15) !important;
-          background-color: #ffffff !important;
+        .section-eyebrow {
+          font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em;
+          text-transform: uppercase; color: #9ca3af; margin-bottom: 6px;
         }
-        .lux-download-btn {
-          background-color: #198754 !important;
-          border: 1px solid #198754 !important;
-          color: #ffffff !important;
-          font-weight: 600 !important;
-          transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease !important;
+        .theme-admin th {
+          background-color: #FAF8FF !important;
+          color: #94a3b8 !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          font-size: 0.78rem !important;
+          letter-spacing: 0.05em !important;
+          padding: 14px 20px !important;
+          border-bottom: 2px solid #f1f0f9 !important;
+          text-align: left !important;
         }
-        .lux-download-btn:hover {
-          transform: translateY(-1px) !important;
-          box-shadow: 0 4px 12px rgba(25, 135, 84, 0.22) !important;
-          filter: brightness(1.05) !important;
+        .theme-admin td {
+          padding: 16px 20px !important;
+          vertical-align: middle !important;
+          border-bottom: 1px solid #f4f2fb !important;
+          color: #4a5568 !important;
+          font-size: 0.92rem !important;
+          text-align: left !important;
         }
-        .lux-table-row {
-          transition: background-color 0.12s ease !important;
-        }
-        .lux-table-row:hover {
-          background-color: rgba(25, 135, 84, 0.02) !important;
+        .theme-admin tbody tr:hover {
+          background-color: #FDFAFF !important;
         }
       `}</style>
 
       {/* Toast Alert */}
       {successMsg && (
-        <div className="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-4 shadow border-0 position-fixed top-0 end-0 m-4 z-3" style={{ maxWidth: '400px' }}>
+        <div className="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-4 shadow border-0 position-fixed top-0 end-0 m-4 z-3" style={{ maxWidth: '400px', backgroundColor: '#ffffff', border: '1px solid #10b981', color: '#065f46' }}>
           <div><span className="me-2">✅</span><strong>Compilation Complete:</strong> {successMsg}</div>
           <button className="btn-close" onClick={() => setSuccessMsg('')}></button>
         </div>
       )}
 
       {/* Header Panel */}
-      <div className="mb-4 pb-2 border-bottom">
-        <div className="d-flex align-items-center gap-2">
-          <span className="fs-3">📋</span>
-          <h3 className="fw-bold text-dark mb-0">System Audit Logs</h3>
+      <div className="d-flex align-items-center gap-3 mb-4 pt-2">
+        <div className="d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+          style={{ width: '48px', height: '48px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)`, borderRadius: '14px' }}>
+          {ICONS.clipboard}
         </div>
-        <p className="text-muted mb-0">View real-time security events, administrator syncs, database updates, and workspace operations.</p>
+        <div>
+          <h3 className="fw-bold" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>System Audit Logs</h3>
+          <p style={{ color: '#94a3b8' }} className="small mb-0">View real-time security events, administrator syncs, database updates, and workspace operations.</p>
+        </div>
       </div>
 
-      <div className="card border-0 lux-audit-card">
+      <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ borderRadius: '22px' }}>
 
-        {/* FIXED HIGH-CONTRAST FILTER STRIP CONTROL MATRIX */}
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 filter-control-strip">
+        {/* CONTROLS MATRIX BAR SECTION */}
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 p-4 border-bottom" style={{ borderColor: '#f1f0f9' }}>
           <div className="d-flex flex-grow-1 gap-3" style={{ maxWidth: '650px' }}>
             <div className="position-relative flex-grow-1">
               <span className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style={{ zIndex: 10 }}>🔍</span>
               <input
                 type="text"
-                className="form-control rounded-pill ps-5 lux-interactive-input small py-2"
+                className="form-control rounded-pill ps-5 hover-input-lux small py-2"
                 placeholder="Search logs by action, details, user..."
                 value={logSearch}
                 onChange={(e) => setLogSearch(e.target.value)}
               />
             </div>
             <select
-              className="form-select rounded-pill border-0 lux-interactive-input px-4 py-2 text-dark font-medium"
+              className="form-select rounded-pill hover-input-lux px-4 py-2 text-dark font-medium"
               style={{ width: '180px', cursor: 'pointer' }}
               value={logCategoryFilter}
               onChange={(e) => setLogCategoryFilter(e.target.value)}
@@ -164,15 +204,19 @@ const AuditLogsPage = () => {
               <option value="INTEGRATION">Integrations</option>
             </select>
           </div>
-          <button className="btn rounded-pill px-4 py-2 lux-download-btn shadow-sm" onClick={handleExportCSV}>
+          <button
+            className="btn rounded-pill px-4 py-2 text-white border-0 hover-btn-lux fw-bold"
+            style={{ background: 'linear-gradient(135deg, #FF7A45 0%, #FFA36C 100%)' }}
+            onClick={handleExportCSV}
+          >
             📥 Export logs as CSV
           </button>
         </div>
 
         <div className="table-responsive px-3 pb-3" style={{ maxHeight: '550px' }}>
-          <table className="table table-hover align-middle mb-0 mt-2">
-            <thead className="table-light sticky-top" style={{ zIndex: 5 }}>
-              <tr className="text-secondary small">
+          <table className="table align-middle mb-0 mt-2">
+            <thead>
+              <tr>
                 <th className="py-3 ps-2">Logged Timestamp</th>
                 <th className="py-3">Action Class</th>
                 <th className="py-3">Audit Details</th>
@@ -183,14 +227,24 @@ const AuditLogsPage = () => {
             <tbody>
               {filteredLogs.length ? (
                 filteredLogs.map(l => (
-                  <tr key={l.id} className="lux-table-row">
+                  <tr key={l.id}>
                     <td className="text-muted ps-2" style={{ fontSize: '0.86rem' }}>{new Date(l.created_at).toLocaleString()}</td>
                     <td>
-                      <span className={`badge px-2.5 py-1.5 rounded-3 fw-bold ${l.action === 'AUTHENTICATION' ? 'bg-primary-subtle text-primary' :
-                          l.action === 'DATABASE' ? 'bg-warning-subtle text-warning-emphasis' :
-                            l.action === 'USER_MANAGEMENT' ? 'bg-info-subtle text-info-emphasis' :
-                              l.action === 'INTEGRATION' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'
-                        }`} style={{ fontSize: '0.74rem' }}>
+                      <span className={`badge px-3 py-1.5 rounded-pill border fw-bold`} style={{
+                        backgroundColor: l.action === 'AUTHENTICATION' ? 'rgba(91,141,239,0.1)' :
+                          l.action === 'DATABASE' ? 'rgba(255,197,66,0.15)' :
+                            l.action === 'USER_MANAGEMENT' ? 'rgba(155,126,222,0.1)' :
+                              l.action === 'INTEGRATION' ? 'rgba(46,217,195,0.1)' : 'rgba(100,116,139,0.1)',
+                        color: l.action === 'AUTHENTICATION' ? '#5B8DEF' :
+                          l.action === 'DATABASE' ? '#b45309' :
+                            l.action === 'USER_MANAGEMENT' ? '#9B7EDE' :
+                              l.action === 'INTEGRATION' ? '#0f9488' : '#64748B',
+                        borderColor: l.action === 'AUTHENTICATION' ? 'rgba(91,141,239,0.3)' :
+                          l.action === 'DATABASE' ? 'rgba(255,197,66,0.3)' :
+                            l.action === 'USER_MANAGEMENT' ? 'rgba(155,126,222,0.3)' :
+                              l.action === 'INTEGRATION' ? 'rgba(46,217,195,0.3)' : 'rgba(100,116,139,0.3)',
+                        fontSize: '0.74rem'
+                      }}>
                         {l.action}
                       </span>
                     </td>

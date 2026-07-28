@@ -9,6 +9,128 @@ import { fetchSalesSummary, fetchQuotations, createQuotation, fetchSalesTelemetr
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
+// ── WARM ORANGISH & AMBER PALETTE FOR VISUAL CONSISTENCY WITH HRMSPAGE & ERPPAGE ──
+const COLORS = {
+  orange: '#FF8A48',     // Primary accent
+  amber: '#FFC542',      // Secondary / Warning
+  coral: '#FF6B6B',      // Danger / Alert
+  emerald: '#2ED9C3',    // Success
+  sky: '#4FC3F7',        // Info / Secondary nodes
+  violet: '#9B7EDE',
+  slate: '#64748B',
+  primary: '#FF8A48',
+  alert: '#FF6B6B'
+};
+
+// Shared UI Theme Token Constants — mirrors HRMSPage exactly so status badges,
+// borders and surfaces read as one consistent design system across modules.
+const THEME = {
+  primary: COLORS.orange,
+  primaryLight: 'rgba(255, 138, 72, 0.12)',
+  slateDark: '#2c2520',
+  slateMuted: '#a0938a',
+  slateBorder: '#FCEFEA',
+  slateBg: '#FFF9F6',
+  white: '#ffffff',
+  success: '#0f9488',
+  successBg: `${COLORS.emerald}14`,
+  danger: '#dc2626',
+  dangerBg: `${COLORS.alert}14`,
+  pending: '#b45309',
+  pendingBg: `${COLORS.amber}18`,
+  info: '#b45309',
+  infoBg: `${COLORS.amber}14`
+};
+
+// ── CRISP-OPTIMIZED VECTOR ICON MATRIX (styled to match HRMSPage's THIN_ICONS) ──
+// Each entry is a function so the same glyph can be rendered at any size while
+// still inheriting color via `currentColor` from its parent element.
+const CRM_ICONS = {
+  search: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <circle vectorEffect="non-scaling-stroke" cx="11" cy="11" r="7" />
+      <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  ),
+  chart: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M3 3v18h18" />
+      <rect vectorEffect="non-scaling-stroke" x="7" y="13" width="3" height="5" rx="0.5" />
+      <rect vectorEffect="non-scaling-stroke" x="12" y="9" width="3" height="9" rx="0.5" />
+      <rect vectorEffect="non-scaling-stroke" x="17" y="5" width="3" height="13" rx="0.5" />
+    </svg>
+  ),
+  users: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle vectorEffect="non-scaling-stroke" cx="9" cy="7" r="4" />
+      <path vectorEffect="non-scaling-stroke" d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path vectorEffect="non-scaling-stroke" d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  target: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="10" />
+      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="6" />
+      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="2" />
+    </svg>
+  ),
+  zap: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  ),
+  handshake: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M2 14h4l3-3 3 3 3-3 3 3h4" />
+      <path vectorEffect="non-scaling-stroke" d="M9 8l3 3 3-3" />
+    </svg>
+  ),
+  trophy: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M7 4h10v5a5 5 0 0 1-10 0V4z" />
+      <path vectorEffect="non-scaling-stroke" d="M5 4H3a2 2 0 0 0 0 4h2" />
+      <path vectorEffect="non-scaling-stroke" d="M19 4h2a2 2 0 0 1 0 4h-2" />
+      <path vectorEffect="non-scaling-stroke" d="M12 14v4" />
+      <path vectorEffect="non-scaling-stroke" d="M8 21h8" />
+    </svg>
+  ),
+  briefcase: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <rect vectorEffect="non-scaling-stroke" x="2" y="7" width="20" height="14" rx="2" />
+      <path vectorEffect="non-scaling-stroke" d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      <line vectorEffect="non-scaling-stroke" x1="2" y1="12" x2="22" y2="12" />
+    </svg>
+  ),
+  wallet: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path vectorEffect="non-scaling-stroke" d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path vectorEffect="non-scaling-stroke" d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
+    </svg>
+  ),
+  fileText: (size = 18) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path vectorEffect="non-scaling-stroke" d="M14 2v6h6" />
+      <line vectorEffect="non-scaling-stroke" x1="8" y1="13" x2="16" y2="13" />
+      <line vectorEffect="non-scaling-stroke" x1="8" y1="17" x2="16" y2="17" />
+    </svg>
+  ),
+  edit: (size = 14) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M12 20h9" />
+      <path vectorEffect="non-scaling-stroke" d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  ),
+  plus: (size = 14) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  )
+};
+
 const CRMPage = () => {
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('dashboard');
   const [leads, setLeads] = useState([]);
@@ -123,7 +245,7 @@ const CRMPage = () => {
       {
         label: 'Active Pipeline Stage Count',
         data: [pipelineMetrics.leads, pipelineMetrics.qualified, pipelineMetrics.deals, pipelineMetrics.won],
-        backgroundColor: ['#2563eb', '#7c3aed', '#ea580c', '#166534'],
+        backgroundColor: [COLORS.orange, COLORS.violet, COLORS.sky, COLORS.emerald],
         borderRadius: 8,
         barThickness: 24,
       },
@@ -136,8 +258,8 @@ const CRMPage = () => {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      x: { beginAtZero: true, grid: { color: '#e2e8f0', borderDash: [4, 4] }, ticks: { color: '#475569' } },
-      y: { grid: { display: false }, ticks: { color: '#475569' } },
+      x: { beginAtZero: true, grid: { color: THEME.slateBorder, borderDash: [4, 4] }, ticks: { color: THEME.slateMuted } },
+      y: { grid: { display: false }, ticks: { color: THEME.slateMuted } },
     },
   };
 
@@ -212,98 +334,112 @@ const CRMPage = () => {
     }
   };
 
-  return (
-    // 🟢 ENHANCED LIGHT MODE CANVAS WRAPPER CONTAINER
-    <div className="theme-crm container-fluid px-4 py-3" style={{ backgroundColor: '#f8fafc', minHeight: '100vh', color: '#1e293b' }}>
+  // Reusable status-badge style resolver — same three-state (success/pending/info)
+  // token mapping used across HRMSPage's leave, candidate and training badges.
+  const stageBadgeStyle = (stage) => {
+    const s = stage || '';
+    if (s.includes('Won')) return { backgroundColor: THEME.successBg, color: THEME.success, border: `1px solid ${COLORS.emerald}44` };
+    if (s.includes('Negotiation')) return { backgroundColor: THEME.pendingBg, color: THEME.pending, border: `1px solid ${COLORS.amber}44` };
+    if (s.includes('Qualified')) return { backgroundColor: THEME.infoBg, color: THEME.primary, border: `1px solid ${COLORS.orange}33` };
+    return { backgroundColor: THEME.slateBg, color: '#5c524a', border: `1px solid ${THEME.slateBorder}` };
+  };
 
-      {/* 🟢 RE-ENGINEERED HIGH-CONTRAST LIGHT MODE COMPONENT SURFACES STYLE SHEETS */}
+  return (
+    // WARM CANVAS WRAPPER — matches HRMSPage's gradient direction and tones
+    <div className="theme-crm container-fluid px-4 py-4" style={{
+      background: 'linear-gradient(160deg, #FFF6F0 0%, #FFFBF9 50%, #FFFFFF 100%)',
+      minHeight: '100vh', color: THEME.slateDark, fontFamily: '"Inter", sans-serif'
+    }}>
+
+      {/* RE-ENGINEERED LIGHT MODE COMPONENT SURFACES — reusing HRMSPage's THEME tokens */}
       <style>{`
         .hover-premium-card { 
-          background-color: #ffffff !important; 
-          border: 1px solid #e2e8f0 !important; 
-          color: #1e293b !important; 
-          border-radius: 16px !important;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
-          transition: transform 0.22s ease-in-out, box-shadow 0.22s ease-in-out, border-color 0.22s !important; 
+          background-color: ${THEME.white} !important; 
+          border: none !important; 
+          color: ${THEME.slateDark} !important; 
+          border-radius: 22px !important;
+          box-shadow: 0 8px 24px rgba(95,58,30,0.04) !important;
+          transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s ease !important; 
         }
         .hover-premium-card:hover { 
-          transform: translateY(-2px); 
-          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08) !important; 
-          border-color: #cbd5e1 !important; 
+          transform: translateY(-4px); 
+          box-shadow: 0 14px 28px rgba(95,58,30,0.07) !important; 
         }
         .light-table th { 
-          background-color: #f1f5f9 !important; 
-          color: #475569 !important; 
-          border-bottom: 2px solid #e2e8f0 !important; 
+          background-color: ${THEME.slateBg} !important; 
+          color: ${THEME.slateMuted} !important; 
+          border-bottom: 2px solid ${THEME.slateBorder} !important; 
           text-transform: uppercase; 
-          font-size: 0.75rem; 
+          font-size: 0.78rem; 
           font-weight: 700; 
-          letter-spacing: 0.5px;
-          padding: 14px !important; 
+          letter-spacing: 0.05em;
+          padding: 14px 20px !important; 
         }
         .light-table td { 
-          color: #334155 !important; 
-          border-top: 1px solid #e2e8f0 !important; 
-          padding: 14px !important; 
+          color: #5c524a !important; 
+          border-bottom: 1px solid #FDF6F2 !important; 
+          padding: 16px 20px !important; 
           background-color: transparent !important; 
+          font-size: 0.92rem;
         }
         .light-table tr:hover td { 
-          background-color: #f8fafc !important; 
+          background-color: #FFFBF9 !important; 
         }
         .lux-input { 
-          background-color: #ffffff !important; 
-          color: #1e293b !important; 
-          border: 1px solid #cbd5e1 !important; 
-          border-radius: 10px; 
+          background-color: ${THEME.white} !important; 
+          color: ${THEME.slateDark} !important; 
+          border: 1px solid ${THEME.slateBorder} !important; 
+          border-radius: 12px; 
           padding: 10px 14px;
+          transition: all 0.2s ease !important;
         }
         .lux-input:focus { 
-          border-color: #2563eb !important; 
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important; 
+          border-color: ${COLORS.orange} !important; 
+          box-shadow: 0 0 0 4px rgba(255, 138, 72, 0.12) !important; 
           outline: none; 
         }
         .workspace-pill { 
-          border: 1px solid #e2e8f0; 
-          background: #ffffff; 
+          border: 1px solid ${THEME.slateBorder}; 
+          background: ${THEME.white}; 
           padding: 10px 22px; 
           border-radius: 12px; 
           font-weight: 600; 
           font-size: 0.85rem; 
-          color: #475569; 
-          box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+          color: #5c524a; 
+          box-shadow: 0 2px 4px rgba(95,58,30,0.02);
           transition: all 0.2s ease; 
+          display: inline-flex;
         }
         .workspace-pill:hover { 
-          background-color: #f1f5f9; 
-          color: #1e293b; 
-          border-color: #cbd5e1;
+          background-color: ${THEME.slateBg}; 
+          color: ${THEME.slateDark}; 
+          border-color: ${COLORS.orange}55;
         }
         .workspace-pill.active { 
-          background-color: #2563eb; 
-          color: white; 
-          border-color: #2563eb; 
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); 
+          background: linear-gradient(135deg, ${COLORS.orange} 0%, ${COLORS.amber} 100%) !important; 
+          color: white !important; 
+          border-color: ${COLORS.orange} !important; 
+          box-shadow: 0 4px 12px rgba(255, 138, 72, 0.25) !important; 
         }
         .edit-badge-btn { 
-          background: #f1f5f9; 
-          border: 1px solid #cbd5e1; 
-          padding: 6px 12px; 
-          border-radius: 6px; 
-          color: #2563eb; 
-          font-size: 0.78rem; 
-          font-weight: 600; 
+          background-color: ${THEME.primaryLight} !important; 
+          border: none !important; 
+          padding: 6px 14px !important; 
+          border-radius: 8px !important; 
+          color: ${THEME.primary} !important; 
+          font-size: 0.8rem !important; 
+          font-weight: 700 !important; 
           transition: all 0.15s; 
           cursor: pointer; 
         }
         .edit-badge-btn:hover { 
-          background: #2563eb; 
-          color: #ffffff; 
-          border-color: #2563eb; 
+          background-color: ${COLORS.orange} !important; 
+          color: #ffffff !important; 
         }
         .crm-modal-backdrop { 
           position: fixed; 
           top: 0; left: 0; right: 0; bottom: 0; 
-          background-color: rgba(15, 23, 42, 0.4); 
+          background-color: rgba(44, 37, 32, 0.35); 
           backdrop-filter: blur(4px);
           display: flex; 
           align-items: center; 
@@ -312,27 +448,29 @@ const CRMPage = () => {
           padding: 20px; 
         }
         .crm-modal-content { 
-          background-color: #ffffff; 
-          border: 1px solid #cbd5e1; 
-          border-radius: 16px; 
+          background-color: ${THEME.white}; 
+          border: 1px solid ${THEME.slateBorder}; 
+          border-radius: 22px; 
           width: 100%; 
           max-width: 900px; 
-          box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1); 
+          box-shadow: 0 20px 40px rgba(95,58,30,0.12); 
           max-height: 90vh; 
           overflow-y: auto; 
         }
       `}</style>
 
       {/* HEADER CONTROLS */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: '#e2e8f0' }}>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: THEME.slateBorder }}>
         <div>
-          <h2 className="fw-bold text-dark mb-0">CRM Dashboard Terminal</h2>
-          <p className="text-muted small mb-0">Lead conversion, sales velocity tracking, and account relationships.</p>
+          <h3 className="fw-bold mb-1" style={{ color: '#2c2520', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>CRM Dashboard Terminal</h3>
+          <p style={{ color: THEME.slateMuted }} className="small mb-0">Lead conversion, sales velocity tracking, and account relationships.</p>
         </div>
 
         <div className="d-flex align-items-center gap-2">
           <div className="position-relative" style={{ minWidth: '320px' }}>
-            <span className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">🔍</span>
+            <span className="position-absolute top-50 start-0 translate-middle-y ms-3 d-flex align-items-center" style={{ zIndex: 10, color: THEME.slateMuted }}>
+              {CRM_ICONS.search(16)}
+            </span>
             <input
               type="text"
               className="form-control rounded-pill ps-5 lux-input"
@@ -341,12 +479,20 @@ const CRMPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="btn btn-primary fw-semibold px-4 rounded-pill border-0 shadow-sm" style={{ backgroundColor: '#2563eb' }} onClick={() => setShowAddForm(!showAddForm)}>
-            {showAddForm ? 'Close Form' : 'Add Lead'}
+          <button
+            className="btn fw-semibold px-4 py-2 rounded-pill border-0 shadow-sm text-white d-inline-flex align-items-center gap-2"
+            style={{ background: `linear-gradient(135deg, ${COLORS.orange} 0%, ${COLORS.amber} 100%)` }}
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            {!showAddForm && CRM_ICONS.plus(14)} {showAddForm ? 'Close Form' : 'Add Lead'}
           </button>
           {activeWorkspaceTab === 'quotations' && (
-            <button className="btn btn-success fw-semibold px-4 rounded-pill border-0 shadow-sm" style={{ backgroundColor: '#10b981' }} onClick={() => setShowQuoteForm(!showQuoteForm)}>
-              {showQuoteForm ? 'Close Form' : 'Build Quote'}
+            <button
+              className="btn fw-semibold px-4 py-2 rounded-pill border-0 shadow-sm text-white d-inline-flex align-items-center gap-2"
+              style={{ background: `linear-gradient(135deg, ${COLORS.emerald} 0%, #5EEAD4 100%)` }}
+              onClick={() => setShowQuoteForm(!showQuoteForm)}
+            >
+              {!showQuoteForm && CRM_ICONS.plus(14)} {showQuoteForm ? 'Close Form' : 'Build Quote'}
             </button>
           )}
         </div>
@@ -355,8 +501,8 @@ const CRMPage = () => {
       {/* ADD NEW LEADS FORM BLOCK */}
       {showAddForm && (
         <div className="card border-0 p-4 mb-4 hover-premium-card">
-          <h5 className="fw-bold text-dark mb-1">Add New Pipeline Entry</h5>
-          <p className="text-muted small mb-3">Input parameters to add a record inside your system database directory.</p>
+          <h5 className="fw-bold mb-1" style={{ color: THEME.slateDark }}>Add New Pipeline Entry</h5>
+          <p className="small mb-3" style={{ color: THEME.slateMuted }}>Input parameters to add a record inside your system database directory.</p>
           <form onSubmit={handleSaveLead} className="row g-3 mt-1">
             <div className="col-12 col-md-4">
               <label className="form-label small fw-semibold text-secondary">Contact Name *</label>
@@ -404,8 +550,8 @@ const CRMPage = () => {
               <textarea name="notes" rows="2" className="form-control lux-input" value={newLead.notes} onChange={handleInputChange} />
             </div>
             <div className="col-12 d-flex justify-content-end gap-2 mt-3">
-              <button type="button" className="btn btn-light border" onClick={() => setShowAddForm(false)}>Cancel</button>
-              <button type="submit" className="btn btn-primary border-0" style={{ backgroundColor: '#2563eb' }}>Save Lead</button>
+              <button type="button" className="btn rounded-3 border bg-white" style={{ borderColor: THEME.slateBorder }} onClick={() => setShowAddForm(false)}>Cancel</button>
+              <button type="submit" className="btn border-0 text-white rounded-3 fw-semibold px-4" style={{ background: `linear-gradient(135deg, ${COLORS.orange} 0%, ${COLORS.amber} 100%)` }}>Save Lead</button>
             </div>
           </form>
         </div>
@@ -415,9 +561,11 @@ const CRMPage = () => {
       {editingLead && (
         <div className="crm-modal-backdrop">
           <div className="crm-modal-content p-4">
-            <div className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3" style={{ borderColor: '#e2e8f0' }}>
-              <h5 className="fw-bold text-primary mb-0">📝 Edit Lead Configuration Matrix</h5>
-              <span className="text-muted small">ID Node Ref: #{editingLead.id}</span>
+            <div className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3" style={{ borderColor: THEME.slateBorder }}>
+              <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: THEME.primary }}>
+                {CRM_ICONS.edit(18)} Edit Lead Configuration Matrix
+              </h5>
+              <span className="small" style={{ color: THEME.slateMuted }}>ID Node Ref: #{editingLead.id}</span>
             </div>
             <form onSubmit={handleUpdateLeadSubmit} className="row g-3">
               <div className="col-12 col-md-4">
@@ -466,8 +614,8 @@ const CRMPage = () => {
                 <textarea name="notes" rows="2" className="form-control lux-input" value={editingLead.notes || ''} onChange={handleEditInputChange} />
               </div>
               <div className="col-12 d-flex justify-content-end gap-2 mt-3">
-                <button type="button" className="btn btn-light border" onClick={() => setEditingLead(null)}>Cancel</button>
-                <button type="submit" className="btn btn-primary border-0 px-4" style={{ backgroundColor: '#2563eb' }}>Apply Data Shifts</button>
+                <button type="button" className="btn rounded-3 border bg-white" style={{ borderColor: THEME.slateBorder }} onClick={() => setEditingLead(null)}>Cancel</button>
+                <button type="submit" className="btn border-0 text-white rounded-3 px-4 fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.orange} 0%, ${COLORS.amber} 100%)` }}>Apply Data Shifts</button>
               </div>
             </form>
           </div>
@@ -477,7 +625,7 @@ const CRMPage = () => {
       {/* QUOTATION INPUT DRAWER */}
       {showQuoteForm && (
         <div className="card border-0 p-4 mb-4 hover-premium-card">
-          <h5 className="fw-bold text-dark mb-1">Generate Commercial Cost Quotation</h5>
+          <h5 className="fw-bold mb-1" style={{ color: THEME.slateDark }}>Generate Commercial Cost Quotation</h5>
           <form onSubmit={handleSaveQuotation} className="row g-3 mt-1">
             <div className="col-12 col-md-4">
               <label className="form-label small fw-semibold text-secondary">Target Account Profile</label>
@@ -489,8 +637,8 @@ const CRMPage = () => {
             <div className="col-12 col-md-4"><label className="form-label small fw-semibold text-secondary">Total Amount Value (₹)</label><input type="number" name="total_amount" required className="form-control lux-input" value={newQuote.total_amount} onChange={handleQuoteInputChange} /></div>
             <div className="col-12 col-md-4"><label className="form-label small fw-semibold text-secondary">Validation Expiry Date</label><input type="date" name="valid_until" required className="form-control lux-input" value={newQuote.valid_until} onChange={handleQuoteInputChange} /></div>
             <div className="col-12 d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-light border" onClick={() => setShowQuoteForm(false)}>Cancel</button>
-              <button type="submit" className="btn btn-success border-0 text-white px-4" style={{ backgroundColor: '#10b981' }}>Compile Invoice Ledger</button>
+              <button type="button" className="btn rounded-3 border bg-white" style={{ borderColor: THEME.slateBorder }} onClick={() => setShowQuoteForm(false)}>Cancel</button>
+              <button type="submit" className="btn border-0 text-white rounded-3 px-4 fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.emerald} 0%, #5EEAD4 100%)` }}>Compile Invoice Ledger</button>
             </div>
           </form>
         </div>
@@ -498,33 +646,33 @@ const CRMPage = () => {
 
       {/* WORKSPACE SELECTION INTERACTION LINKS BAR */}
       <div className="d-flex flex-wrap gap-2 mb-4">
-        <button className={`workspace-pill ${activeWorkspaceTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('dashboard')}>📊 CRM Overview</button>
-        <button className={`workspace-pill ${activeWorkspaceTab === 'leads' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('leads')}>👥 Lead Management</button>
-        <button className={`workspace-pill ${activeWorkspaceTab === 'opportunities' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('opportunities')}>🎯 Opportunities Pipeline</button>
-        <button className={`workspace-pill ${activeWorkspaceTab === 'quotations' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('quotations')}>📝 Quotations Engine</button>
-        <button className={`workspace-pill ${activeWorkspaceTab === 'targets' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('targets')}>🎯 Sales Targets</button>
-        <button className={`workspace-pill ${activeWorkspaceTab === 'revenue' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('revenue')}>💰 Revenue Tracking</button>
+        <button className={`workspace-pill align-items-center gap-2 ${activeWorkspaceTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('dashboard')}>{CRM_ICONS.chart(16)} CRM Overview</button>
+        <button className={`workspace-pill align-items-center gap-2 ${activeWorkspaceTab === 'leads' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('leads')}>{CRM_ICONS.users(16)} Lead Management</button>
+        <button className={`workspace-pill align-items-center gap-2 ${activeWorkspaceTab === 'opportunities' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('opportunities')}>{CRM_ICONS.briefcase(16)} Opportunities Pipeline</button>
+        <button className={`workspace-pill align-items-center gap-2 ${activeWorkspaceTab === 'quotations' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('quotations')}>{CRM_ICONS.fileText(16)} Quotations Engine</button>
+        <button className={`workspace-pill align-items-center gap-2 ${activeWorkspaceTab === 'targets' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('targets')}>{CRM_ICONS.target(16)} Sales Targets</button>
+        <button className={`workspace-pill align-items-center gap-2 ${activeWorkspaceTab === 'revenue' ? 'active' : ''}`} onClick={() => setActiveWorkspaceTab('revenue')}>{CRM_ICONS.wallet(16)} Revenue Tracking</button>
       </div>
 
       {/* CONDITIONALLY LOAD PIPELINES ONLY IF TAB IS 'dashboard' */}
       {activeWorkspaceTab === 'dashboard' && (
         <>
           <div className="card border-0 p-4 mb-4 hover-premium-card">
-            <h5 className="fw-bold text-dark mb-1">Deal Funnel Velocity</h5>
+            <h5 className="fw-bold mb-1" style={{ color: THEME.slateDark }}>Deal Funnel Velocity</h5>
             <div className="row g-3 mt-1">
               {[
-                { label: 'Leads', value: loading ? '...' : pipelineMetrics.leads, icon: '🎯', customColor: '#2563eb' },
-                { label: 'Qualified', value: loading ? '...' : pipelineMetrics.qualified, icon: '⚡', customColor: '#7c3aed' },
-                { label: 'Deals', value: loading ? '...' : pipelineMetrics.deals, icon: '🤝', customColor: '#ea580c' },
-                { label: 'Won', value: loading ? '...' : pipelineMetrics.won, icon: '🏆', customColor: '#166534' }
+                { label: 'Leads', value: loading ? '...' : pipelineMetrics.leads, icon: CRM_ICONS.target(20), customColor: COLORS.orange },
+                { label: 'Qualified', value: loading ? '...' : pipelineMetrics.qualified, icon: CRM_ICONS.zap(20), customColor: COLORS.violet },
+                { label: 'Deals', value: loading ? '...' : pipelineMetrics.deals, icon: CRM_ICONS.handshake(20), customColor: COLORS.sky },
+                { label: 'Won', value: loading ? '...' : pipelineMetrics.won, icon: CRM_ICONS.trophy(20), customColor: COLORS.emerald }
               ].map((card, idx) => (
                 <div key={idx} className="col-6 col-md-3">
-                  <div className="p-3 rounded-3 border text-center h-100" style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}>
-                    <div className="mx-auto mb-2 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '42px', height: '42px', fontSize: '1.2rem', backgroundColor: '#ffffff', color: card.customColor, border: '1px solid #e2e8f0' }}>
+                  <div className="p-3 rounded-3 text-center h-100" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                    <div className="mx-auto mb-2 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '42px', height: '42px', fontSize: '1.2rem', backgroundColor: THEME.white, color: card.customColor, border: `2px solid ${card.customColor}35` }}>
                       {card.icon}
                     </div>
-                    <h4 className="fw-bold text-dark mb-0 font-monospace">{card.value}</h4>
-                    <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>{card.label}</small>
+                    <h4 className="fw-bold mb-0 font-monospace" style={{ color: THEME.slateDark }}>{card.value}</h4>
+                    <small className="d-block mt-1" style={{ fontSize: '0.78rem', color: THEME.slateMuted }}>{card.label}</small>
                   </div>
                 </div>
               ))}
@@ -534,7 +682,7 @@ const CRMPage = () => {
           <div className="row g-4 mb-4">
             <div className="col-12 col-lg-8">
               <div className="card border-0 p-4 h-100 hover-premium-card">
-                <h5 className="fw-bold text-dark mb-3">Sales Pipeline Conversion</h5>
+                <h5 className="fw-bold mb-3" style={{ color: THEME.slateDark }}>Sales Pipeline Conversion</h5>
                 <div style={{ height: '210px', position: 'relative' }}>
                   <BarChart data={chartData} options={chartOptions} />
                 </div>
@@ -542,16 +690,16 @@ const CRMPage = () => {
             </div>
 
             <div className="col-12 col-lg-4">
-              <div className="card border-0 p-4 h-100 hover-premium-card" style={{ borderLeft: '5px solid #7c3aed' }}>
-                <h5 className="fw-bold text-dark mb-1">Financial Pipeline Value</h5>
+              <div className="card border-0 p-4 h-100 hover-premium-card" style={{ borderLeft: `5px solid ${COLORS.violet}` }}>
+                <h5 className="fw-bold mb-1" style={{ color: THEME.slateDark }}>Financial Pipeline Value</h5>
                 <div className="d-flex flex-column gap-3 mt-3">
-                  <div className="p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                    <small className="d-block fw-medium mb-1 text-muted" style={{ fontSize: '0.75rem' }}>Total Closed Won Revenue</small>
-                    <h4 className="fw-bold text-success mb-0 font-monospace">₹{Number(telemetry.telemetry?.won || salesSummary.total_revenue || 0).toLocaleString()}</h4>
+                  <div className="p-3 rounded-3" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                    <small className="d-block fw-medium mb-1" style={{ fontSize: '0.75rem', color: THEME.slateMuted }}>Total Closed Won Revenue</small>
+                    <h4 className="fw-bold mb-0 font-monospace" style={{ color: THEME.success }}>₹{Number(telemetry.telemetry?.won || salesSummary.total_revenue || 0).toLocaleString()}</h4>
                   </div>
-                  <div className="p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                    <small className="d-block fw-medium mb-1 text-muted" style={{ fontSize: '0.75rem' }}>Gross Open Pipeline Portfolio Worth</small>
-                    <h4 className="fw-bold text-primary mb-0 font-monospace">₹{Number(telemetry.telemetry?.pipeline || 0).toLocaleString()}</h4>
+                  <div className="p-3 rounded-3" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                    <small className="d-block fw-medium mb-1" style={{ fontSize: '0.75rem', color: THEME.slateMuted }}>Gross Open Pipeline Portfolio Worth</small>
+                    <h4 className="fw-bold mb-0 font-monospace" style={{ color: THEME.primary }}>₹{Number(telemetry.telemetry?.pipeline || 0).toLocaleString()}</h4>
                   </div>
                 </div>
               </div>
@@ -581,7 +729,7 @@ const CRMPage = () => {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan="7" className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm text-primary me-2" />Syncing lead indexes...</td></tr>
+                    <tr><td colSpan="7" className="text-center py-4" style={{ color: THEME.slateMuted }}><span className="spinner-border spinner-border-sm me-2" style={{ color: THEME.primary }} />Syncing lead indexes...</td></tr>
                   ) : filteredLeads.length ? (
                     filteredLeads.map((item, idx) => {
                       const clientContactName = item.contact_name || 'Unnamed Contact';
@@ -591,28 +739,28 @@ const CRMPage = () => {
 
                       return (
                         <tr key={item.id || idx}>
-                          <td className="ps-3 fw-semibold text-dark">{clientContactName}<br /><small className="text-muted font-monospace">{item.email || '—'}</small></td>
+                          <td className="ps-3 fw-semibold" style={{ color: THEME.slateDark }}>{clientContactName}<br /><small className="font-monospace" style={{ color: THEME.slateMuted }}>{item.email || '—'}</small></td>
                           <td>{item.company || '—'}</td>
-                          <td className="text-muted small">{item.source || 'CRM Terminal'}</td>
-                          <td className="fw-bold text-success font-monospace">
+                          <td className="small" style={{ color: THEME.slateMuted }}>{item.source || 'CRM Terminal'}</td>
+                          <td className="fw-bold font-monospace" style={{ color: THEME.success }}>
                             ₹{financialDealValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td className="text-secondary small">{assignedLeadOwner}</td>
+                          <td className="small text-secondary">{assignedLeadOwner}</td>
                           <td>
-                            <span className="badge rounded-pill px-3 py-1.5 bg-light text-dark border">
+                            <span className="badge rounded-pill px-3 py-1.5" style={stageBadgeStyle(activePipelineStatus)}>
                               {activePipelineStatus}
                             </span>
                           </td>
                           <td className="text-end pe-3">
-                            <button className="edit-badge-btn" onClick={() => { setEditingLead(item); }}>
-                              ✏️ Edit
+                            <button className="edit-badge-btn d-inline-flex align-items-center gap-1" onClick={() => { setEditingLead(item); }}>
+                              {CRM_ICONS.edit(13)} Edit
                             </button>
                           </td>
                         </tr>
                       );
                     })
                   ) : (
-                    <tr><td colSpan="7" className="text-center text-muted py-4">No parameters match active lead thresholds.</td></tr>
+                    <tr><td colSpan="7" className="text-center py-4" style={{ color: THEME.slateMuted }}>No parameters match active lead thresholds.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -627,34 +775,34 @@ const CRMPage = () => {
                   {
                     label: 'Gross Open Opportunity Worth',
                     value: `₹${leads.reduce((acc, curr) => curr.stage !== 'Closed Won' ? acc + parseFloat(curr.value || 0) : acc, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-                    icon: '💼',
-                    color: '#2563eb',
+                    icon: CRM_ICONS.briefcase(20),
+                    color: COLORS.orange,
                     desc: 'Unclosed active deal metrics'
                   },
                   {
                     label: 'Deals Active in Negotiation',
                     value: filteredOpportunities.filter(item => item.stage === 'In Negotiation').length,
-                    icon: '🤝',
-                    color: '#ea580c',
+                    icon: CRM_ICONS.handshake(20),
+                    color: COLORS.amber,
                     desc: 'Live high-intent contract reviews'
                   },
                   {
                     label: 'Average Weighted Deal Size',
                     value: `₹${Math.round(filteredOpportunities.length ? (filteredOpportunities.reduce((acc, curr) => acc + parseFloat(curr.value || 0), 0) / filteredOpportunities.length) : 0).toLocaleString('en-IN')}`,
-                    icon: '📊',
-                    color: '#7c3aed',
+                    icon: CRM_ICONS.chart(20),
+                    color: COLORS.violet,
                     desc: 'Mean worth across portfolio'
                   }
                 ].map((card, idx) => (
                   <div key={idx} className="col-12 col-md-4">
-                    <div className="p-3 rounded-3 h-100 text-start" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderLeft: `4px solid ${card.color}` }}>
+                    <div className="p-3 rounded-3 h-100 text-start" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}`, borderLeft: `4px solid ${card.color}` }}>
                       <div className="d-flex justify-content-between align-items-start">
                         <div>
-                          <small className="text-muted d-block fw-semibold tracking-wider mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase' }}>{card.label}</small>
-                          <h4 className="fw-bold text-dark mb-1 font-monospace" style={{ fontSize: '1.25rem' }}>{card.value}</h4>
-                          <span className="text-secondary d-block" style={{ fontSize: '0.72rem' }}>{card.desc}</span>
+                          <small className="d-block fw-semibold tracking-wider mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: THEME.slateMuted }}>{card.label}</small>
+                          <h4 className="fw-bold mb-1 font-monospace" style={{ fontSize: '1.25rem', color: THEME.slateDark }}>{card.value}</h4>
+                          <span className="d-block" style={{ fontSize: '0.72rem', color: '#5c524a' }}>{card.desc}</span>
                         </div>
-                        <div className="fs-4 opacity-75">{card.icon}</div>
+                        <div className="opacity-75" style={{ color: card.color }}>{card.icon}</div>
                       </div>
                     </div>
                   </div>
@@ -663,10 +811,10 @@ const CRMPage = () => {
 
               <div className="d-flex justify-content-between align-items-center mb-3 pt-2">
                 <div className="text-start">
-                  <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '1rem' }}>🎯 Qualified Opportunities Deal Flow</h5>
-                  <small className="text-muted">Displaying pipeline accounts with dynamic, verified value metrics.</small>
+                  <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1rem', color: THEME.slateDark }}>{CRM_ICONS.target(16)} Qualified Opportunities Deal Flow</h5>
+                  <small style={{ color: THEME.slateMuted }}>Displaying pipeline accounts with dynamic, verified value metrics.</small>
                 </div>
-                <span className="badge px-3 py-1.5 bg-light text-dark border fw-bold">
+                <span className="badge px-3 py-1.5 fw-bold" style={{ backgroundColor: THEME.slateBg, color: '#5c524a', border: `1px solid ${THEME.slateBorder}` }}>
                   Pipeline Portfolio: {filteredOpportunities.length} Deals
                 </span>
               </div>
@@ -687,7 +835,7 @@ const CRMPage = () => {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan="8" className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm text-primary me-2" />Extracting live telemetry...</td></tr>
+                      <tr><td colSpan="8" className="text-center py-4" style={{ color: THEME.slateMuted }}><span className="spinner-border spinner-border-sm me-2" style={{ color: THEME.primary }} />Extracting live telemetry...</td></tr>
                     ) : filteredOpportunities.length ? (
                       filteredOpportunities.map((item, idx) => {
                         const clientContactName = item.contact_name || 'Unnamed Contact';
@@ -698,28 +846,26 @@ const CRMPage = () => {
 
                         return (
                           <tr key={item.id || idx}>
-                            <td className="ps-3 fw-semibold text-dark">
+                            <td className="ps-3 fw-semibold" style={{ color: THEME.slateDark }}>
                               {clientContactName}
                               <br />
-                              <small className="text-muted font-monospace" style={{ fontSize: '0.75rem' }}>{item.email || '—'}</small>
+                              <small className="font-monospace" style={{ fontSize: '0.75rem', color: THEME.slateMuted }}>{item.email || '—'}</small>
                             </td>
                             <td>{item.company || '—'}</td>
-                            <td className="text-muted small">{item.source || 'CRM Terminal'}</td>
-                            <td className="fw-bold text-success font-monospace">
+                            <td className="small" style={{ color: THEME.slateMuted }}>{item.source || 'CRM Terminal'}</td>
+                            <td className="fw-bold font-monospace" style={{ color: THEME.success }}>
                               ₹{financialDealValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td className="small text-danger font-monospace">{forecastCloseDate}</td>
-                            <td className="text-secondary small">{assignedLeadOwner}</td>
+                            <td className="small font-monospace" style={{ color: THEME.danger }}>{forecastCloseDate}</td>
+                            <td className="small text-secondary">{assignedLeadOwner}</td>
                             <td>
-                              <span className={`badge rounded-pill px-3 py-1.5 ${activePipelineStatus.includes('Won') ? 'bg-success text-white' :
-                                activePipelineStatus.includes('Negotiation') ? 'bg-warning text-dark fw-bold' : 'bg-primary text-white'
-                                }`}>
+                              <span className="badge rounded-pill px-3 py-1.5" style={stageBadgeStyle(activePipelineStatus)}>
                                 {activePipelineStatus}
                               </span>
                             </td>
                             <td className="text-end pe-3">
-                              <button className="edit-badge-btn" onClick={() => { setEditingLead(item); }}>
-                                ✏️ Edit Deal
+                              <button className="edit-badge-btn d-inline-flex align-items-center gap-1" onClick={() => { setEditingLead(item); }}>
+                                {CRM_ICONS.edit(13)} Edit Deal
                               </button>
                             </td>
                           </tr>
@@ -727,7 +873,7 @@ const CRMPage = () => {
                       })
                     ) : (
                       <tr>
-                        <td colSpan="8" className="text-center text-muted py-5">
+                        <td colSpan="8" className="text-center py-5" style={{ color: THEME.slateMuted }}>
                           No leads have progressed to the opportunity stage. Assign a value &gt; ₹0 or adjust the status to "In Negotiation" to see them track here!
                         </td>
                       </tr>
@@ -753,13 +899,13 @@ const CRMPage = () => {
                 <tbody>
                   {quotations && quotations.length ? quotations.map((q, i) => (
                     <tr key={q.id || i}>
-                      <td className="ps-3 font-monospace text-primary fw-bold">{q.quote_number}</td>
-                      <td className="text-dark fw-semibold">{q.company_name || q.contact_name || `Lead Account Ref #${q.lead_id}`}</td>
-                      <td className="font-monospace text-success fw-bold">₹{Number(q.total_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                      <td className="text-end pe-3 text-muted small">{q.valid_until ? new Date(q.valid_until).toLocaleDateString() : 'No Deadline'}</td>
+                      <td className="ps-3 font-monospace fw-bold" style={{ color: THEME.primary }}>{q.quote_number}</td>
+                      <td className="fw-semibold" style={{ color: THEME.slateDark }}>{q.company_name || q.contact_name || `Lead Account Ref #${q.lead_id}`}</td>
+                      <td className="font-monospace fw-bold" style={{ color: THEME.success }}>₹{Number(q.total_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                      <td className="text-end pe-3 small" style={{ color: THEME.slateMuted }}>{q.valid_until ? new Date(q.valid_until).toLocaleDateString() : 'No Deadline'}</td>
                     </tr>
                   )) : (
-                    <tr><td colSpan="4" className="text-center text-muted py-4">No active quote indices registered inside current database data blocks.</td></tr>
+                    <tr><td colSpan="4" className="text-center py-4" style={{ color: THEME.slateMuted }}>No active quote indices registered inside current database data blocks.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -769,29 +915,31 @@ const CRMPage = () => {
           {/* TARGET PERFORMANCE TARGETS TRACKER */}
           {activeWorkspaceTab === 'targets' && (
             <div className="py-2">
-              <div className="p-4 border shadow-sm" style={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '16px', color: '#1e293b' }}>
+              <div className="p-4" style={{ backgroundColor: THEME.white, border: `1px solid ${THEME.slateBorder}`, borderRadius: '16px', color: THEME.slateDark }}>
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="fw-bold text-dark" style={{ fontSize: '1.05rem', letterSpacing: '-0.3px' }}>Quota Performance Targets Tracker</span>
-                  <span className="badge font-monospace px-3 py-1.5" style={{ backgroundColor: 'rgba(22, 101, 52, 0.1)', color: '#166534', fontSize: '0.8rem', fontWeight: '700' }}>
+                  <span className="fw-bold d-flex align-items-center gap-2" style={{ fontSize: '1.05rem', letterSpacing: '-0.3px', color: THEME.slateDark }}>
+                    {CRM_ICONS.target(18)} Quota Performance Targets Tracker
+                  </span>
+                  <span className="badge font-monospace px-3 py-1.5" style={{ backgroundColor: THEME.successBg, color: THEME.success, fontSize: '0.8rem', fontWeight: '700' }}>
                     {targetProgressPercent}% Achieved
                   </span>
                 </div>
 
-                <div className="progress mb-4" style={{ height: '10px', backgroundColor: '#f1f5f9', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
-                  <div className="progress-bar" role="progressbar" style={{ width: `${targetProgressPercent}%`, backgroundColor: '#166534', borderRadius: '20px' }} />
+                <div className="progress mb-4" style={{ height: '10px', backgroundColor: THEME.slateBg, borderRadius: '20px', border: `1px solid ${THEME.slateBorder}` }}>
+                  <div className="progress-bar" role="progressbar" style={{ width: `${targetProgressPercent}%`, backgroundColor: COLORS.emerald, borderRadius: '20px' }} />
                 </div>
 
                 <div className="row g-3">
                   <div className="col-12 col-md-6">
-                    <div className="p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                      <small className="d-block text-muted mb-1 fw-medium" style={{ fontSize: '0.75rem' }}>Realized Volume Completed</small>
-                      <h5 className="fw-bold text-success mb-0 font-monospace">₹{Number(telemetry.target?.achieved_amount || 0).toLocaleString('en-IN')}</h5>
+                    <div className="p-3 rounded-3" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                      <small className="d-block mb-1 fw-medium" style={{ fontSize: '0.75rem', color: THEME.slateMuted }}>Realized Volume Completed</small>
+                      <h5 className="fw-bold mb-0 font-monospace" style={{ color: THEME.success }}>₹{Number(telemetry.target?.achieved_amount || 0).toLocaleString('en-IN')}</h5>
                     </div>
                   </div>
                   <div className="col-12 col-md-6">
-                    <div className="p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                      <small className="d-block text-muted mb-1 fw-medium" style={{ fontSize: '0.75rem' }}>Assigned Target Boundary Quota</small>
-                      <h5 className="fw-bold text-dark mb-0 font-monospace">₹{Number(telemetry.target?.target_amount || 500000).toLocaleString('en-IN')}</h5>
+                    <div className="p-3 rounded-3" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                      <small className="d-block mb-1 fw-medium" style={{ fontSize: '0.75rem', color: THEME.slateMuted }}>Assigned Target Boundary Quota</small>
+                      <h5 className="fw-bold mb-0 font-monospace" style={{ color: THEME.slateDark }}>₹{Number(telemetry.target?.target_amount || 500000).toLocaleString('en-IN')}</h5>
                     </div>
                   </div>
                 </div>
@@ -802,20 +950,20 @@ const CRMPage = () => {
           {/* REVENUE PROGRESS LEDGER TAB */}
           {activeWorkspaceTab === 'revenue' && (
             <div className="py-2">
-              <h5 className="fw-bold text-dark mb-1">Revenue Ingestion Ledger Tracking</h5>
-              <p className="text-muted small mb-3">Auditing accounting logs pulling exclusively from successfully locked Closed Won pipeline values.</p>
+              <h5 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ color: THEME.slateDark }}>{CRM_ICONS.wallet(18)} Revenue Ingestion Ledger Tracking</h5>
+              <p className="small mb-3" style={{ color: THEME.slateMuted }}>Auditing accounting logs pulling exclusively from successfully locked Closed Won pipeline values.</p>
 
               <div className="row g-3 mb-4">
                 <div className="col-12 col-md-6">
-                  <div className="p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                    <small className="text-muted d-block small mb-1">Gross Settled Liquidity Value</small>
-                    <h3 className="fw-bold text-success font-monospace mb-0">₹{Number(telemetry.telemetry?.won || 0).toLocaleString('en-IN')}</h3>
+                  <div className="p-3 rounded-3" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                    <small className="d-block small mb-1" style={{ color: THEME.slateMuted }}>Gross Settled Liquidity Value</small>
+                    <h3 className="fw-bold font-monospace mb-0" style={{ color: THEME.success }}>₹{Number(telemetry.telemetry?.won || 0).toLocaleString('en-IN')}</h3>
                   </div>
                 </div>
                 <div className="col-12 col-md-6">
-                  <div className="p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                    <small className="text-muted d-block small mb-1">Combined Accounts Pipeline Weight</small>
-                    <h3 className="fw-bold text-primary font-monospace mb-0">₹{Number(telemetry.telemetry?.pipeline || 0).toLocaleString('en-IN')}</h3>
+                  <div className="p-3 rounded-3" style={{ backgroundColor: THEME.slateBg, border: `1px solid ${THEME.slateBorder}` }}>
+                    <small className="d-block small mb-1" style={{ color: THEME.slateMuted }}>Combined Accounts Pipeline Weight</small>
+                    <h3 className="fw-bold font-monospace mb-0" style={{ color: THEME.primary }}>₹{Number(telemetry.telemetry?.pipeline || 0).toLocaleString('en-IN')}</h3>
                   </div>
                 </div>
               </div>
@@ -841,13 +989,13 @@ const CRMPage = () => {
 
                       return (
                         <tr key={item.id || idx}>
-                          <td className="ps-3 fw-semibold text-dark">{finalContactName}<br /><small className="text-muted font-monospace">{item.email}</small></td>
-                          <td className="fw-medium text-secondary small">{item.company || '—'}</td>
-                          <td className="text-muted small">{item.source || 'CRM Terminal'}</td>
-                          <td className="fw-bold text-success font-monospace">₹{revenueValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className="text-secondary small">{dealOwner}</td>
+                          <td className="ps-3 fw-semibold" style={{ color: THEME.slateDark }}>{finalContactName}<br /><small className="font-monospace" style={{ color: THEME.slateMuted }}>{item.email}</small></td>
+                          <td className="fw-medium small text-secondary">{item.company || '—'}</td>
+                          <td className="small" style={{ color: THEME.slateMuted }}>{item.source || 'CRM Terminal'}</td>
+                          <td className="fw-bold font-monospace" style={{ color: THEME.success }}>₹{revenueValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td className="small text-secondary">{dealOwner}</td>
                           <td className="text-end pe-3">
-                            <span className="badge bg-success text-white rounded-pill px-3 py-1.5">
+                            <span className="badge rounded-pill px-3 py-1.5" style={{ backgroundColor: THEME.successBg, color: THEME.success, border: `1px solid ${COLORS.emerald}44` }}>
                               {currentStage}
                             </span>
                           </td>
@@ -855,7 +1003,7 @@ const CRMPage = () => {
                       );
                     }) : (
                       <tr>
-                        <td colSpan="6" className="text-center text-muted py-4">
+                        <td colSpan="6" className="text-center py-4" style={{ color: THEME.slateMuted }}>
                           No deals have transitioned into a 'Closed Won' state within this system period.
                         </td>
                       </tr>

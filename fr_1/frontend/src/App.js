@@ -12,7 +12,6 @@ import ReportsPage from './pages/ReportsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
-import LeaveManagementPage from './pages/LeaveManagementPage';
 import MaterialMovementsPage from './pages/MaterialMovementsPage';
 import VendorsPage from './pages/VendorsPage';
 import PayrollPage from './pages/PayrollPage';
@@ -24,6 +23,33 @@ import BackupRestorePage from './pages/BackupRestorePage';
 import HelpSupportPage from './pages/HelpSupportPage';
 import CustomerPage from './pages/CustomerPage';
 import FollowUps from './pages/FollowUps';
+import BarcodeQRManagementPage from './pages/BarcodeQRManagementPage';
+import StockMonitoringPage from './pages/StockMonitoringPage';
+import EmployeeDirectoryPage from './pages/EmployeeDirectoryPage';
+import AttendanceTrackerPage from './pages/AttendanceTrackerPage';
+import LeaveManagementPage from './pages/LeaveManagementPage';
+import PerformanceReviewsPage from './pages/PerformanceReviewsPage';
+import RecruitmentPage from './pages/RecruitmentPage';
+import TrainingTrackerPage from './pages/TrainingTrackerPage';
+import HolidayCalendarPage from './pages/HolidayCalendarPage';
+import HRDocumentsPage from './pages/HRDocumentsPage';
+import ProcurementManagementPage from './pages/ProcurementManagementPage';
+import FinancialOperationsPage from './pages/FinancialOperationsPage';
+import OrderManagementPage from './pages/OrderManagementPage';
+import CustomerDataHubPage from './pages/CustomerDataHubPage';
+import LeadManagementCenterPage from './pages/LeadManagementCenterPage';
+import SupportDeskPage from './pages/SupportDeskPage';
+import SalesPipelineOverviewPage from './pages/SalesPipelineOverviewPage';
+import SalesOpportunitiesPage from './pages/SalesOpportunitiesPage';
+import SalesQuotationsPage from './pages/SalesQuotationsPage';
+import SalesTargetsPage from './pages/SalesTargetsPage';
+import SalesRevenueTrackingPage from './pages/SalesRevenueTrackingPage';
+import TeamMonitoringPage from './pages/TeamMonitoringPage';
+import TaskAssignmentPage from './pages/TaskAssignmentPage';
+import ProjectTrackingPage from './pages/ProjectTrackingPage';
+import ApprovalsPage from './pages/ApprovalsPage';
+import EmployeeProjectsPage from './pages/EmployeeProjectsPage';
+import EmployeeTrainingPage from './pages/EmployeeTrainingPage';
 import { GoogleOAuthProvider } from '@react-oauth/google'; // 🟢 Imported successfully
 
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -54,6 +80,90 @@ function App() {
           {/* Dashboard */}
           <Route index element={<DashboardPage />} />
 
+          {/* CRM */}
+          <Route
+            path="crm"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Sales']}>
+                <CRMPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="customers"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Sales', 'Manager']}>
+                <CustomerDataHubPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="crm/leads"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Sales', 'Manager']}>
+                <LeadManagementCenterPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="crm/support"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Sales', 'Manager']}>
+                <SupportDeskPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="crm/pipeline"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Sales', 'Manager']}>
+                <SalesPipelineOverviewPage />
+              </RoleBasedRoute>
+            }
+          />
+
+          {/* Sales Workspace */}
+          <Route
+            path="sales/opportunities"
+            element={
+              <RoleBasedRoute allowedRoles={['Sales', 'Admin', 'Manager', 'HR', 'Employee', 'Finance']}>
+                <SalesOpportunitiesPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="sales/quotations"
+            element={
+              <RoleBasedRoute allowedRoles={['Sales', 'Admin', 'Manager', 'HR', 'Employee', 'Finance']}>
+                <SalesQuotationsPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="sales/followups"
+            element={
+              <RoleBasedRoute allowedRoles={['Sales', 'Admin', 'Manager', 'HR', 'Employee', 'Finance']}>
+                <FollowUps />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="sales/targets"
+            element={
+              <RoleBasedRoute allowedRoles={['Sales', 'Admin', 'Manager', 'HR', 'Employee', 'Finance']}>
+                <SalesTargetsPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="sales/revenue"
+            element={
+              <RoleBasedRoute allowedRoles={['Sales', 'Admin', 'Manager', 'HR', 'Employee', 'Finance']}>
+                <SalesRevenueTrackingPage />
+              </RoleBasedRoute>
+            }
+          />
+
           {/* Materials */}
           <Route
             path="materials"
@@ -63,13 +173,109 @@ function App() {
               </RoleBasedRoute>
             }
           />
+          <Route
+            path="barcode-qr"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager']}>
+                <BarcodeQRManagementPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="stock-monitoring"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager']}>
+                <StockMonitoringPage />
+              </RoleBasedRoute>
+            }
+          />
 
-          {/* HRMS */}
+          {/* HRMS Dedicated Pages */}
           <Route
             path="hrms"
             element={
-              <RoleBasedRoute allowedRoles={['Admin', 'HR']}>
-                <HRMSPage />
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager']}>
+                <EmployeeDirectoryPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/directory"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager']}>
+                <EmployeeDirectoryPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/attendance"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager']}>
+                <AttendanceTrackerPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/leaves"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
+                <LeaveManagementPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/performance"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager']}>
+                <PerformanceReviewsPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/recruitment"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager']}>
+                <RecruitmentPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="employee/projects"
+            element={
+              <RoleBasedRoute allowedRoles={['Employee', 'Admin', 'HR', 'Manager', 'Sales']}>
+                <EmployeeProjectsPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="employee/training"
+            element={
+              <RoleBasedRoute allowedRoles={['Employee', 'Admin', 'HR', 'Manager', 'Sales']}>
+                <EmployeeTrainingPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/training"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager']}>
+                <TrainingTrackerPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/holidays"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
+                <HolidayCalendarPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="hrms/documents"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
+                <HRDocumentsPage />
               </RoleBasedRoute>
             }
           />
@@ -78,8 +284,66 @@ function App() {
           <Route
             path="erp"
             element={
-              <RoleBasedRoute allowedRoles={['Admin', 'Manager']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager', 'Sales', 'Finance']}>
                 <ERPPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="erp/procurement"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager', 'Sales', 'Finance']}>
+                <ProcurementManagementPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="erp/finance"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager', 'Sales', 'Finance']}>
+                <FinancialOperationsPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="erp/orders"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager', 'Sales', 'Finance']}>
+                <OrderManagementPage />
+              </RoleBasedRoute>
+            }
+          />
+
+          {/* Manager Workspace (Only accessible by Manager & Admin) */}
+          <Route
+            path="manager/team"
+            element={
+              <RoleBasedRoute allowedRoles={['Manager', 'Admin']}>
+                <TeamMonitoringPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="manager/tasks"
+            element={
+              <RoleBasedRoute allowedRoles={['Manager', 'Admin']}>
+                <TaskAssignmentPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="manager/projects"
+            element={
+              <RoleBasedRoute allowedRoles={['Manager', 'Admin']}>
+                <ProjectTrackingPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="manager/approvals"
+            element={
+              <RoleBasedRoute allowedRoles={['Manager', 'Admin']}>
+                <ApprovalsPage />
               </RoleBasedRoute>
             }
           />
@@ -91,6 +355,9 @@ function App() {
               </RoleBasedRoute>
             }
           />
+
+
+
           <Route
             path="vendors"
             element={
@@ -116,7 +383,7 @@ function App() {
           <Route
             path="reports"
             element={
-              <RoleBasedRoute allowedRoles={['Admin', 'Manager', 'HR']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager', 'HR', 'Sales']}>
                 <ReportsPage />
               </RoleBasedRoute>
             }
@@ -131,10 +398,11 @@ function App() {
               </RoleBasedRoute>
             }
           />
+          {/* Payroll Routes */}
           <Route
             path="payroll"
             element={
-              <RoleBasedRoute allowedRoles={['Employee']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
                 <PayrollPage />
               </RoleBasedRoute>
             }
@@ -144,7 +412,7 @@ function App() {
           <Route
             path="payroll-commissions"
             element={
-              <RoleBasedRoute allowedRoles={['Sales']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
                 <PayrollPage />
               </RoleBasedRoute>
             }
@@ -154,7 +422,7 @@ function App() {
           <Route
             path="payroll-management"
             element={
-              <RoleBasedRoute allowedRoles={['Admin', 'HR']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
                 <PayrollPage />
               </RoleBasedRoute>
             }
@@ -164,7 +432,7 @@ function App() {
           <Route
             path="payroll-budgets"
             element={
-              <RoleBasedRoute allowedRoles={['Manager']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
                 <PayrollPage />
               </RoleBasedRoute>
             }

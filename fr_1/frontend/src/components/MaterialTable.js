@@ -9,15 +9,16 @@ const MaterialTable = ({
   setSearchValue,
   categories = [],
   selectedCategory = '',
-  setSelectedCategory
+  setSelectedCategory,
+  statusFilter = 'All',
+  setStatusFilter
 }) => {
 
-  // 🟢 FIXED: Safe fallbacks prevent crashes when database properties return null or undefined
+  // 🟢 SAFE FILTERING LOGIC
   const filteredMaterials = useMemo(() => {
     return materials.filter((item) => {
       if (!item) return false;
 
-      // Force null/undefined properties to fallback safely to an empty string ''
       const search = (searchValue || '').toLowerCase();
       const name = (item.material_name || '').toLowerCase();
       const code = (item.material_code || '').toLowerCase();
@@ -32,9 +33,22 @@ const MaterialTable = ({
 
       const matchCategory = selectedCategory ? item.category === selectedCategory : true;
 
-      return matchSearch && matchCategory;
+      let matchStatus = true;
+      const qty = Number(item.quantity || 0);
+      const minQty = Number(item.min_quantity || item.low_stock_threshold || 10);
+      const itemStatus = (item.status || '').toLowerCase();
+
+      if (statusFilter === 'In Stock') {
+        matchStatus = qty > minQty && !itemStatus.includes('out') && !itemStatus.includes('transit');
+      } else if (statusFilter === 'Low Stock') {
+        matchStatus = (qty <= minQty && qty > 0) || itemStatus.includes('low');
+      } else if (statusFilter === 'Out of Stock') {
+        matchStatus = qty === 0 || itemStatus.includes('out');
+      }
+
+      return matchSearch && matchCategory && matchStatus;
     });
-  }, [materials, searchValue, selectedCategory]);
+  }, [materials, searchValue, selectedCategory, statusFilter]);
 
   return (
     <div className="table-wrapper p-3" style={{ background: 'var(--surface)', borderRadius: '16px' }}>
@@ -60,44 +74,89 @@ const MaterialTable = ({
           background-color: var(--surface-alt) !important;
           transform: scale(1.002);
         }
-        .hover-scale-action {
-          transition: transform 0.2s ease, filter 0.2s ease !important;
+
+        /* ── ACTION ICON BUTTONS ── */
+        .btn-action-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
+          border: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
         }
-        .hover-scale-action:hover {
-          transform: scale(1.03);
-          filter: brightness(1.05);
+        .edit-icon-btn {
+          background-color: #EFF6FF !important;
+          color: #3B82F6 !important;
+        }
+        .edit-icon-btn:hover {
+          background-color: #3B82F6 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+          transform: translateY(-1px);
+        }
+        .del-icon-btn {
+          background-color: #FFF1F2 !important;
+          color: #F43F5E !important;
+        }
+        .del-icon-btn:hover {
+          background-color: #F43F5E !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+          transform: translateY(-1px);
         }
       `}</style>
 
       {/* FILTER SEARCH AND CONTROLS ROW */}
-      <div className="d-flex flex-wrap gap-3 align-items-center mb-4">
-        <div className="position-relative flex-grow-1" style={{ maxWidth: '280px' }}>
-          <span className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}>🔍</span>
-          <input
-            type="text"
-            className="form-control hover-input-lux ps-5 small"
-            placeholder="Search materials..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            style={{ borderRadius: '12px', padding: '0.6rem 1rem' }}
-          />
+      <div className="d-flex flex-wrap gap-3 align-items-center justify-content-between mb-4">
+        <div className="d-flex flex-wrap gap-2 align-items-center flex-grow-1">
+          <div className="position-relative" style={{ minWidth: '240px' }}>
+            <span className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}>🔍</span>
+            <input
+              type="text"
+              className="form-control hover-input-lux ps-5 small"
+              placeholder="Search material..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              style={{ borderRadius: '12px', padding: '0.6rem 1rem' }}
+            />
+          </div>
+
+          <div style={{ minWidth: '180px' }}>
+            <select
+              className="form-select hover-input-lux small"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              style={{ borderRadius: '12px', padding: '0.6rem 1rem' }}
+            >
+              <option value="">All categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div style={{ minWidth: '200px' }}>
-          <select
-            className="form-select hover-input-lux small"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ borderRadius: '12px', padding: '0.6rem 1rem' }}
-          >
-            <option value="">All categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
+        {/* STATUS FILTER PILLS MATCHING SCREENSHOT */}
+        {setStatusFilter && (
+          <div className="d-flex align-items-center gap-1 bg-light p-1 rounded-3 border" style={{ backgroundColor: '#FAF8FF' }}>
+            {['All', 'In Stock', 'Low Stock', 'Out of Stock'].map((st) => (
+              <button
+                key={st}
+                type="button"
+                className={`btn btn-sm px-3 py-1.5 rounded-3 fw-bold ${statusFilter === st ? 'btn-primary text-white shadow-sm' : 'text-secondary border-0 bg-transparent'}`}
+                style={{ fontSize: '0.78rem' }}
+                onClick={() => setStatusFilter(st)}
+              >
+                {st}
+              </button>
             ))}
-          </select>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* RE-STYLED RESPONSIVE TABLE LAYER */}
@@ -112,7 +171,7 @@ const MaterialTable = ({
               <th className="border-0">Supplier</th>
               <th className="border-0">Location</th>
               <th className="border-0">Status</th>
-              <th className="text-end pe-4 border-0">Actions</th>
+              <th className="text-center border-0">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -155,20 +214,27 @@ const MaterialTable = ({
                         {material.status || (isLowStock ? 'Low Stock' : 'Active')}
                       </span>
                     </td>
-                    <td className="text-end pe-4">
-                      <div className="d-flex gap-2 justify-content-end">
+                    <td className="text-center">
+                      <div className="d-flex gap-2 justify-content-center align-items-center">
                         <button
-                          className="btn btn-sm btn-outline-dark hover-scale-action rounded-3 px-2.5 small fw-semibold"
+                          className="btn-action-icon edit-icon-btn"
                           onClick={() => onEdit(material)}
-                          style={{ borderColor: 'var(--card-border)', color: 'var(--text)', backgroundColor: 'transparent' }}
+                          title="Edit Material"
                         >
-                          ⚙️ Edit
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
                         </button>
                         <button
-                          className="btn btn-sm btn-danger hover-scale-action rounded-3 px-2.5 small fw-semibold"
+                          className="btn-action-icon del-icon-btn"
                           onClick={() => onDelete(material.id)}
+                          title="Delete Material"
                         >
-                          🗑️ Delete
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
                         </button>
                       </div>
                     </td>

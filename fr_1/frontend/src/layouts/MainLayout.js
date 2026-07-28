@@ -1,11 +1,14 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { logout } from '../services/authService';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
+import ChatWidget from '../components/ChatWidget';
 
 const MainLayout = () => {
   const [darkMode, setDarkMode] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [hasUnreadChat, setHasUnreadChat] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,15 +26,42 @@ const MainLayout = () => {
     navigate('/login');
   };
 
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setHasUnreadChat(false);
+  };
+
   return (
     <div className="app-shell">
+      {/* Sidebar is position:fixed so we push content right by its exact width */}
       <Sidebar darkMode={darkMode} />
-      <div className="flex-fill">
-        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} onLogout={handleLogout} />
+
+      {/* This div takes up all remaining space to the right of the sidebar */}
+      <div style={{ marginLeft: '260px', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <TopNavbar
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          onLogout={handleLogout}
+          isChatOpen={isChatOpen}
+          setIsChatOpen={(val) => {
+            setIsChatOpen(val);
+            if (val) setHasUnreadChat(false);
+          }}
+          hasUnreadChat={hasUnreadChat}
+        />
         <main className="main-content">
           <Outlet />
         </main>
       </div>
+
+      {/* Slide-in AI Assistant Chat Widget */}
+      <ChatWidget
+        isOpen={isChatOpen}
+        onClose={handleCloseChat}
+        onNewMessage={() => {
+          if (!isChatOpen) setHasUnreadChat(true);
+        }}
+      />
     </div>
   );
 };

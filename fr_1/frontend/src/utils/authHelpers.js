@@ -5,7 +5,7 @@ export const getCurrentUser = () => {
       const parsed = JSON.parse(raw);
       return {
         id: parsed.id,
-        role: parsed.role,
+        role: (parsed.role || '').toUpperCase(),
         email: parsed.email,
         name: parsed.name,
         department: parsed.department || 'General',
@@ -22,7 +22,7 @@ export const getCurrentUser = () => {
     const payload = JSON.parse(window.atob(token.split('.')[1] || ''));
     return {
       id: payload.id,
-      role: payload.role,
+      role: (payload.role || '').toUpperCase(),
       email: payload.email,
       name: payload.name,
       department: payload.department || 'General',
@@ -34,5 +34,6 @@ export const getCurrentUser = () => {
 
 export const hasRole = (allowedRoles) => {
   const user = getCurrentUser();
-  return user && allowedRoles.includes(user.role);
+  if (!user || !user.role) return false;
+  return allowedRoles.map(r => r.toUpperCase()).includes(user.role);
 };

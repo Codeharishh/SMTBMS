@@ -1,6 +1,6 @@
 import api from './api';
 
-// User Management CRUD
+// ── 1. USER MANAGEMENT CRUD ──────────────────────────────────────────────────
 export const fetchUsers = async () => {
   const response = await api.get('/admin/users');
   return response.data;
@@ -21,13 +21,13 @@ export const deleteUser = async (id) => {
   return response.data;
 };
 
-// Audit Logs
+// ── 2. AUDIT LOGS ─────────────────────────────────────────────────────────────
 export const fetchAuditLogs = async () => {
   const response = await api.get('/admin/audit-logs');
   return response.data;
 };
 
-// Integrations
+// ── 3. INTEGRATIONS ───────────────────────────────────────────────────────────
 export const fetchIntegrations = async () => {
   const response = await api.get('/admin/integrations');
   return response.data;
@@ -43,7 +43,7 @@ export const testIntegrationConnection = async (name) => {
   return response.data;
 };
 
-// Backup & Restore
+// ── 4. BACKUP & RESTORE ───────────────────────────────────────────────────────
 export const fetchBackups = async () => {
   const response = await api.get('/admin/backups');
   return response.data;
@@ -59,7 +59,27 @@ export const restoreDatabaseFromBackup = async (id) => {
   return response.data;
 };
 
-// Help & Support Tickets
+// Downloads the raw database .zip stream directly
+export const downloadBackupZip = async (id, fileName) => {
+  const response = await api.get(`/admin/backups/${id}/download`, {
+    responseType: 'blob'
+  });
+
+  const blob = new Blob([response.data], { type: 'application/zip' });
+  const url = window.URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', fileName || `backup_${id}.zip`);
+
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+// ── 5. HELP & SUPPORT TICKETS ─────────────────────────────────────────────────
 export const fetchTickets = async () => {
   const response = await api.get('/admin/tickets');
   return response.data;

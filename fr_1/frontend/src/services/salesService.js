@@ -6,6 +6,8 @@ export const fetchSales = async () => {
   return response.data;
 };
 
+export const fetchSalesOrders = fetchSales;
+
 export const fetchSalesSummary = async () => {
   const response = await api.get('/sales/summary');
   return response.data;
@@ -15,6 +17,8 @@ export const createSale = async (data) => {
   const response = await api.post('/sales', data);
   return response.data;
 };
+
+export const createSalesOrder = createSale;
 
 export const updateSale = async (id, data) => {
   const response = await api.put(`/sales/${id}`, data);

@@ -196,7 +196,7 @@ exports.getPendingApprovals = async (req, res) => {
 
     // 2. Fetch pending procurements
     const [procurements] = await pool.query(`
-      SELECT p.*, v.name as supplier_name
+      SELECT p.*, v.vendor_name as supplier_name
       FROM procurements p
       LEFT JOIN vendors v ON p.vendor_id = v.id
       WHERE p.status = 'Pending'

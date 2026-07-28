@@ -2,6 +2,11 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 
+// Roles that should get a matching `employees` row so attendance/HR features work.
+// Keep this in sync with the roles allowed in backend/routes/attendanceRoutes.js
+// (Admin is intentionally excluded — admins don't punch in via the dashboard).
+const ATTENDANCE_ELIGIBLE_ROLES = ['employee', 'manager', 'sales', 'hr'];
+
 // Helper to log administrative audits
 const logAdminAction = async (userId, action, details, ipAddress = '127.0.0.1') => {
   try {
@@ -52,6 +57,18 @@ const initTables = async () => {
         description TEXT,
         priority VARCHAR(50) DEFAULT 'Low',
         status VARCHAR(50) DEFAULT 'Open',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 3b. Chat Messages (Per-Role & Per-User Isolated State)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS chat_messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
+        role VARCHAR(50) NOT NULL,
+        sender VARCHAR(20) NOT NULL,
+        message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -326,7 +343,10 @@ exports.createUser = async (req, res) => {
 
     const newUserId = userRes.insertId;
 
-    if ((role || '').toLowerCase() === 'employee') {
+    // Create a matching `employees` row for any attendance-eligible role
+    // (Employee, Manager, Sales, HR) — not just plain "Employee" — so
+    // punch-in/out and other HRMS features work for those accounts too.
+    if (ATTENDANCE_ELIGIBLE_ROLES.includes((role || '').toLowerCase())) {
       await connection.query(
         'INSERT INTO employees (user_id, name, department, salary, join_date, attendance_status, leave_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [newUserId, name, department || 'Administration', 0, new Date(), 'Present', 0]
@@ -364,11 +384,22 @@ exports.updateUser = async (req, res) => {
       [name, email, role, department, phone, id]
     );
 
-    // Sync with corresponding employee table entries
-    await connection.query(
-      'UPDATE employees SET name = ?, department = ? WHERE user_id = ?',
-      [name, department, id]
-    );
+    // Sync with corresponding employee table entry — and backfill it if the
+    // user never had one (e.g. they were created before this fix, or their
+    // role just changed into an attendance-eligible one).
+    const [existingEmployee] = await connection.query('SELECT id FROM employees WHERE user_id = ?', [id]);
+
+    if (existingEmployee.length) {
+      await connection.query(
+        'UPDATE employees SET name = ?, department = ? WHERE user_id = ?',
+        [name, department, id]
+      );
+    } else if (ATTENDANCE_ELIGIBLE_ROLES.includes((role || '').toLowerCase())) {
+      await connection.query(
+        'INSERT INTO employees (user_id, name, department, salary, join_date, attendance_status, leave_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, name, department || 'Administration', 0, new Date(), 'Present', 0]
+      );
+    }
 
     await connection.commit();
     await logAdminAction(req.user.id, 'USER_MANAGEMENT', `Updated user account details: ${email}`, req.ip);
@@ -461,12 +492,12 @@ exports.toggleIntegration = async (req, res) => {
     }
 
     await pool.query('UPDATE integrations SET active = ? WHERE id = ?', [active ? 1 : 0, id]);
-    
+
     const actionDesc = active ? 'ENABLED' : 'DISABLED';
     await logAdminAction(
-      req.user.id, 
-      'INTEGRATION', 
-      `${actionDesc} Third-party Connection integration for: ${existing[0].display_name}`, 
+      req.user.id,
+      'INTEGRATION',
+      `${actionDesc} Third-party Connection integration for: ${existing[0].display_name}`,
       req.ip
     );
 
@@ -520,7 +551,7 @@ exports.createBackup = async (req, res) => {
   try {
     const timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '').substring(0, 15);
     const fileName = `backup_manual_admin_${timestamp}.sql`;
-    
+
     // Simulate real SQL backup generation latency
     await new Promise((resolve) => setTimeout(resolve, 600));
 

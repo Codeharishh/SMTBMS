@@ -49,6 +49,7 @@ app.use('/api/material-movements', materialMovementRoutes);
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/hr', require('./routes/hrRoutes'));
 app.use('/api/manager', require('./routes/managerRoutes'));
+app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/leads', require('./routes/leadRoutes'));
 app.use('/api/customers', require('./routes/customerRoutes'));
 

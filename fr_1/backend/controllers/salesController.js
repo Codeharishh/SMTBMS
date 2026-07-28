@@ -3,7 +3,12 @@ const pool = require('../config/db');
 exports.getAllSales = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM sales ORDER BY sales_date DESC'
+      `SELECT s.*, 
+              COALESCE(c.customer_name, s.product_name, 'Valued Customer') as customer_name,
+              COALESCE(s.payment_status, 'Processing') as status
+       FROM sales s 
+       LEFT JOIN customers c ON s.customer_id = c.id 
+       ORDER BY s.sales_date DESC`
     );
 
     res.json(rows);

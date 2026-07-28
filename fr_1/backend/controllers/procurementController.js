@@ -1,5 +1,21 @@
 const pool = require('../config/db');
 
+// procurement_date is a plain MySQL DATE column — it rejects full ISO
+// datetime strings like '2026-06-07T18:30:00.000Z' outright. Normalize
+// anything we receive down to 'YYYY-MM-DD' before it hits the query.
+//
+// NOTE: if the incoming value already has a 'T18:30:00.000Z'-style suffix,
+// that's very likely an IST date that got shifted back a calendar day by
+// a client-side `new Date(...).toISOString()` conversion (UTC+5:30 rolling
+// midnight IST back to the previous day in UTC). Truncating here avoids the
+// crash, but the *correct* fix is on the frontend — see the note below.
+const normalizeDateOnly = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value.split('T')[0];
+  if (value instanceof Date) return value.toISOString().split('T')[0];
+  return value;
+};
+
 exports.getAllProcurements = async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM procurements ORDER BY created_at DESC');
@@ -25,10 +41,13 @@ exports.getProcurementById = async (req, res) => {
 
 exports.createProcurement = async (req, res) => {
   try {
-    const { procurement_code, vendor_id, material_id, quantity, total_cost, status, expected_delivery_date } = req.body;
+    // NOTE: matches the actual `procurements` table columns — there is no
+    // `procurement_code` column, and the date column is `procurement_date`,
+    // not `expected_delivery_date`.
+    const { vendor_id, material_id, quantity, total_cost, status, procurement_date } = req.body;
     const [result] = await pool.query(
-      'INSERT INTO procurements (procurement_code, vendor_id, material_id, quantity, total_cost, status, expected_delivery_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-      [procurement_code, vendor_id, material_id, quantity || 0, total_cost || 0, status || 'Pending', expected_delivery_date || null]
+      'INSERT INTO procurements (vendor_id, material_id, quantity, total_cost, status, procurement_date, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+      [vendor_id, material_id, quantity || 0, total_cost || 0, status || 'Pending', normalizeDateOnly(procurement_date)]
     );
     const [rows] = await pool.query('SELECT * FROM procurements WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -40,10 +59,10 @@ exports.createProcurement = async (req, res) => {
 
 exports.updateProcurement = async (req, res) => {
   try {
-    const { procurement_code, vendor_id, material_id, quantity, total_cost, status, expected_delivery_date } = req.body;
+    const { vendor_id, material_id, quantity, total_cost, status, procurement_date } = req.body;
     await pool.query(
-      'UPDATE procurements SET procurement_code = ?, vendor_id = ?, material_id = ?, quantity = ?, total_cost = ?, status = ?, expected_delivery_date = ? WHERE id = ?',
-      [procurement_code, vendor_id, material_id, quantity || 0, total_cost || 0, status || 'Pending', expected_delivery_date || null, req.params.id]
+      'UPDATE procurements SET vendor_id = ?, material_id = ?, quantity = ?, total_cost = ?, status = ?, procurement_date = ? WHERE id = ?',
+      [vendor_id, material_id, quantity || 0, total_cost || 0, status || 'Pending', normalizeDateOnly(procurement_date), req.params.id]
     );
     const [rows] = await pool.query('SELECT * FROM procurements WHERE id = ?', [req.params.id]);
     res.json(rows[0]);
