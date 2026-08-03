@@ -17,7 +17,7 @@ const pool = mysql.createPool({
   // Aiven requires SSL for all connections. ca.pem must sit in the same
   // folder as this file (or adjust the path below to wherever you put it).
   ssl: {
-    ca: fs.readFileSync(path.join(__dirname, 'ca.pem'))
+    ca: fs.readFileSync(path.join(__dirname, '..', 'ca.pem'))
   },
 
   // Keeps pooled connections alive instead of going stale — useful for a
