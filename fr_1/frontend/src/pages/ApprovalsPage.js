@@ -62,6 +62,12 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="18" y1="6" x2="6" y2="18" />
       <line vectorEffect="non-scaling-stroke" x1="6" y1="6" x2="18" y2="18" />
     </svg>
+  ),
+  trash: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <polyline vectorEffect="non-scaling-stroke" points="3 6 5 6 21 6" />
+      <path vectorEffect="non-scaling-stroke" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
   )
 };
 
@@ -91,6 +97,12 @@ const ApprovalsPage = () => {
 
   const handleAction = (id, newStatus) => {
     setRequests(requests.map(r => r.id === id ? { ...r, status: newStatus } : r));
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this request?')) {
+      setRequests(requests.filter(r => r.id !== id));
+    }
   };
 
   const handleCreateRequest = (e) => {
@@ -218,14 +230,16 @@ const ApprovalsPage = () => {
           </div>
         </div>
 
-        <button
-          className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-          onClick={() => setShowModal(true)}
-          style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #60A5FA 100%)` }}
-        >
-          {THIN_ICONS.plus}
-          <span> New Approval Request</span>
-        </button>
+        <div className="d-flex align-items-center justify-content-end">
+          <button
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => setShowModal(true)}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+          >
+            {THIN_ICONS.plus}
+            <span> New Approval Request</span>
+          </button>
+        </div>
       </div>
 
       <div className="section-eyebrow">Overview</div>
@@ -263,9 +277,12 @@ const ApprovalsPage = () => {
             {['All', 'Pending', 'Approved', 'Rejected'].map(st => (
               <button
                 key={st}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark border-0'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-white text-dark'}`}
                 onClick={() => setStatusFilter(st)}
-                style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
+                style={{
+                  background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {st}
               </button>
@@ -320,16 +337,43 @@ const ApprovalsPage = () => {
                   </td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
-                      {r.status === 'Pending' && (
+                      {r.status === 'Pending' ? (
                         <>
-                          <button className="btn btn-sm btn-outline-success border-0 rounded-3 p-1" title="Approve" onClick={() => handleAction(r.id, 'Approved')}>
+                          <button 
+                            className="btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0" 
+                            title="Approve" 
+                            onClick={() => handleAction(r.id, 'Approved')}
+                            style={{ width: '32px', height: '32px', border: `1px solid ${COLORS.emerald}`, color: COLORS.emerald }}
+                          >
                             {THIN_ICONS.check}
                           </button>
-                          <button className="btn btn-sm btn-outline-danger border-0 rounded-3 p-1" title="Reject" onClick={() => handleAction(r.id, 'Rejected')}>
+                          <button 
+                            className="btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0" 
+                            title="Reject" 
+                            onClick={() => handleAction(r.id, 'Rejected')}
+                            style={{ width: '32px', height: '32px', border: `1px solid ${COLORS.alert}`, color: COLORS.alert }}
+                          >
                             {THIN_ICONS.cross}
                           </button>
                         </>
+                      ) : (
+                        <button 
+                          className="btn btn-sm px-3 rounded-pill fw-bold" 
+                          title="Reopen Request" 
+                          onClick={() => handleAction(r.id, 'Pending')}
+                          style={{ border: '1px solid #e2e8f0', color: COLORS.indigo }}
+                        >
+                          Reopen
+                        </button>
                       )}
+                      <button 
+                        className="btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0" 
+                        title="Delete" 
+                        onClick={() => handleDelete(r.id)}
+                        style={{ width: '32px', height: '32px', border: '1px solid #cbd5e1', color: '#94a3b8' }}
+                      >
+                        {THIN_ICONS.trash}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -388,10 +432,12 @@ const ApprovalsPage = () => {
                     <input type="number" className="form-control rounded-3" value={requestForm.amount} onChange={(e) => setRequestForm({ ...requestForm, amount: Number(e.target.value) })} />
                   </div>
                 </div>
-                <div className="modal-footer border-0">
-                  <button type="button" className="btn rounded-pill px-4 bg-white border" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn rounded-pill px-4 border-0 text-white fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #60A5FA 100%)` }}>
+                <div className="modal-footer border-0 gap-2">
+                  <button type="submit" className="btn rounded-3 px-4 py-2 border-0 text-white fw-bold hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)`, flex: 1 }}>
                     Submit Request
+                  </button>
+                  <button type="button" className="btn rounded-3 px-4 py-2 bg-light border fw-bold text-secondary" style={{ flex: 1 }} onClick={() => setShowModal(false)}>
+                    Cancel
                   </button>
                 </div>
               </form>

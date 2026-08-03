@@ -25,6 +25,12 @@ const ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="8" y1="15" x2="16" y2="15" />
       <line vectorEffect="non-scaling-stroke" x1="8" y1="19" x2="12" y2="19" />
     </svg>
+  ),
+  search: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <circle vectorEffect="non-scaling-stroke" cx="11" cy="11" r="8" />
+      <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
   )
 };
 
@@ -111,7 +117,7 @@ const AuditLogsPage = () => {
         }
         .hover-input-lux {
           transition: all 0.2s ease !important;
-          background: #ffffff !important;
+          background-color: #ffffff !important;
           color: #1e293b !important;
           border: 1px solid rgba(165, 175, 200, 0.25) !important;
         }
@@ -181,7 +187,7 @@ const AuditLogsPage = () => {
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 p-4 border-bottom" style={{ borderColor: '#f1f0f9' }}>
           <div className="d-flex flex-grow-1 gap-3" style={{ maxWidth: '650px' }}>
             <div className="position-relative flex-grow-1">
-              <span className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style={{ zIndex: 10 }}>🔍</span>
+              <span className="position-absolute top-50 start-0 translate-middle-y ms-3 d-flex align-items-center" style={{ color: '#94a3b8', pointerEvents: 'none' }}>{ICONS.search}</span>
               <input
                 type="text"
                 className="form-control rounded-pill ps-5 hover-input-lux small py-2"
@@ -209,7 +215,7 @@ const AuditLogsPage = () => {
             style={{ background: 'linear-gradient(135deg, #FF7A45 0%, #FFA36C 100%)' }}
             onClick={handleExportCSV}
           >
-            📥 Export logs as CSV
+            Export logs as CSV
           </button>
         </div>
 

@@ -159,8 +159,8 @@ const THIN_ICONS = {
 const QUICK_ACTIONS = [
   { label: 'Add New Employee', desc: 'Onboard to the workforce roster', icon: THIN_ICONS.userPlus, color: COLORS.indigo, path: '/admin/users' },
   { label: 'Add New Material', desc: 'Log new inventory stock', icon: THIN_ICONS.box, color: COLORS.emerald, path: '/materials' },
-  { label: 'Add New Lead', desc: 'Register a CRM prospect', icon: THIN_ICONS.target, color: COLORS.rose, path: '/crm' },
-  { label: 'Create New Project', desc: 'Start ERP project tracking', icon: THIN_ICONS.briefcase, color: COLORS.violet, path: '/erp' },
+  { label: 'Add New Lead', desc: 'Register a CRM prospect', icon: THIN_ICONS.target, color: COLORS.rose, path: '/leads' },
+  { label: 'Add New Customer', desc: 'Register a CRM Customer', icon: THIN_ICONS.briefcase, color: COLORS.violet, path: '/customers' },
 ];
 
 const DashboardPage = () => {
@@ -424,10 +424,10 @@ const DashboardPage = () => {
       { title: 'Leave Management', value: stats?.pending_leaves || 0, color: COLORS.amber, note: 'Pending leave approvals', icon: THIN_ICONS.clipboard },
     ];
     if (userRole === 'MANAGER') return [
-      { title: 'Inventory Items', value: stats?.total_materials || 0, color: COLORS.indigo, icon: THIN_ICONS.box },
-      { title: 'Team Size', value: stats?.total_employees || 0, color: COLORS.emerald, icon: THIN_ICONS.users },
+      { title: 'Inventory Items', value: stats?.total_materials || 0, color: COLORS.indigo, note: 'Current stock', icon: THIN_ICONS.box },
       { title: 'Active Vendors', value: stats?.total_vendors || 0, color: COLORS.amber, note: 'Global partners', icon: THIN_ICONS.building },
-      { title: 'Open Orders', value: stats?.pending_orders || 0, color: COLORS.sky, note: 'Awaiting dispatch', icon: THIN_ICONS.cart },
+      { title: 'Total Revenue', value: salesSummary?.total_revenue ? `₹${salesSummary.total_revenue.toLocaleString()}` : '₹0', color: COLORS.sky, note: 'Overall income', icon: THIN_ICONS.rupee },
+      { title: 'Pending Approvals', value: stats?.pending_leaves || 0, color: COLORS.rose, note: 'Awaiting action', icon: THIN_ICONS.clipboard },
     ];
     if (userRole === 'SALES') return [
       { title: 'Revenue', value: salesSummary?.total_revenue ? `₹${salesSummary.total_revenue.toLocaleString()}` : '₹0', color: COLORS.emerald, icon: THIN_ICONS.rupee },

@@ -349,7 +349,7 @@ const ProjectTrackingPage = () => {
         <button
           className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
           onClick={handleOpenAddModal}
-          style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}
+          style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
         >
           {THIN_ICONS.plus}
           <span>Add Project</span>
@@ -391,7 +391,7 @@ const ProjectTrackingPage = () => {
               key={st}
               className={`filter-pill btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white hover-btn-lux' : 'bg-white text-dark'}`}
               onClick={() => setStatusFilter(st)}
-              style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` : '#ffffff', borderColor: statusFilter === st ? 'transparent' : '#e5e0f5' }}
+              style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : '#ffffff', borderColor: statusFilter === st ? 'transparent' : '#e5e0f5' }}
             >
               {st}
             </button>
@@ -597,7 +597,7 @@ const ProjectTrackingPage = () => {
                   <button type="button" className="btn flex-grow-1 rounded-3 py-2 bg-light border fw-bold text-secondary" onClick={() => setShowModal(false)}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn flex-grow-1 rounded-3 py-2 border-0 text-white fw-bold shadow-sm hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+                  <button type="submit" className="btn flex-grow-1 rounded-3 py-2 border-0 text-white fw-bold shadow-sm hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}>
                     {editingProject ? 'Save Changes' : 'Create Project'}
                   </button>
                 </div>

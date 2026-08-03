@@ -61,6 +61,11 @@ const GLOBAL_SEARCH_INDEX = [
   { title: 'Task Assignment', path: '/erp/tasks', category: 'ERP Workspace', keywords: 'tasks task tokens assign workflow priorities due date', desc: 'Assign & track task tokens dynamically' },
   { title: 'Project Tracking', path: '/erp/projects', category: 'ERP Workspace', keywords: 'projects milestones site budget progress tracking', desc: 'Monitor project progress, sites & budget' },
   { title: 'Approvals Hub', path: '/erp/approvals', category: 'ERP Workspace', keywords: 'approvals pending requests governance decision', desc: 'Review & action pending approval requests' },
+  { title: 'Employee Dashboard', path: '/employee', category: 'Employee Workspace', keywords: 'employee dashboard overview personal stats', desc: 'Personal employee dashboard and metrics' },
+  { title: 'My Attendance', path: '/employee/attendance', category: 'Employee Workspace', keywords: 'employee attendance punch in out hours check', desc: 'Track your daily check-ins and hours worked' },
+  { title: 'My Leaves', path: '/leave-management', category: 'Employee Workspace', keywords: 'employee leave apply time off vacation sick', desc: 'Apply for leaves and view balance' },
+  { title: 'My Projects', path: '/employee/projects', category: 'Employee Workspace', keywords: 'employee projects tasks assignments tracking', desc: 'View assigned projects and progress' },
+  { title: 'My Training', path: '/employee/training', category: 'Employee Workspace', keywords: 'employee training courses learning skills', desc: 'Access assigned training programs' },
   { title: 'CRM Dashboard', path: '/crm', category: 'CRM', keywords: 'crm leads sales pipeline clients deals deals', desc: 'Client relations & lead pipeline metrics' },
   { title: 'Customer Data Hub', path: '/customers', category: 'CRM', keywords: 'customers clients buyers directory contact accounts', desc: 'Client profiles, company profiles & history' },
   { title: 'Lead Management Center', path: '/crm/leads', category: 'CRM', keywords: 'leads lead management pipeline qualification negotiation', desc: 'Lead cards, negotiation & status matrix' },
@@ -229,7 +234,7 @@ const TopNavbar = ({ darkMode, setDarkMode, isChatOpen, setIsChatOpen, hasUnread
           width: 100%;
           height: 38px;
           border-radius: 10px;
-          border: 1.5px solid rgba(15, 23, 42, 0.10);
+          border: 0.5px solid rgba(15, 23, 42, 0.10);
           background: #f9fafb;
           color: #1f2937;
           font-size: 0.84rem;
@@ -301,7 +306,7 @@ const TopNavbar = ({ darkMode, setDarkMode, isChatOpen, setIsChatOpen, hasUnread
           flex-shrink: 0;
           padding: 6px 14px;
           background: #f9fafb;
-          border: 1.5px solid rgba(15, 23, 42, 0.08);
+          border: 0.5px solid rgba(15, 23, 42, 0.08);
           border-radius: 12px;
           min-width: 170px;
         }
@@ -351,7 +356,7 @@ const TopNavbar = ({ darkMode, setDarkMode, isChatOpen, setIsChatOpen, hasUnread
           height: 38px;
           border-radius: 10px;
           background: #f9fafb;
-          border: 1.5px solid rgba(15, 23, 42, 0.08);
+          border: 0.5px solid rgba(15, 23, 42, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -390,7 +395,7 @@ const TopNavbar = ({ darkMode, setDarkMode, isChatOpen, setIsChatOpen, hasUnread
           padding: 5px 12px 5px 6px;
           border-radius: 12px;
           background: #f9fafb;
-          border: 1.5px solid rgba(15, 23, 42, 0.08);
+          border: 0.5px solid rgba(15, 23, 42, 0.08);
           cursor: default;
           transition: background 0.15s ease;
         }

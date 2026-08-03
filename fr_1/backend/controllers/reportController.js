@@ -5,140 +5,55 @@ exports.getStats = async (req, res) => {
 
     // TOTAL COUNTS
 
-    const [[{ total_users }]] = await pool.query(
-      'SELECT COUNT(*) as total_users FROM users'
-    );
+    let total_users = 0;
+    let total_materials = 0;
+    let total_employees = 0;
+    let total_customers = 0;
+    let total_sales = 0;
+    let total_revenue = 0;
+    let total_vendors = 0;
+    let total_procurements = 0;
 
-    const [[{ total_materials }]] = await pool.query(
-      'SELECT COUNT(*) as total_materials FROM materials'
-    );
-
-    const [[{ total_employees }]] = await pool.query(
-      'SELECT COUNT(*) as total_employees FROM employees'
-    );
-
-    const [[{ total_customers }]] = await pool.query(
-      'SELECT COUNT(*) as total_customers FROM customers'
-    );
-
-    const [[{ total_sales }]] = await pool.query(
-      'SELECT COUNT(*) as total_sales FROM sales'
-    );
-
-    const [[{ total_revenue }]] = await pool.query(
-      'SELECT SUM(amount) as total_revenue FROM sales'
-    );
-
-    const [[{ total_vendors }]] = await pool.query(
-      'SELECT COUNT(*) as total_vendors FROM vendors'
-    );
-
-    const [[{ total_procurements }]] = await pool.query(
-      'SELECT COUNT(*) as total_procurements FROM procurements'
-    );
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM users'); total_users = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM materials'); total_materials = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM employees'); total_employees = r?.c || 0; } catch (e) { }
+    if (total_employees === 0) total_employees = total_users;
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM customers'); total_customers = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM sales'); total_sales = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query('SELECT SUM(amount) as s FROM sales'); total_revenue = r?.s || 0; } catch (e) { }
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM vendors'); total_vendors = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query('SELECT COUNT(*) as c FROM procurements'); total_procurements = r?.c || 0; } catch (e) { }
 
     // USER ANALYTICS
+    let users_with_role = 0;
+    let users_with_department = 0;
+    let users_by_role = [];
+    let users_by_department = [];
+    let employee_department_counts = [];
 
-    const [[{ users_with_role }]] = await pool.query(`
-      SELECT COUNT(*) as users_with_role
-      FROM users
-      WHERE role IS NOT NULL
-      AND role != ''
-    `);
-
-    const [[{ users_with_department }]] = await pool.query(`
-      SELECT COUNT(*) as users_with_department
-      FROM users
-      WHERE department IS NOT NULL
-      AND department != ''
-    `);
-
-    const [users_by_role] = await pool.query(`
-      SELECT 
-        COALESCE(role, 'General') as role,
-        COUNT(*) as count
-      FROM users
-      GROUP BY COALESCE(role, 'General')
-      ORDER BY count DESC
-    `);
-
-    const [users_by_department] = await pool.query(`
-      SELECT 
-        COALESCE(NULLIF(TRIM(department), ''), 'General') as department,
-        COUNT(*) as count
-      FROM users
-      GROUP BY COALESCE(NULLIF(TRIM(department), ''), 'General')
-      ORDER BY count DESC
-    `);
-
-    // EMPLOYEE DEPARTMENT COUNTS
-
-    const [employee_department_counts] = await pool.query(`
-      SELECT 
-        COALESCE(NULLIF(TRIM(department), ''), 'General') as department,
-        COUNT(*) as count
-      FROM employees
-      GROUP BY COALESCE(NULLIF(TRIM(department), ''), 'General')
-      ORDER BY count DESC
-    `);
+    try { const [[r]] = await pool.query("SELECT COUNT(*) as c FROM users WHERE role IS NOT NULL AND role != ''"); users_with_role = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query("SELECT COUNT(*) as c FROM users WHERE department IS NOT NULL AND department != ''"); users_with_department = r?.c || 0; } catch (e) { }
+    try { const [r] = await pool.query("SELECT COALESCE(role, 'General') as role, COUNT(*) as count FROM users GROUP BY COALESCE(role, 'General') ORDER BY count DESC"); users_by_role = r; } catch (e) { }
+    try { const [r] = await pool.query("SELECT COALESCE(NULLIF(TRIM(department), ''), 'General') as department, COUNT(*) as count FROM users GROUP BY COALESCE(NULLIF(TRIM(department), ''), 'General') ORDER BY count DESC"); users_by_department = r; } catch (e) { }
+    try { const [r] = await pool.query("SELECT COALESCE(NULLIF(TRIM(department), ''), 'General') as department, COUNT(*) as count FROM employees GROUP BY COALESCE(NULLIF(TRIM(department), ''), 'General') ORDER BY count DESC"); employee_department_counts = r; } catch (e) { }
 
     // LOW STOCK MATERIALS
+    let topMaterials = [];
+    let low_stock_count = 0;
+    try { const [r] = await pool.query("SELECT * FROM materials ORDER BY quantity ASC LIMIT 5"); topMaterials = r; } catch (e) { }
+    try { const [[r]] = await pool.query("SELECT COUNT(*) as c FROM materials WHERE quantity <= 10"); low_stock_count = r?.c || 0; } catch (e) { }
 
-    const [topMaterials] = await pool.query(`
-      SELECT *
-      FROM materials
-      ORDER BY quantity ASC
-      LIMIT 5
-    `);
+    // RECENT EMPLOYEES & MATERIALS
+    let recentEmployees = [];
+    let recentMaterials = [];
+    try { const [r] = await pool.query("SELECT u.name, e.join_date FROM employees e JOIN users u ON e.user_id = u.id ORDER BY e.id DESC LIMIT 3"); recentEmployees = r; } catch (e) { }
+    try { const [r] = await pool.query("SELECT material_name, created_at FROM materials ORDER BY created_at DESC LIMIT 3"); recentMaterials = r; } catch (e) { }
 
-    // LOW STOCK COUNT
-
-    const [[{ low_stock_count }]] = await pool.query(`
-      SELECT COUNT(*) as low_stock_count
-      FROM materials
-      WHERE quantity <= 10
-    `);
-
-    // RECENT EMPLOYEES
-
-    const [recentEmployees] = await pool.query(`
-      SELECT 
-        users.name,
-        employees.join_date
-      FROM employees
-
-      JOIN users
-      ON employees.user_id = users.id
-
-      ORDER BY employees.id DESC
-      LIMIT 3
-    `);
-
-    // RECENT MATERIALS
-
-    const [recentMaterials] = await pool.query(`
-      SELECT 
-        material_name,
-        created_at
-      FROM materials
-      ORDER BY created_at DESC
-      LIMIT 3
-    `);
-
-    // PENDING LEAVES
-
-    const [[{ pending_leaves }]] = await pool.query(`
-      SELECT COUNT(*) as pending_leaves
-      FROM leave_requests
-      WHERE status = 'Pending'
-    `);
-
-    // ACTIVE CUSTOMERS
-
-    const [[{ active_customers }]] = await pool.query(`
-      SELECT COUNT(*) as active_customers
-      FROM customers
-    `);
+    // PENDING LEAVES & ACTIVE CUSTOMERS
+    let pending_leaves = 0;
+    let active_customers = 0;
+    try { const [[r]] = await pool.query("SELECT COUNT(*) as c FROM leave_requests WHERE status = 'Pending'"); pending_leaves = r?.c || 0; } catch (e) { }
+    try { const [[r]] = await pool.query("SELECT COUNT(*) as c FROM customers"); active_customers = r?.c || 0; } catch (e) { }
 
     // RETENTION RATE
 

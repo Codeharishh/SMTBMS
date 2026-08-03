@@ -297,10 +297,10 @@ const PerformanceReviewsPage = () => {
               />
             </div>
             <select
-              className="form-select rounded-pill small px-3"
+              className="form-select rounded-pill small px-3 text-muted"
               value={ratingFilter}
               onChange={(e) => setRatingFilter(e.target.value)}
-              style={{ background: '#FAF8FF', border: '1px solid #e5e0f5', width: '160px' }}
+              style={{ backgroundColor: '#FAF8FF', border: '1px solid #e5e0f5', width: '160px' }}
             >
               <option value="All">All Ratings</option>
               <option value="Excellent">5 Stars (Excellent)</option>

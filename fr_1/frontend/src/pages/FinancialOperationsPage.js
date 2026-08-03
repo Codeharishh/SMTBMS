@@ -15,10 +15,13 @@ const COLORS = {
 };
 
 const THIN_ICONS = {
-  dollar: (
+  rupee: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <line vectorEffect="non-scaling-stroke" x1="12" y1="1" x2="12" y2="23" />
-      <path vectorEffect="non-scaling-stroke" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      <path vectorEffect="non-scaling-stroke" d="M6 3h12" />
+      <path vectorEffect="non-scaling-stroke" d="M6 8h12" />
+      <path vectorEffect="non-scaling-stroke" d="M9 13c6.667 0 6.667-10 0-10" />
+      <path vectorEffect="non-scaling-stroke" d="M6 13h3" />
+      <path vectorEffect="non-scaling-stroke" d="m6 13 8.5 8" />
     </svg>
   ),
   card: (
@@ -200,27 +203,31 @@ const FinancialOperationsPage = () => {
       `}</style>
 
       {/* HEADER */}
-      <div className="d-flex align-items-center gap-3 mb-4 pt-2">
-        <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
-          style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
-          {THIN_ICONS.card}
-        </div>
-        <div>
-          <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
-            Financial Operations
-            <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>FINANCE</span>
-          </h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Manage budgets, expenses, transactions, and financial performance.</p>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+            {THIN_ICONS.card}
+          </div>
+          <div>
+            <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
+              Financial Operations
+              <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>FINANCE</span>
+            </h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Manage budgets, expenses, transactions, and financial performance.</p>
+          </div>
         </div>
         {canManage && (
-          <button
-            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-            onClick={() => setShowModal(true)}
-            style={{ background: `linear-gradient(135deg, ${COLORS.emerald} 0%, #4FC3F7 100%)` }}
-          >
-            {THIN_ICONS.plus}
-            <span>+ Log Transaction</span>
-          </button>
+          <div className="d-flex align-items-center justify-content-end">
+            <button
+              className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+              onClick={() => setShowModal(true)}
+              style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+            >
+              {THIN_ICONS.plus}
+              <span> Log Transaction</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -229,7 +236,7 @@ const FinancialOperationsPage = () => {
       {/* METRICS */}
       <div className="row g-3 mb-4">
         {[
-          { label: 'Revenue (Paid)', value: metrics.revenue, sub: '↑ This month', icon: THIN_ICONS.dollar, color: COLORS.emerald },
+          { label: 'Revenue (Paid)', value: metrics.revenue, sub: '↑ This month', icon: THIN_ICONS.rupee, color: COLORS.emerald },
           { label: 'Total Payables', value: metrics.payables, sub: '↑ 6% vs last month', icon: THIN_ICONS.card, color: COLORS.indigo },
           { label: 'Overdue', value: metrics.overdue, sub: 'Needs attention', icon: THIN_ICONS.alertTriangle, color: COLORS.alert },
           { label: 'Outstanding Recv.', value: metrics.receivables, sub: '↑ 8% vs last month', icon: THIN_ICONS.pieChart, color: COLORS.amber }
@@ -243,28 +250,39 @@ const FinancialOperationsPage = () => {
       {/* LEDGER TABLE CARD */}
       <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
         <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-          <div className="d-flex align-items-center gap-3">
-            <div className="position-relative" style={{ minWidth: '260px' }}>
+          <div>
+            <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Invoice Register
+            </h5>
+            <p className="small mb-0" style={{ color: '#94a3b8' }}>Payables & receivables — all invoices</p>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <div className="position-relative" style={{ minWidth: '220px' }}>
               <span className="position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: '#94a3b8' }}>{THIN_ICONS.search}</span>
               <input
                 type="text"
-                className="form-control rounded-pill ps-5 small"
+                className="form-control rounded-pill ps-5 small py-2"
                 placeholder="Search transactions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ background: '#FAF8FF', border: '1px solid #e5e0f5' }}
+                style={{ background: '#ffffff', border: '1px solid #e5e0f5' }}
               />
             </div>
-            {['All', 'Revenue', 'Expense', 'Payable'].map(type => (
-              <button
-                key={type}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${selectedType === type ? 'text-white' : 'bg-light text-dark border-0'}`}
-                onClick={() => setSelectedType(type)}
-                style={{ background: selectedType === type ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
-              >
-                {type}
-              </button>
-            ))}
+            <div className="d-flex align-items-center gap-2">
+              {['All', 'Revenue', 'Expense', 'Payable'].map(type => (
+                <button
+                  key={type}
+                  className={`btn btn-sm rounded-pill px-3 fw-bold ${selectedType === type ? 'text-white' : 'bg-white text-dark'}`}
+                  onClick={() => setSelectedType(type)}
+                  style={{
+                    background: selectedType === type ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                    border: selectedType === type ? '1px solid transparent' : '1px solid #cbd5e1',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -345,10 +363,12 @@ const FinancialOperationsPage = () => {
                     <input type="number" className="form-control rounded-3" value={txForm.amount} onChange={(e) => setTxForm({ ...txForm, amount: Number(e.target.value) })} required />
                   </div>
                 </div>
-                <div className="modal-footer border-0">
-                  <button type="button" className="btn rounded-pill px-4 bg-white border" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn rounded-pill px-4 border-0 text-white fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.emerald} 0%, #4FC3F7 100%)` }}>
+                <div className="modal-footer border-0 gap-2">
+                  <button type="submit" className="btn rounded-3 px-4 py-2 border-0 text-white fw-bold hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)`, flex: 1 }}>
                     Save Transaction
+                  </button>
+                  <button type="button" className="btn rounded-3 px-4 py-2 bg-light border fw-bold text-secondary" style={{ flex: 1 }} onClick={() => setShowModal(false)}>
+                    Cancel
                   </button>
                 </div>
               </form>

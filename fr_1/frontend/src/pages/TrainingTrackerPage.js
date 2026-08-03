@@ -209,7 +209,7 @@ const TrainingTrackerPage = () => {
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
-            <span>+ Add Program</span>
+            <span> Add Program</span>
           </button>
         )}
       </div>

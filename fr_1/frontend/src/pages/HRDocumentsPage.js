@@ -237,7 +237,7 @@ const HRDocumentsPage = () => {
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
-            <span>+ Upload Document</span>
+            <span> Upload Document</span>
           </button>
         )}
       </div>
@@ -276,9 +276,12 @@ const HRDocumentsPage = () => {
             {['All', 'Policy', 'Payroll', 'Performance', 'Recruitment'].map(cat => (
               <button
                 key={cat}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${selectedCategory === cat ? 'text-white' : 'bg-light text-dark border-0'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap ${selectedCategory === cat ? 'text-white' : 'bg-light text-dark'}`}
                 onClick={() => setSelectedCategory(cat)}
-                style={{ background: selectedCategory === cat ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
+                style={{
+                  background: selectedCategory === cat ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: selectedCategory === cat ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {cat}
               </button>

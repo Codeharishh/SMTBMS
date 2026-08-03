@@ -91,6 +91,8 @@ const FollowUps = () => {
   const user = getCurrentUser();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [typeFilter, setTypeFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   const [followups, setFollowups] = useState([
     { id: 1, customer: 'Greenfield Infra', contact: 'Deepa Rao', type: 'Call', scheduled: 'Today, 3:00 PM', status: 'Completed', priority: 'Medium', assigned: 'Divya Pillai', notes: 'Followed up regarding quote approval' },
@@ -107,6 +109,14 @@ const FollowUps = () => {
     const completed = followups.filter(f => f.status === 'Completed').length;
     return { total, pending, completed };
   }, [followups]);
+
+  const filteredFollowups = useMemo(() => {
+    return followups.filter(f => {
+      const matchType = typeFilter === 'All' || f.type === typeFilter;
+      const matchStatus = statusFilter === 'All' || f.status === statusFilter;
+      return matchType && matchStatus;
+    });
+  }, [followups, typeFilter, statusFilter]);
 
   const handleOpenCreateModal = () => {
     setEditingItem(null);
@@ -367,9 +377,38 @@ const FollowUps = () => {
 
       {/* FOLLOW-UPS TABLE CARD */}
       <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
-        <div className="p-4 pb-0">
-          <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>All Follow-ups</h5>
-          <p className="small mb-0" style={{ color: '#94a3b8' }}>CRM customers cross-linked conversation roster</p>
+        <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div>
+            <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>All Follow-ups</h5>
+            <p className="small mb-0" style={{ color: '#94a3b8' }}>CRM customers cross-linked conversation roster</p>
+          </div>
+          <div className="d-flex align-items-center gap-3">
+            <div className="d-flex align-items-center gap-2">
+              {['All', 'Call', 'Email', 'Meeting'].map(type => (
+                <button
+                  key={type}
+                  className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap ${typeFilter === type ? 'text-white' : 'bg-light text-dark'}`}
+                  onClick={() => setTypeFilter(type)}
+                  style={{
+                    background: typeFilter === type ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                    border: typeFilter === type ? '1px solid transparent' : '1px solid #cbd5e1'
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            <select
+              className="form-select form-select-sm rounded-pill px-3 fw-bold text-muted"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{ backgroundColor: '#FAF8FF', border: '1px solid #e5e0f5', minWidth: '130px' }}
+            >
+              <option value="All">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
         </div>
 
         <div className="table-responsive p-4 pt-2">
@@ -387,7 +426,7 @@ const FollowUps = () => {
               </tr>
             </thead>
             <tbody>
-              {followups.map(f => {
+              {filteredFollowups.map(f => {
                 const statusStyle = STATUS_STYLES[f.status] || STATUS_STYLES.Pending;
                 const priorityStyle = PRIORITY_STYLES[f.priority] || PRIORITY_STYLES.Medium;
                 return (
@@ -425,9 +464,9 @@ const FollowUps = () => {
                   </tr>
                 );
               })}
-              {followups.length === 0 && (
+              {filteredFollowups.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center" style={{ color: '#94a3b8' }}>No follow-ups scheduled yet.</td>
+                  <td colSpan={8} className="text-center" style={{ color: '#94a3b8' }}>No follow-ups found for the selected filters.</td>
                 </tr>
               )}
             </tbody>
@@ -438,7 +477,7 @@ const FollowUps = () => {
       {/* CREATE / EDIT FOLLOW-UP MODAL */}
       {showModal && (
         <div className="modal fade show d-block" style={{ background: 'rgba(44, 37, 32, 0.35)', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow-lg p-3" style={{ borderLeft: `4px solid ${COLORS.primary}` }}>
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>

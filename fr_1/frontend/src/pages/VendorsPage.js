@@ -250,44 +250,6 @@ const VendorsPage = () => {
           padding-left: 38px !important;
         }
 
-        /* PREMIUM DYNAMIC TAB FILTERS */
-        .filter-pill-container {
-          background-color: #f8f6ff;
-          padding: 4px;
-          border-radius: 12px;
-          display: inline-flex;
-          gap: 4px;
-          border: 1px solid #e2def5;
-        }
-        .filter-pill {
-          border: none;
-          background: transparent;
-          padding: 6px 16px;
-          font-size: 0.82rem;
-          font-weight: 700;
-          color: #64748b;
-          border-radius: 9px;
-          transition: all 0.2s ease;
-        }
-        .filter-pill:hover {
-          color: #1e293b;
-        }
-        .filter-pill.active-all {
-          background-color: #ffffff;
-          color: ${COLORS.indigo};
-          box-shadow: 0 2px 8px rgba(91, 141, 239, 0.12);
-        }
-        .filter-pill.active-active {
-          background-color: #ffffff;
-          color: #0f9488;
-          box-shadow: 0 2px 8px rgba(46, 217, 195, 0.15);
-        }
-        .filter-pill.active-onhold {
-          background-color: #ffffff;
-          color: #b45309;
-          box-shadow: 0 2px 8px rgba(255, 197, 66, 0.2);
-        }
-
         /* INVENTORY LEDGER LAYOUT RULES */
         .theme-materials table {
           width: 100% !important;
@@ -394,6 +356,20 @@ const VendorsPage = () => {
           color: #ffffff !important;
           box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
           transform: translateY(-1px);
+        }
+
+        /* ── FILTER ROW: keep search + All/Active/On Hold pills on one line ── */
+        .vendor-filter-row {
+          flex-wrap: nowrap !important;
+        }
+        @media (max-width: 767px) {
+          .vendor-filter-row {
+            flex-wrap: wrap !important;
+          }
+        }
+        .vendor-filter-pills {
+          flex-wrap: nowrap !important;
+          flex-shrink: 0 !important;
         }
       `}</style>
 
@@ -669,51 +645,46 @@ const VendorsPage = () => {
 
       {/* OPERATIONAL DATA DIRECTORY */}
       <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
-        <div className="p-4 bg-white border-bottom d-flex flex-column lg-flex-row gap-3 align-items-start align-items-md-center justify-content-between" style={{ borderColor: '#f1f0f9' }}>
-          <h5 className="fw-bold mb-0" style={{ color: '#1e293b', fontSize: '1.1rem' }}>Vendor Operational Directory</h5>
-
-          {/* CONTROL SUITE PANEL (TAB FILTERS + SEARCH INLINE) */}
-          <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-3 w-100 w-md-auto">
-
-            {/* QUICK STATUS PILL FILTER TABS */}
-            <div className="filter-pill-container align-self-start align-self-sm-center">
-              {['All', 'Active', 'On Hold'].map((status) => {
-                const normalizedKey = status.toLowerCase().replace(/\s+/g, '');
-                const isActive = statusFilter === status;
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => setStatusFilter(status)}
-                    className={`filter-pill ${isActive ? `active-${normalizedKey}` : ''}`}
-                  >
-                    {status}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* LIVE SEARCH BAR BOX */}
-            <div className="search-container-lux" style={{ minWidth: '240px' }}>
-              <span className="search-icon-lux">{METRIC_ICONS.search}</span>
+        <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 vendor-filter-row">
+          <div>
+            <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Vendor Operational Directory</h5>
+            <p className="small text-muted mb-0">Manage supplier registries and structural vendor relationship indexes</p>
+          </div>
+          <div className="d-flex align-items-center gap-2 vendor-filter-pills">
+            <div className="position-relative" style={{ minWidth: '180px' }}>
+              <span className="position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: '#94a3b8' }}>{METRIC_ICONS.search}</span>
               <input
-                className="form-control hover-input-lux search-input-with-icon w-100"
+                type="text"
+                className="form-control rounded-pill ps-5 small"
                 placeholder="Search vendor matrix..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                style={{ background: '#FAF8FF', border: '1px solid #e5e0f5' }}
               />
             </div>
-
+            {['All', 'Active', 'On Hold'].map(st => (
+              <button
+                key={st}
+                className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap ${statusFilter === st ? 'text-white' : 'bg-light text-dark'}`}
+                onClick={() => setStatusFilter(st)}
+                style={{
+                  background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
+              >
+                {st}
+              </button>
+            ))}
           </div>
         </div>
 
-        {loading && vendors.length === 0 ? (
-          <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
-            <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }}></div>
-            Synchronizing live partner profiles...
-          </div>
-        ) : (
-          <div className="table-responsive">
+        <div className="table-responsive p-4 pt-2">
+          {loading && vendors.length === 0 ? (
+            <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
+              <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }}></div>
+              Synchronizing live partner profiles...
+            </div>
+          ) : (
             <table className="table align-middle mb-0">
               <thead>
                 <tr>
@@ -785,8 +756,8 @@ const VendorsPage = () => {
                 )}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

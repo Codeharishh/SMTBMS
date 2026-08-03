@@ -49,7 +49,25 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
       <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
     </svg>
+  ),
+  trash: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <polyline points="3 6 5 6 21 6" vectorEffect="non-scaling-stroke"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" vectorEffect="non-scaling-stroke"></path>
+    </svg>
   )
+};
+
+const getStageStyle = (status) => {
+  switch (status) {
+    case 'Shortlisted': return { color: COLORS.indigo, backgroundColor: `${COLORS.indigo}15`, border: `1px solid ${COLORS.indigo}40` };
+    case 'Technical Test': return { color: COLORS.slate, backgroundColor: `${COLORS.slate}15`, border: `1px solid ${COLORS.slate}40` };
+    case 'Interview': return { color: COLORS.amber, backgroundColor: `${COLORS.amber}15`, border: `1px solid ${COLORS.amber}40` };
+    case 'HR Round': return { color: COLORS.violet, backgroundColor: `${COLORS.violet}15`, border: `1px solid ${COLORS.violet}40` };
+    case 'Offer Sent': return { color: COLORS.emerald, backgroundColor: `${COLORS.emerald}15`, border: `1px solid ${COLORS.emerald}40` };
+    case 'Rejected': return { color: COLORS.alert, backgroundColor: `${COLORS.alert}15`, border: `1px solid ${COLORS.alert}40` };
+    default: return { color: COLORS.slate, backgroundColor: `${COLORS.slate}15`, border: `1px solid ${COLORS.slate}40` };
+  }
 };
 
 const RecruitmentPage = () => {
@@ -60,7 +78,8 @@ const RecruitmentPage = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
   // Modals state
   const [showJobModal, setShowJobModal] = useState(false);
   const [showCandidateModal, setShowCandidateModal] = useState(false);
@@ -111,8 +130,8 @@ const RecruitmentPage = () => {
     return candidates.filter(c => {
       const q = searchTerm.toLowerCase();
       return (c.name || '').toLowerCase().includes(q) ||
-             (c.email || '').toLowerCase().includes(q) ||
-             (c.position || c.job_position || '').toLowerCase().includes(q);
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.position || c.job_position || '').toLowerCase().includes(q);
     });
   }, [candidates, searchTerm]);
 
@@ -123,6 +142,21 @@ const RecruitmentPage = () => {
     } catch (err) {
       alert('Failed to update candidate status.');
     }
+  };
+
+  const toggleJobStatus = (id) => {
+    setJobOpenings(jobOpenings.map(job =>
+      job.id === id ? { ...job, status: job.status === 'Active' ? 'Inactive' : 'Active' } : job
+    ));
+    setOpenDropdownId(null);
+  };
+
+  const toggleDropdown = (id) => {
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
+  const handleRemoveCandidate = (id) => {
+    setCandidates(candidates.filter(c => c.id !== id));
   };
 
   const handleCreateJob = (e) => {
@@ -260,6 +294,29 @@ const RecruitmentPage = () => {
           color: #ffffff; font-weight: 800; font-size: 0.9rem;
           display: flex; align-items: center; justify-content: center;
         }
+
+        /* ── ACTION ICON BUTTONS (matched to MaterialsPage / MaterialTable) ── */
+        .btn-action-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
+          border: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
+        }
+        .del-icon-btn {
+          background-color: #FFF1F2 !important;
+          color: #F43F5E !important;
+        }
+        .del-icon-btn:hover {
+          background-color: #F43F5E !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+          transform: translateY(-1px);
+        }
       `}</style>
 
       {/* HEADER */}
@@ -282,7 +339,7 @@ const RecruitmentPage = () => {
               style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #4FC3F7 100%)` }}
             >
               {THIN_ICONS.plus}
-              <span>+ Post Job</span>
+              <span> Post Job</span>
             </button>
             <button
               className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
@@ -358,7 +415,8 @@ const RecruitmentPage = () => {
                   <th>Vacancies</th>
                   <th>Applicants</th>
                   <th>Deadline</th>
-                  <th>Status</th>
+                  <th>STATUS</th>
+                  <th className="text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -371,7 +429,75 @@ const RecruitmentPage = () => {
                     <td className="fw-bold">{job.vacancies}</td>
                     <td className="fw-bold text-primary">{job.applicants} →</td>
                     <td>{job.deadline}</td>
-                    <td><span className="badge rounded-pill bg-success-subtle text-success px-3">• {job.status}</span></td>
+                    <td>
+                      {job.status === 'Inactive' ? (
+                        <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.alert}1A`, color: '#dc2626' }}>• Inactive</span>
+                      ) : (
+                        <span className="badge rounded-pill bg-success-subtle text-success px-3 py-1 fw-bold">• Active</span>
+                      )}
+                    </td>
+                    <td className="text-end">
+                      <div className="d-flex align-items-center justify-content-end gap-2">
+                        {job.status === 'Inactive' ? (
+                          <button
+                            className="btn btn-sm bg-white border fw-bold rounded-2 px-3 hover-btn-lux"
+                            style={{ color: '#1e293b' }}
+                            onClick={() => toggleJobStatus(job.id)}
+                          >
+                            Open
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-sm bg-white border fw-bold rounded-2 px-3 hover-btn-lux"
+                            style={{ color: '#1e293b' }}
+                            onClick={() => toggleJobStatus(job.id)}
+                          >
+                            Close
+                          </button>
+                        )}
+                        <div className="dropdown" style={{ position: 'relative' }}>
+                          <button
+                            className="btn btn-sm text-muted p-1 border-0 bg-transparent hover-btn-lux"
+                            onClick={() => toggleDropdown(job.id)}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="1" />
+                              <circle cx="12" cy="5" r="1" />
+                              <circle cx="12" cy="19" r="1" />
+                            </svg>
+                          </button>
+                          {openDropdownId === job.id && (
+                            <ul className="dropdown-menu border-0 shadow-lg rounded-3 p-2 show" style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1000, minWidth: '160px' }}>
+                              <li>
+                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold" style={{ color: '#1e293b' }} onClick={() => setOpenDropdownId(null)}>
+                                  <span>👁</span> View Details
+                                </button>
+                              </li>
+                              <li>
+                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold" style={{ color: '#1e293b' }} onClick={() => setOpenDropdownId(null)}>
+                                  <span>✏️</span> Edit Job
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold"
+                                  style={{ color: '#1e293b' }}
+                                  onClick={() => toggleJobStatus(job.id)}
+                                >
+                                  <span>🔒</span> {job.status === 'Inactive' ? 'Open Job' : 'Close Job'}
+                                </button>
+                              </li>
+                              <li><hr className="dropdown-divider my-1" /></li>
+                              <li>
+                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold text-danger" onClick={() => setOpenDropdownId(null)}>
+                                  <span>🗑️</span> Delete
+                                </button>
+                              </li>
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -384,7 +510,8 @@ const RecruitmentPage = () => {
                   <th>Job Applied</th>
                   <th>Experience</th>
                   <th>Applied On</th>
-                  <th>Stage</th>
+                  <th>STAGE</th>
+                  <th className="text-end">ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -410,14 +537,27 @@ const RecruitmentPage = () => {
                           className="form-select form-select-sm rounded-pill px-3 fw-bold"
                           value={c.status || 'Applied'}
                           onChange={(e) => handleStageChange(c.id, e.target.value)}
-                          style={{ width: '140px', background: '#FFF9F6', border: `1px solid ${COLORS.primary}` }}
+                          style={{ width: '140px', ...getStageStyle(c.status || 'Applied') }}
                         >
                           <option value="Applied">Applied</option>
                           <option value="Shortlisted">Shortlisted</option>
+                          <option value="Technical Test">Technical Test</option>
                           <option value="Interview">Interview</option>
-                          <option value="Offered">Offered</option>
+                          <option value="HR Round">HR Round</option>
+                          <option value="Offer Sent">Offer Sent</option>
                           <option value="Rejected">Rejected</option>
                         </select>
+                      </td>
+                      <td className="text-end">
+                        <div className="d-flex align-items-center justify-content-end">
+                          <button
+                            className="btn btn-sm btn-action-icon del-icon-btn"
+                            title="Remove Candidate"
+                            onClick={() => handleRemoveCandidate(c.id)}
+                          >
+                            {THIN_ICONS.trash}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

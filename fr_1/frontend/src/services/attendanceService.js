@@ -5,8 +5,8 @@ export const fetchTodayAttendance = async () => {
   return response.data;
 };
 
-export const fetchAttendanceHistory = async () => {
-  const response = await api.get('/attendance/history');
+export const fetchAttendanceHistory = async (params = {}) => {
+  const response = await api.get('/attendance/history', { params });
   return response.data;
 };
 

@@ -4,8 +4,9 @@ exports.getAllSales = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT s.*, 
-              COALESCE(c.customer_name, s.product_name, 'Valued Customer') as customer_name,
-              COALESCE(s.payment_status, 'Processing') as status
+              s.sales_date as ordered_date,
+              COALESCE(s.customer_name_text, c.customer_name, s.product_name, 'Valued Customer') as customer_name,
+              COALESCE(s.payment_status, 'Confirmed') as status
        FROM sales s 
        LEFT JOIN customers c ON s.customer_id = c.id 
        ORDER BY s.sales_date DESC`
@@ -51,7 +52,6 @@ exports.getSaleById = async (req, res) => {
 
 exports.createSale = async (req, res) => {
   try {
-
     const {
       customer_id,
       sales_person_id,
@@ -59,8 +59,22 @@ exports.createSale = async (req, res) => {
       quantity,
       amount,
       sales_date,
-      payment_status
+      payment_status,
+      // Frontend mapped fields
+      order_code,
+      customer_name,
+      item_name,
+      total_amount,
+      delivery_date,
+      priority,
+      manager,
+      status
     } = req.body;
+
+    const final_amount = total_amount !== undefined ? total_amount : (amount || 0);
+    const final_status = status || payment_status || 'Confirmed';
+    const final_item = item_name || product_name || 'N/A';
+    const final_sales_date = sales_date || new Date().toISOString().split('T')[0];
 
     const [result] = await pool.query(
       `INSERT INTO sales
@@ -71,22 +85,42 @@ exports.createSale = async (req, res) => {
         quantity,
         amount,
         sales_date,
-        payment_status
+        payment_status,
+        order_code,
+        delivery_date,
+        priority,
+        manager,
+        items_count,
+        customer_name_text,
+        item_name
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customer_id || null,
         sales_person_id || null,
-        product_name,
-        quantity || 0,
-        amount || 0,
-        sales_date || null,
-        payment_status || 'Completed'
+        final_item,
+        quantity || 1,
+        final_amount,
+        final_sales_date,
+        final_status,
+        order_code || `SO-${Date.now()}`,
+        delivery_date || 'TBD',
+        priority || 'Medium',
+        manager || 'Sales Team',
+        quantity || 1,
+        customer_name || null,
+        final_item
       ]
     );
 
     const [rows] = await pool.query(
-      'SELECT * FROM sales WHERE id = ?',
+      `SELECT s.*, 
+              s.sales_date as ordered_date,
+              COALESCE(s.customer_name_text, c.customer_name, s.product_name, 'Valued Customer') as customer_name,
+              COALESCE(s.payment_status, 'Confirmed') as status
+       FROM sales s 
+       LEFT JOIN customers c ON s.customer_id = c.id 
+       WHERE s.id = ?`,
       [result.insertId]
     );
 
@@ -104,7 +138,6 @@ exports.createSale = async (req, res) => {
 
 exports.updateSale = async (req, res) => {
   try {
-
     const {
       customer_id,
       sales_person_id,
@@ -112,8 +145,22 @@ exports.updateSale = async (req, res) => {
       quantity,
       amount,
       sales_date,
-      payment_status
+      payment_status,
+      // Frontend mapped fields
+      order_code,
+      customer_name,
+      item_name,
+      total_amount,
+      delivery_date,
+      priority,
+      manager,
+      status
     } = req.body;
+
+    const final_amount = total_amount !== undefined ? total_amount : (amount || 0);
+    const final_status = status || payment_status || 'Confirmed';
+    const final_item = item_name || product_name || 'N/A';
+    const final_sales_date = sales_date || null;
 
     await pool.query(
       `UPDATE sales SET
@@ -123,22 +170,42 @@ exports.updateSale = async (req, res) => {
         quantity = ?,
         amount = ?,
         sales_date = ?,
-        payment_status = ?
+        payment_status = ?,
+        order_code = ?,
+        delivery_date = ?,
+        priority = ?,
+        manager = ?,
+        items_count = ?,
+        customer_name_text = ?,
+        item_name = ?
       WHERE id = ?`,
       [
         customer_id || null,
         sales_person_id || null,
-        product_name,
-        quantity || 0,
-        amount || 0,
-        sales_date || null,
-        payment_status || 'Completed',
+        final_item,
+        quantity || 1,
+        final_amount,
+        final_sales_date,
+        final_status,
+        order_code || null,
+        delivery_date || null,
+        priority || 'Medium',
+        manager || null,
+        quantity || 1,
+        customer_name || null,
+        final_item,
         req.params.id
       ]
     );
 
     const [rows] = await pool.query(
-      'SELECT * FROM sales WHERE id = ?',
+      `SELECT s.*, 
+              s.sales_date as ordered_date,
+              COALESCE(s.customer_name_text, c.customer_name, s.product_name, 'Valued Customer') as customer_name,
+              COALESCE(s.payment_status, 'Confirmed') as status
+       FROM sales s 
+       LEFT JOIN customers c ON s.customer_id = c.id 
+       WHERE s.id = ?`,
       [req.params.id]
     );
 
@@ -348,6 +415,39 @@ exports.getSalesTelemetry = async (req, res) => {
     console.error('Fetch sales target telemetry error:', error);
     res.status(500).json({
       message: 'Unable to evaluate workspace financial telemetry indexes'
+    });
+  }
+};
+
+// 4. Update Sales Order Status directly
+exports.updateSaleStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+
+    await pool.query(
+      'UPDATE sales SET payment_status = ? WHERE id = ?',
+      [status, req.params.id]
+    );
+
+    const [rows] = await pool.query(
+      `SELECT s.*, 
+              s.sales_date as ordered_date,
+              COALESCE(s.customer_name_text, c.customer_name, s.product_name, 'Valued Customer') as customer_name,
+              COALESCE(s.payment_status, 'Confirmed') as status
+       FROM sales s 
+       LEFT JOIN customers c ON s.customer_id = c.id 
+       WHERE s.id = ?`,
+      [req.params.id]
+    );
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('Update sale status error', error);
+    res.status(500).json({
+      message: 'Unable to update sale status'
     });
   }
 };

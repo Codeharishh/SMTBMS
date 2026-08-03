@@ -49,7 +49,11 @@ exports.createMovement = async (req, res) => {
     } = req.body;
 
     // Defensive Layer: Force valid formats to prevent column constraint 500 errors
-    const clean_material_id = parseInt(material_id, 10) || 0;
+    // If material_id contains text (e.g., MAT-123), extract the digits
+    let clean_material_id = parseInt(String(material_id).replace(/\D/g, ''), 10);
+    if (isNaN(clean_material_id)) {
+      clean_material_id = 0;
+    }
     const clean_quantity = parseFloat(quantity) || 0.00;
 
     await pool.query(`
@@ -88,6 +92,85 @@ exports.createMovement = async (req, res) => {
     res.status(500).json({
       success: false,
       message: `Database write failed: ${error.message}`
+    });
+  }
+};
+
+// ==========================================
+// 3. UPDATE MATERIAL MOVEMENT RECORD
+// ==========================================
+exports.updateMovement = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      material_id,
+      material_name,
+      type,
+      quantity,
+      from_location,
+      to_location,
+      performed_by,
+      notes
+    } = req.body;
+
+    let clean_material_id = parseInt(String(material_id).replace(/\D/g, ''), 10);
+    if (isNaN(clean_material_id)) {
+      clean_material_id = 0;
+    }
+    const clean_quantity = parseFloat(quantity) || 0.00;
+
+    await pool.query(`
+      UPDATE movements SET
+        material_id = ?,
+        material_name = ?,
+        type = ?,
+        quantity = ?,
+        from_location = ?,
+        to_location = ?,
+        performed_by = ?,
+        notes = ?
+      WHERE id = ?
+    `, [
+      clean_material_id,
+      material_name || '',
+      type || 'Inbound',
+      clean_quantity,
+      from_location || '',
+      to_location || '',
+      performed_by || '',
+      notes || '',
+      id
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Material transit parameters updated successfully.'
+    });
+  } catch (error) {
+    console.error('Update movement server layer crash:', error.message);
+    res.status(500).json({
+      success: false,
+      message: `Database update failed: ${error.message}`
+    });
+  }
+};
+
+// ==========================================
+// 4. DELETE MATERIAL MOVEMENT RECORD
+// ==========================================
+exports.deleteMovement = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM movements WHERE id = ?', [id]);
+    res.status(200).json({
+      success: true,
+      message: 'Movement record deleted successfully.'
+    });
+  } catch (error) {
+    console.error('Delete movement server layer crash:', error.message);
+    res.status(500).json({
+      success: false,
+      message: `Database deletion failed: ${error.message}`
     });
   }
 };

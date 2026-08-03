@@ -257,18 +257,30 @@ const ProcurementManagementPage = () => {
         }
       `}</style>
 
-      {/* HEADER */}
-      <div className="d-flex align-items-center gap-3 mb-4 pt-2">
-        <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
-          style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
-          {THIN_ICONS.cart}
+      {/* HEADER — Raise PO button moved here, right-aligned, orange gradient (matches VendorsPage) */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+            {THIN_ICONS.cart}
+          </div>
+          <div>
+            <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
+              Procurement Management
+              <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>PROCUREMENT</span>
+            </h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Streamline purchasing workflows, supplier coordination, and procurement efficiency.</p>
+          </div>
         </div>
-        <div>
-          <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
-            Procurement Management
-            <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>PROCUREMENT</span>
-          </h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Streamline purchasing workflows, supplier coordination, and procurement efficiency.</p>
+        <div className="d-flex align-items-center justify-content-end">
+          <button
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => setShowModal(true)}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+          >
+            {THIN_ICONS.plus}
+            <span>Raise PO</span>
+          </button>
         </div>
       </div>
 
@@ -291,8 +303,12 @@ const ProcurementManagementPage = () => {
       {/* PURCHASE ORDERS TABLE CARD */}
       <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
         <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-          <div className="d-flex align-items-center gap-3 flex-wrap">
-            <div className="position-relative" style={{ minWidth: '260px' }}>
+          <div>
+            <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Purchase Orders Register</h5>
+            <p className="small text-muted mb-0">Track all active material requests and POs</p>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <div className="position-relative" style={{ minWidth: '220px' }}>
               <span className="position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: '#94a3b8' }}>{THIN_ICONS.search}</span>
               <input
                 type="text"
@@ -306,23 +322,17 @@ const ProcurementManagementPage = () => {
             {['All', 'Pending', 'Approved', 'Dispatched', 'Received'].map(st => (
               <button
                 key={st}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark border-0'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark'}`}
                 onClick={() => setStatusFilter(st)}
-                style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
+                style={{
+                  background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {st}
               </button>
             ))}
           </div>
-
-          <button
-            className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-            onClick={() => setShowModal(true)}
-            style={{ background: `linear-gradient(135deg, ${COLORS.sky} 0%, ${COLORS.indigo} 100%)` }}
-          >
-            {THIN_ICONS.plus}
-            <span>Raise PO</span>
-          </button>
         </div>
 
         <div className="table-responsive p-4 pt-2">

@@ -229,7 +229,7 @@ const HelpSupportPage = () => {
         <div className="col-12 col-lg-7">
           <div className="card border-0 shadow-sm p-4 hover-premium-card" style={{ borderRadius: '22px' }}>
             <h5 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-              <span style={{ color: COLORS.indigo }}>{THIN_ICONS.bookOpen}</span> Knowledge Base FAQs
+              <span style={{ color: COLORS.primary }}>{THIN_ICONS.bookOpen}</span> Knowledge Base FAQs
             </h5>
             <p className="text-muted small mb-4">Search system reference details instantly to guide operations.</p>
 
@@ -357,49 +357,7 @@ const HelpSupportPage = () => {
         </div>
       </div>
 
-      {/* MY RECENT TICKETS TABLE */}
-      <div className="card border-0 shadow-sm p-4 mt-4 hover-premium-card" style={{ borderRadius: '22px' }}>
-        <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-          <span style={{ color: COLORS.indigo }}>{THIN_ICONS.messageSquare}</span> My Recent Support Tickets
-        </h5>
 
-        <div className="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>TICKET ID</th>
-                <th>TITLE</th>
-                <th>CATEGORY</th>
-                <th>PRIORITY</th>
-                <th>STATUS</th>
-                <th>CREATED</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tickets.map(t => (
-                <tr key={t.id}>
-                  <td className="fw-bold" style={{ color: COLORS.indigo }}>TKT-00{t.id}</td>
-                  <td className="fw-bold" style={{ color: '#1e293b' }}>{t.title}</td>
-                  <td>
-                    <span className="badge rounded-pill bg-light text-primary border px-3">{t.category}</span>
-                  </td>
-                  <td>
-                    <span className={`badge rounded-pill px-3 py-1 fw-bold ${t.priority === 'High' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning'}`}>
-                      {t.priority}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge rounded-pill px-3 py-1 fw-bold ${t.status === 'Resolved' ? 'bg-success-subtle text-success' : 'bg-info-subtle text-info'}`}>
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="small">{new Date(t.created_at).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 };

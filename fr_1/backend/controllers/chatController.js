@@ -73,6 +73,37 @@ exports.handleChatMessage = async (req, res) => {
     );
     const historyPayload = historyRows.reverse().map(h => ({ sender: h.sender, text: h.message }));
 
+    // ── GREETING & SMALL TALK INTERCEPTOR ──
+    const cleanMsg = message.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+    const GREETINGS = ['hi', 'hello', 'hey', 'greetings', 'morning', 'afternoon', 'evening', 'good morning', 'good afternoon', 'good evening', 'howdy', 'sup'];
+    const SMALL_TALK = ['thanks', 'thank you', 'thx', 'bye', 'goodbye', 'see ya', 'cool', 'awesome', 'great', 'ok', 'okay'];
+    const DATA_KEYWORDS = ['how many', 'count', 'show', 'list', 'summary', 'pending', 'report', 'total', 'records', 'database', 'registered', 'material', 'materials', 'stock', 'inventory', 'quantity', 'warehouse', 'barcode', 'qr', 'movement', 'movements', 'transfer', 'inbound', 'outbound', 'sale', 'sales', 'lead', 'leads', 'crm', 'customer', 'customers', 'revenue', 'employee', 'employees', 'staff', 'manager', 'managers', 'hr', 'hrms', 'payroll', 'salary', 'salaries', 'leave', 'leaves', 'attendance', 'audit', 'log', 'logs', 'notification', 'notifications', 'payslip', 'pay', 'training', 'trainings', 'project', 'projects', 'task', 'tasks', 'assignment', 'assignments'];
+    
+    const isExplicitGreeting = GREETINGS.some(g => cleanMsg === g || cleanMsg.startsWith(g + ' ') || cleanMsg.endsWith(' ' + g));
+    const isExplicitSmallTalk = SMALL_TALK.some(s => cleanMsg === s || cleanMsg.startsWith(s + ' ') || cleanMsg.endsWith(' ' + s));
+    const isDataQuery = DATA_KEYWORDS.some(k => cleanMsg.includes(k));
+
+    if ((isExplicitGreeting || isExplicitSmallTalk) && !isDataQuery) {
+      let shortReply = `Hello **${user.name}**! How can I help you today?`;
+      if (cleanMsg.includes('morning')) shortReply = `Good morning, **${user.name}**! How can I help you today?`;
+      if (cleanMsg.includes('evening')) shortReply = `Good evening, **${user.name}**! How can I help you today?`;
+      if (cleanMsg.includes('afternoon')) shortReply = `Good afternoon, **${user.name}**! How can I help you today?`;
+      if (cleanMsg.includes('thanks') || cleanMsg.includes('thank you') || cleanMsg.includes('thx')) shortReply = `You're welcome, **${user.name}**! Let me know if you need anything else.`;
+      if (cleanMsg.includes('bye') || cleanMsg.includes('goodbye')) shortReply = `Goodbye, **${user.name}**! Have a great day.`;
+
+      const [botRes] = await pool.query(
+        'INSERT INTO chat_messages (user_id, role, sender, message) VALUES (?, ?, ?, ?)',
+        [user.id, role, 'bot', shortReply]
+      );
+
+      return res.json({
+        success: true,
+        reply: shortReply,
+        messageId: botRes.insertId,
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // 1. Gather Ground Truth Context from DB scoped to User's Role & Question Keywords
     const dbContext = await gatherAppContext(message, user);
 
@@ -87,7 +118,7 @@ CRITICAL GROUNDING RULES:
 2. Do NOT invent fake numbers, non-existent inventory codes, or dummy employee names that are not in the context.
 3. If the requested information is not available in the database context or restricted by role permission, state so plainly and professionally.
 4. Format your responses using clean Markdown (bold text, bullet lists, or tables where appropriate).
-5. If the user asks what you can do, explain that you can query real live inventory, stock levels, sales pipeline, HR roster, attendance, and system statistics according to their access privileges (${user.role}).
+5. If the user's message is a greeting, farewell, or casual small talk, reply briefly and naturally without including any database summaries, live context, tables, or statistics. Only include data/context when the user explicitly asks a question that requires it.
 
 REAL LIVE DATABASE CONTEXT (GROUND TRUTH):
 \`\`\`json
@@ -176,8 +207,75 @@ function synthesizeGroundedResponse(query, context, user) {
   const summary = context.system_overview_summary?.system_totals || {};
   const role = (user.role || 'EMPLOYEE').toUpperCase();
 
+  // ── Employee Personal Data Fallbacks ──
+  if (role === 'EMPLOYEE') {
+    if (context.unauthorized_cross_employee_query) {
+      return `🔒 **Access Restricted**: I can only access your own personal records. I do not have authorization to view other employees' data.`;
+    }
+
+    if (q.includes('payslip') || q.includes('pay') || q.includes('salary')) {
+      if (context.personal_payslips && context.personal_payslips.length) {
+        const latest = context.personal_payslips[0];
+        let text = `### 💰 My Payslips\n\n**Latest Payslip (${latest.payroll_month}):**\n- Net Salary: ₹${latest.net_salary || latest.basic_salary || latest.total_amount || 0}\n- Status: ${latest.payment_status || latest.status || 'Paid'}\n\n`;
+        if (context.personal_payslips.length > 1) {
+          text += `**Previous Payslips:**\n`;
+          context.personal_payslips.slice(1, 4).forEach(p => text += `- ${p.payroll_month}: ₹${p.net_salary || p.basic_salary || p.total_amount || 0} (${p.payment_status || p.status || 'Paid'})\n`);
+        }
+        return text;
+      }
+      return `### 💰 My Payslips\n\nNo personal payslip records found.`;
+    }
+
+    if (q.includes('leave') || q.includes('leaves') || q.includes('balance')) {
+      if (context.personal_leaves) {
+        let text = `### 📅 My Leaves\n\n- **Available Leave Balance**: ${context.personal_leaves.balance || 0} days\n\n`;
+        if (context.personal_leaves.requests && context.personal_leaves.requests.length) {
+          text += `**Recent Leave Requests:**\n`;
+          context.personal_leaves.requests.forEach(r => text += `- ${new Date(r.start_date).toLocaleDateString()} to ${new Date(r.end_date).toLocaleDateString()} (${r.leave_type}): **${r.status}**\n`);
+        } else {
+          text += `No recent leave requests found.`;
+        }
+        return text;
+      }
+      return `### 📅 My Leaves\n\nNo personal leave records found.`;
+    }
+
+    if (q.includes('project') || q.includes('task') || q.includes('assignment')) {
+      if (context.personal_assignments && context.personal_assignments.length) {
+        let text = `### 📋 My Assigned Projects & Tasks\n\n`;
+        context.personal_assignments.forEach(t => text += `- **${t.title}** (Status: ${t.status})\n  *Due: ${t.due_date ? new Date(t.due_date).toLocaleDateString() : 'No deadline'}*\n`);
+        return text;
+      }
+      return `### 📋 My Assigned Projects & Tasks\n\nYou currently have no assigned projects or tasks.`;
+    }
+
+    if (q.includes('training') || q.includes('trainings')) {
+      return `### 🎓 My Training Records\n\nI don't have access to individual training completion records yet, as the system currently only tracks department-wide schedules. Please check the Training Tracker portal for upcoming departmental trainings.`;
+    }
+  }
+
+  // Material Movements / Transfers
+  if (q.includes('movement') || q.includes('transfer') || q.includes('inbound') || q.includes('outbound') || q.includes('shipment') || q.includes('dispatch') || q.includes('logistics') || q.includes('recent activity') || q.includes('history') || q.includes('logs')) {
+    if (context.material_movements) {
+      const { stats, records } = context.material_movements;
+      let text = `### 🔄 Material Movements Registers\n\n`;
+      text += `- **Total Movements**: ${stats?.total || 0}\n`;
+      text += `- **Inbound Total**: ${stats?.inbound || 0}\n`;
+      text += `- **Outbound Total**: ${stats?.outbound || 0}\n`;
+      text += `- **Internal Transfers**: ${stats?.transfer || 0}\n\n`;
+
+      if (records && records.length) {
+        text += `**Here are the recent material movements:**\n`;
+        records.slice(0, 5).forEach(m => text += `- ${m}\n`);
+      } else {
+        text += `No recent material movement logs found in the current ledger.`;
+      }
+      return text;
+    }
+  }
+
   // Inventory / Materials Queries
-  if (q.includes('material') || q.includes('stock') || q.includes('inventory') || q.includes('item') || q.includes('quantity')) {
+  if (q.includes('material') || q.includes('stock') || q.includes('inventory') || q.includes('item') || q.includes('quantity') || q.includes('types')) {
     if (context.materials) {
       const items = context.materials.items_sample || [];
       const lowCount = context.materials.low_stock_items_count || 0;
@@ -192,16 +290,6 @@ function synthesizeGroundedResponse(query, context, user) {
       items.slice(0, 5).forEach(item => text += `- ${item}\n`);
       return text;
     }
-  }
-
-  // Material Movements / Transfers
-  if (q.includes('movement') || q.includes('transfer') || q.includes('inbound') || q.includes('outbound')) {
-    if (context.material_movements && context.material_movements.length) {
-      let text = `### 🔄 Recent Material Transit Registers\n\nHere are the latest movement records from the warehouse log:\n\n`;
-      context.material_movements.forEach(m => text += `- ${m}\n`);
-      return text;
-    }
-    return `### 🔄 Material Movements\n\nNo recent material movement logs found in the current ledger. You can record a new transit using the **Record Movement** tool in the Material Movements Portal.`;
   }
 
   // Sales & CRM Queries
@@ -251,34 +339,26 @@ function synthesizeGroundedResponse(query, context, user) {
     }
     if (context.payroll_ledger) {
       const pay = context.payroll_ledger;
+      const stats = pay.stats || { baseSum: 0, bonusSum: 0, dedSum: 0, netSum: 0 };
+      
       let text = `### 💰 Corporate Payroll Ledger Summary\n\n`;
-      text += `- **Gross Payroll Disbursed**: **₹${Number(pay.gross_payroll_disbursed || 0).toLocaleString()}**\n\n`;
+      text += `Total payroll disbursed: ₹${Number(stats.netSum || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Basic Salary: ₹${Number(stats.baseSum || 0).toLocaleString()} + Incentives: ₹${Number(stats.bonusSum || 0).toLocaleString()} − Deductions: ₹${Number(stats.dedSum || 0).toLocaleString()}).\n\n`;
+      
       if (pay.recent_disbursements && pay.recent_disbursements.length) {
         text += `**Recent Disbursements:**\n`;
         pay.recent_disbursements.slice(0, 4).forEach(p => text += `- ${p}\n`);
-      } else {
-        text += `No recent individual payslip disbursements recorded.`;
       }
       return text;
     }
   }
 
-  // System Help & Greeting
-  return `Hello **${user.name}**! I am your AI assistant for **SMTBMS**.
-
-Here is a summary of the current live database context available to your role (**${user.role}**):
-
-| Resource Category | Registered Count | Status |
-| :--- | :--- | :--- |
-| **Material Catalog** | ${summary.total_materials_in_database || 0} SKUs | Active |
-| **Workforce Staff** | ${summary.total_employees_on_roster || 0} Personnel | Monitored |
-| **CRM Leads** | ${summary.total_crm_leads || 0} Leads | Pipeline |
-| **Customer Accounts** | ${summary.total_active_customers || 0} Clients | Active |
+  // Unrecognized Query Fallback (Only happens if LLM fails and query doesn't match above)
+  return `I'm sorry, I don't have enough information in the provided context to answer that specific query. 
 
 You can ask me questions such as:
 - *"Show me materials with low stock"*
 - *"What are the recent material movements?"*
-- *"Give me a summary of current CRM leads"* (Sales/Admin)
-- *"Show employee department breakdown"* (HR/Admin)
-- *"What is the total payroll disbursed?"* (HR/Admin)`;
+- *"Give me a summary of current CRM leads"*
+- *"Show employee department roster"*
+- *"What is the total payroll disbursed?"*`;
 }

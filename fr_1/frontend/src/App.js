@@ -50,7 +50,9 @@ import ProjectTrackingPage from './pages/ProjectTrackingPage';
 import ApprovalsPage from './pages/ApprovalsPage';
 import EmployeeProjectsPage from './pages/EmployeeProjectsPage';
 import EmployeeTrainingPage from './pages/EmployeeTrainingPage';
-import { GoogleOAuthProvider } from '@react-oauth/google'; // 🟢 Imported successfully
+import EmployeeAttendancePage from './pages/EmployeeAttendancePage';
+import OCRScannerPage from './pages/OCRScannerPage';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
@@ -80,6 +82,16 @@ function App() {
           {/* Dashboard */}
           <Route index element={<DashboardPage />} />
 
+          {/* OCR Scanner */}
+          <Route
+            path="ocr-scanner"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'Manager']}>
+                <OCRScannerPage />
+              </RoleBasedRoute>
+            }
+          />
+
           {/* CRM */}
           <Route
             path="crm"
@@ -89,6 +101,7 @@ function App() {
               </RoleBasedRoute>
             }
           />
+
           <Route
             path="customers"
             element={
@@ -356,8 +369,6 @@ function App() {
             }
           />
 
-
-
           <Route
             path="vendors"
             element={
@@ -394,6 +405,23 @@ function App() {
             path="leave-management"
             element={
               <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Employee', 'Manager', 'Sales']}>
+                <LeaveManagementPage />
+              </RoleBasedRoute>
+            }
+          />
+          {/* Employee Personal Features */}
+          <Route
+            path="employee/attendance"
+            element={
+              <RoleBasedRoute allowedRoles={['Employee', 'Sales']}>
+                <EmployeeAttendancePage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="employee/leave"
+            element={
+              <RoleBasedRoute allowedRoles={['Admin', 'HR', 'Manager', 'Employee', 'Sales']}>
                 <LeaveManagementPage />
               </RoleBasedRoute>
             }

@@ -64,7 +64,7 @@ const THIN_ICONS = {
 
 const LeaveManagementPage = () => {
   const user = getCurrentUser();
-  const canManageHR = user?.role && ['Admin', 'HR', 'Manager'].includes(user.role);
+  const canManageHR = user?.role && ['ADMIN', 'HR', 'MANAGER'].includes(user.role);
 
   const [leaves, setLeaves] = useState([]);
   const [myLeaves, setMyLeaves] = useState([]);
@@ -232,6 +232,9 @@ const LeaveManagementPage = () => {
           border: none !important;
           text-align: left !important;
         }
+        .theme-leave th.text-center {
+          text-align: center !important;
+        }
         .theme-leave td {
           padding: 16px 20px !important;
           vertical-align: middle !important;
@@ -255,7 +258,7 @@ const LeaveManagementPage = () => {
         .emp-avatar-badge {
           width: 44px; height: 44px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          background: linear-gradient(135deg, ${COLORS.amber} 0%, ${COLORS.primary} 100%);
           color: #ffffff;
           font-weight: 800;
           font-size: 0.95rem;
@@ -282,7 +285,7 @@ const LeaveManagementPage = () => {
         }
       `}</style>
 
-      {/* HEADER */}
+      {/* HEADER (VISIBLE TO ALL ROLES) */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
         <div className="d-flex align-items-center gap-3">
           <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
@@ -290,8 +293,12 @@ const LeaveManagementPage = () => {
             {THIN_ICONS.calendar}
           </div>
           <div className="d-flex flex-column justify-content-center">
-            <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>My Leaves & Leave Management</h3>
-            <p style={{ color: '#94a3b8' }} className="small mb-0">Manage your leave applications, balance history, and company approvals.</p>
+            <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
+              {canManageHR ? ' Leave Management' : 'My Leaves & Leave Management'}
+            </h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">
+              {canManageHR ? 'Review, approve, and manage workforce leave requests.' : 'Manage your leave applications, balance history, and company approvals.'}
+            </p>
           </div>
         </div>
         <button
@@ -304,105 +311,10 @@ const LeaveManagementPage = () => {
         </button>
       </div>
 
-      {/* USER PROFILE SUMMARY BANNER */}
-      <div className="card border-0 p-4 mb-4 hover-premium-card" style={{ borderRadius: '22px' }}>
-        <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
-          <div className="d-flex align-items-center gap-3">
-            <div className="emp-avatar-badge" style={{ width: 56, height: 56, fontSize: '1.2rem' }}>
-              {getInitials(user?.name)}
-            </div>
-            <div>
-              <div className="d-flex align-items-center gap-2">
-                <h4 className="fw-bold mb-0" style={{ color: '#1e293b' }}>{user?.name || 'Tarun Bose'}</h4>
-                <span className="badge rounded-pill bg-success-subtle text-success px-3 py-1 fw-bold">Active</span>
-              </div>
-              <p className="small text-muted mb-0 mt-1">
-                EMP-014 • {user?.role || 'Staff Member'} • {user?.email || 'tarun.b@smtbms.in'}
-              </p>
-            </div>
-          </div>
-
-          <div className="d-flex flex-wrap gap-4 border-start-lg ps-lg-4" style={{ borderColor: '#e5e0f5' }}>
-            <div>
-              <span className="d-block small text-muted">Department</span>
-              <span className="fw-bold" style={{ color: '#1e293b' }}>{user?.department || 'IT Operations'}</span>
-            </div>
-            <div>
-              <span className="d-block small text-muted">Employee Type</span>
-              <span className="fw-bold" style={{ color: '#1e293b' }}>Full Time</span>
-            </div>
-            <div>
-              <span className="d-block small text-muted">Join Date</span>
-              <span className="fw-bold" style={{ color: '#1e293b' }}>Nov 20, 2023</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* LEAVE BALANCE PROGRESS GRID */}
-      <div className="section-eyebrow">Leave Balance Overview</div>
-      <div className="row g-3 mb-4">
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div className="leave-balance-card">
-            <h6 className="fw-bold text-start mb-3" style={{ color: COLORS.indigo }}>Casual Leave</h6>
-            <div className="my-2">
-              <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>10</h2>
-              <span className="small text-muted fw-bold">Days Left</span>
-            </div>
-            <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
-              <span>0 Used</span>
-              <span>10 Total</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div className="leave-balance-card">
-            <h6 className="fw-bold text-start mb-3" style={{ color: '#0f9488' }}>Sick Leave</h6>
-            <div className="my-2">
-              <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>10</h2>
-              <span className="small text-muted fw-bold">Days Left</span>
-            </div>
-            <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
-              <span>0 Used</span>
-              <span>10 Total</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div className="leave-balance-card">
-            <h6 className="fw-bold text-start mb-3" style={{ color: COLORS.violet }}>Privilege Leave</h6>
-            <div className="my-2">
-              <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>15</h2>
-              <span className="small text-muted fw-bold">Days Left</span>
-            </div>
-            <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
-              <span>0 Used</span>
-              <span>15 Total</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div className="leave-balance-card">
-            <h6 className="fw-bold text-start mb-3" style={{ color: COLORS.amber }}>Comp Off</h6>
-            <div className="my-2">
-              <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>4</h2>
-              <span className="small text-muted fw-bold">Days Left</span>
-            </div>
-            <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
-              <span>0 Used</span>
-              <span>4 Total</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ADMIN & HR GLOBAL LEAVE APPLICATIONS MANAGEMENT TABLE */}
-      {['Admin', 'HR'].includes(user?.role) ? (
-        <>
-          <div className="section-eyebrow">All Workforce Leave Applications</div>
+      {['ADMIN', 'HR'].includes(user?.role) ? (
+        <div className="pt-2">
+          <div className="section-eyebrow mb-3" style={{ fontSize: '0.85rem' }}>All Workforce Leave Applications</div>
 
           {/* METRIC OVERVIEW CARDS */}
           <div className="row g-3 mb-4">
@@ -434,10 +346,10 @@ const LeaveManagementPage = () => {
                   />
                 </div>
                 <select
-                  className="form-select rounded-pill small px-3"
+                  className="form-select rounded-pill small px-3 text-muted"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  style={{ background: '#FAF8FF', border: '1px solid #e5e0f5', width: '140px' }}
+                  style={{ backgroundColor: '#FAF8FF', border: '1px solid #e5e0f5', width: '140px' }}
                 >
                   <option value="All">All Status</option>
                   <option value="Pending">Pending</option>
@@ -464,7 +376,7 @@ const LeaveManagementPage = () => {
                       <th>To</th>
                       <th>Days</th>
                       <th>Status</th>
-                      <th>Action</th>
+                      <th className="text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -494,9 +406,9 @@ const LeaveManagementPage = () => {
                             <td>{l.end_date ? new Date(l.end_date).toLocaleDateString() : '2026-06-14'}</td>
                             <td className="fw-bold">1d</td>
                             <td>{statusBadge}</td>
-                            <td>
+                            <td className="text-center">
                               {l.status === 'Pending' ? (
-                                <div className="d-flex gap-2">
+                                <div className="d-flex gap-2 justify-content-center">
                                   <button className="btn btn-sm btn-success rounded-2 px-2 py-1 fw-bold" onClick={() => handleAction(l.id, 'Approved')}>Approve</button>
                                   <button className="btn btn-sm btn-outline-danger rounded-2 px-2 py-1 fw-bold" onClick={() => handleAction(l.id, 'Rejected')}>Reject</button>
                                 </div>
@@ -513,9 +425,104 @@ const LeaveManagementPage = () => {
               </div>
             )}
           </div>
-        </>
+        </div>
       ) : (
         <>
+          {/* USER PROFILE SUMMARY BANNER */}
+          <div className="card border-0 p-4 mb-4 hover-premium-card" style={{ borderRadius: '22px' }}>
+            <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+              <div className="d-flex align-items-center gap-3">
+                <div className="emp-avatar-badge" style={{ width: 56, height: 56, fontSize: '1.2rem' }}>
+                  {getInitials(user?.name)}
+                </div>
+                <div>
+                  <div className="d-flex align-items-center gap-2">
+                    <h4 className="fw-bold mb-0" style={{ color: '#1e293b' }}>{user?.name || 'Tarun Bose'}</h4>
+                    <span className="badge rounded-pill bg-success-subtle text-success px-3 py-1 fw-bold">Active</span>
+                  </div>
+                  <p className="small text-muted mb-0 mt-1">
+                    {user?.role === 'ADMIN' ? 'Admin Workspace' : `EMP-${String(user?.id || '014').padStart(3, '0')}`} • {user?.role || 'Staff Member'} • {user?.email || 'tarun.b@smtbms.in'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="d-flex flex-wrap gap-4 border-start-lg ps-lg-4" style={{ borderColor: '#e5e0f5' }}>
+                <div>
+                  <span className="d-block small text-muted">Department</span>
+                  <span className="fw-bold" style={{ color: '#1e293b' }}>{user?.department || 'IT Operations'}</span>
+                </div>
+                <div>
+                  <span className="d-block small text-muted">Employee Type</span>
+                  <span className="fw-bold" style={{ color: '#1e293b' }}>Full Time</span>
+                </div>
+                <div>
+                  <span className="d-block small text-muted">Join Date</span>
+                  <span className="fw-bold" style={{ color: '#1e293b' }}>Nov 20, 2023</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* LEAVE BALANCE PROGRESS GRID */}
+          <div className="section-eyebrow">Leave Balance Overview</div>
+          <div className="row g-3 mb-4">
+            <div className="col-12 col-sm-6 col-xl-3">
+              <div className="leave-balance-card">
+                <h6 className="fw-bold text-start mb-3" style={{ color: COLORS.indigo }}>Casual Leave</h6>
+                <div className="my-2">
+                  <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>10</h2>
+                  <span className="small text-muted fw-bold">Days Left</span>
+                </div>
+                <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
+                  <span>0 Used</span>
+                  <span>10 Total</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-12 col-sm-6 col-xl-3">
+              <div className="leave-balance-card">
+                <h6 className="fw-bold text-start mb-3" style={{ color: '#0f9488' }}>Sick Leave</h6>
+                <div className="my-2">
+                  <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>10</h2>
+                  <span className="small text-muted fw-bold">Days Left</span>
+                </div>
+                <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
+                  <span>0 Used</span>
+                  <span>10 Total</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-12 col-sm-6 col-xl-3">
+              <div className="leave-balance-card">
+                <h6 className="fw-bold text-start mb-3" style={{ color: COLORS.violet }}>Privilege Leave</h6>
+                <div className="my-2">
+                  <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>15</h2>
+                  <span className="small text-muted fw-bold">Days Left</span>
+                </div>
+                <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
+                  <span>0 Used</span>
+                  <span>15 Total</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-12 col-sm-6 col-xl-3">
+              <div className="leave-balance-card">
+                <h6 className="fw-bold text-start mb-3" style={{ color: COLORS.amber }}>Comp Off</h6>
+                <div className="my-2">
+                  <h2 className="fw-extrabold mb-0" style={{ color: '#1e293b' }}>4</h2>
+                  <span className="small text-muted fw-bold">Days Left</span>
+                </div>
+                <div className="d-flex justify-content-between small text-muted mt-3 pt-2 border-top">
+                  <span>0 Used</span>
+                  <span>4 Total</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* MY PERSONAL LEAVE APPLICATIONS TABLE (FOR EMPLOYEES / MANAGERS / SALES) */}
           <div className="section-eyebrow">My Leave History</div>
           <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>

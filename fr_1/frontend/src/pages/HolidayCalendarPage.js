@@ -244,7 +244,7 @@ const HolidayCalendarPage = () => {
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
-            <span>+ Add Holiday</span>
+            <span> Add Holiday</span>
           </button>
         )}
       </div>
@@ -283,9 +283,12 @@ const HolidayCalendarPage = () => {
             {['All', 'National', 'Festival'].map(type => (
               <button
                 key={type}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${selectedType === type ? 'text-white' : 'bg-light text-dark border-0'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap ${selectedType === type ? 'text-white' : 'bg-light text-dark'}`}
                 onClick={() => setSelectedType(type)}
-                style={{ background: selectedType === type ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
+                style={{
+                  background: selectedType === type ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: selectedType === type ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {type}
               </button>

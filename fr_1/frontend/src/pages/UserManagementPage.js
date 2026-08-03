@@ -36,14 +36,27 @@ const THIN_ICONS = {
       <polyline vectorEffect="non-scaling-stroke" points="17 6 23 6 23 12" />
     </svg>
   ),
+  briefcase: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <rect vectorEffect="non-scaling-stroke" x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path vectorEffect="non-scaling-stroke" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      <line vectorEffect="non-scaling-stroke" x1="2" y1="12" x2="22" y2="12" />
+    </svg>
+  ),
   pencil: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
       <path vectorEffect="non-scaling-stroke" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path vectorEffect="non-scaling-stroke" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   ),
+  search: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <circle vectorEffect="non-scaling-stroke" cx="11" cy="11" r="8" />
+      <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  ),
   trash: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
       <polyline vectorEffect="non-scaling-stroke" points="3 6 5 6 21 6" />
       <path vectorEffect="non-scaling-stroke" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
@@ -277,30 +290,37 @@ const UserManagementPage = () => {
           display: inline-block;
         }
 
-        /* Actions Button Configurations */
-        .theme-users .btn-action-edit {
-          width: 32px; height: 32px; border-radius: 8px;
-          display: inline-flex; align-items: center; justify-content: center;
+        /* ── ACTION MATRIX ICON BUTTONS — matched exactly to MaterialsPage / MaterialTable ── */
+        .btn-action-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
           border: none !important;
-          background-color: #eff6ff !important;
-          color: #3b82f6 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
           transition: all 0.2s ease !important;
+          cursor: pointer !important;
         }
-        .theme-users .btn-action-edit:hover {
-          background-color: #3b82f6 !important;
+        .edit-icon-btn {
+          background-color: #EFF6FF !important;
+          color: #3B82F6 !important;
+        }
+        .edit-icon-btn:hover {
+          background-color: #3B82F6 !important;
           color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+          transform: translateY(-1px);
         }
-        .theme-users .btn-action-del {
-          width: 32px; height: 32px; border-radius: 8px;
-          display: inline-flex; align-items: center; justify-content: center;
-          border: none !important;
-          background-color: #fef2f2 !important;
-          color: #ef4444 !important;
-          transition: all 0.2s ease !important;
+        .del-icon-btn {
+          background-color: #FFF1F2 !important;
+          color: #F43F5E !important;
         }
-        .theme-users .btn-action-del:hover {
-          background-color: #ef4444 !important;
+        .del-icon-btn:hover {
+          background-color: #F43F5E !important;
           color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+          transform: translateY(-1px);
         }
 
         /* Clean Input Filtering Header Styles */
@@ -317,6 +337,12 @@ const UserManagementPage = () => {
           outline: none !important;
           border-color: ${COLORS.indigo} !important;
           box-shadow: 0 0 0 3px ${COLORS.indigo}1A !important;
+        }
+
+        /* Search input needs extra left padding so text clears the icon —
+           the shorthand padding above would otherwise override ps-5 */
+        .theme-users .search-input-lux {
+          padding-left: 2.75rem !important;
         }
       `}</style>
 
@@ -409,7 +435,16 @@ const UserManagementPage = () => {
       {/* FILTER CONTROL BAR & LAYOUT REGISTRIES TABLE CONTAINER */}
       <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
         <div className="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center bg-white">
-          <input className="form-control w-25 filter-input-lux" style={{ minWidth: '200px' }} placeholder="Search user directory..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
+          <div className="position-relative" style={{ minWidth: '260px' }}>
+            <span className="position-absolute top-50 start-0 translate-middle-y ms-3 d-flex align-items-center" style={{ color: '#94a3b8', pointerEvents: 'none' }}>{THIN_ICONS.search}</span>
+            <input
+              type="text"
+              className="form-control filter-input-lux search-input-lux"
+              placeholder="Search user directory..."
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+            />
+          </div>
           <select className="form-select w-25 filter-input-lux" style={{ minWidth: '160px' }} value={userRoleFilter} onChange={(e) => setUserRoleFilter(e.target.value)}>
             <option value="All">All Roles Directory</option>
             <option value="Admin">Admin</option>
@@ -461,10 +496,10 @@ const UserManagementPage = () => {
                         </td>
                         <td className="text-center" style={{ textAlign: 'center' }}>
                           <div className="d-flex justify-content-center gap-1">
-                            <button className="btn-action-edit" title="Edit User" onClick={() => handleOpenUserModal(u)}>
+                            <button className="btn-action-icon edit-icon-btn" title="Edit User" onClick={() => handleOpenUserModal(u)}>
                               {THIN_ICONS.pencil}
                             </button>
-                            <button className="btn-action-del" title="Delete User" onClick={() => handleDeleteUser(u.id, u.name)}>
+                            <button className="btn-action-icon del-icon-btn" title="Delete User" onClick={() => handleDeleteUser(u.id, u.name)}>
                               {THIN_ICONS.trash}
                             </button>
                           </div>

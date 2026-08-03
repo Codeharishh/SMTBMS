@@ -5,6 +5,16 @@
 
 const pool = require('../config/db');
 
+// Helper to get employee record
+const getEmployeeRecord = async (userId) => {
+  try {
+    const [rows] = await pool.query('SELECT id, department, designation, salary, leave_balance FROM employees WHERE user_id = ?', [userId]);
+    return rows.length ? rows[0] : null;
+  } catch (err) {
+    return null;
+  }
+};
+
 /**
  * Retrieves dynamic real-time context from database tables based on user request keywords & user role privileges.
  * @param {string} userQuery - User message text
@@ -40,15 +50,32 @@ exports.gatherAppContext = async (userQuery, user) => {
     }
 
     // ── 2. MATERIAL MOVEMENTS & LOGISTICS CONTEXT ──
-    if (queryLower.includes('movement') || queryLower.includes('transfer') || queryLower.includes('inbound') || queryLower.includes('outbound') || queryLower.includes('shipment')) {
+    if (queryLower.includes('movement') || queryLower.includes('transfer') || queryLower.includes('inbound') || queryLower.includes('outbound') || queryLower.includes('shipment') || queryLower.includes('dispatch') || queryLower.includes('logistics')) {
       let movements = [];
+      let stats = { total: 0, inbound: 0, outbound: 0, transfer: 0 };
       try {
         const [movRows] = await pool.query(
-          'SELECT id, material_id, material_name, type, quantity, from_location, to_location, created_at FROM material_movements ORDER BY created_at DESC LIMIT 10'
+          'SELECT id, material_id, material_name, type, quantity, from_location, to_location, created_at FROM movements ORDER BY created_at DESC LIMIT 10'
         );
         movements = movRows;
-      } catch (movErr) { }
-      contextData.material_movements = movements.map(m => `[${m.type}] ${m.material_name} (${m.quantity} pcs) from '${m.from_location || 'Supplier'}' to '${m.to_location || 'Warehouse'}' at ${new Date(m.created_at).toLocaleDateString()}`);
+
+        const [[tRes]] = await pool.query('SELECT COUNT(*) as c FROM movements');
+        const [[iRes]] = await pool.query('SELECT COUNT(*) as c FROM movements WHERE type = "Inbound"');
+        const [[oRes]] = await pool.query('SELECT COUNT(*) as c FROM movements WHERE type = "Outbound"');
+        const [[trRes]] = await pool.query('SELECT COUNT(*) as c FROM movements WHERE type = "Transfer"');
+
+        stats.total = tRes?.c || 0;
+        stats.inbound = iRes?.c || 0;
+        stats.outbound = oRes?.c || 0;
+        stats.transfer = trRes?.c || 0;
+      } catch (movErr) { 
+        console.error('Material Movements context error:', movErr.message);
+      }
+      
+      contextData.material_movements = {
+        stats,
+        records: movements.map(m => `🔵 ${m.type} — ${m.material_name} (ID: ${m.material_id}), Qty ${m.quantity}, ${m.from_location || 'Supplier'} → ${m.to_location || 'Warehouse'}, ${new Date(m.created_at).toLocaleString()}`)
+      };
     }
 
     // ── 3. SALES & LEADS CONTEXT (Restricted to ADMIN, MANAGER, SALES) ──
@@ -113,16 +140,19 @@ exports.gatherAppContext = async (userQuery, user) => {
     // ── 5. PAYROLL CONTEXT (Restricted to ADMIN, HR) ──
     if (['ADMIN', 'HR'].includes(role) && (queryLower.includes('payroll') || queryLower.includes('disbursed') || queryLower.includes('disburse') || queryLower.includes('salary') || queryLower.includes('payslip') || queryLower.includes('bonus') || queryLower.includes('compensation') || queryLower.includes('pay') || queryLower.includes('wage') || queryLower.includes('total'))) {
       let grossPayroll = 0;
+      let payrollStats = { baseSum: 0, bonusSum: 0, dedSum: 0, netSum: 0 };
       let recentDisbursements = [];
 
       try {
-        const [[sumRes]] = await pool.query('SELECT SUM(COALESCE(net_salary, basic_salary, total_amount, 0)) as total_payroll FROM payroll');
-        grossPayroll = sumRes?.total_payroll || 0;
-
-        if (!grossPayroll || grossPayroll === 0) {
-          const [[empSalaryRes]] = await pool.query('SELECT SUM(COALESCE(salary, 0)) as emp_payroll FROM employees');
-          grossPayroll = empSalaryRes?.emp_payroll || 0;
-        }
+        const [[sumRes]] = await pool.query('SELECT SUM(basic_salary) as baseSum, SUM(bonus) as bonusSum, SUM(deductions) as dedSum, SUM(net_salary) as netSum FROM payroll');
+        
+        payrollStats = {
+          baseSum: Number(sumRes?.baseSum || 0),
+          bonusSum: Number(sumRes?.bonusSum || 0),
+          dedSum: Number(sumRes?.dedSum || 0),
+          netSum: Number(sumRes?.netSum || 0)
+        };
+        grossPayroll = payrollStats.netSum;
 
         const [pRows] = await pool.query(`
           SELECT p.*, u.name as emp_name 
@@ -131,19 +161,63 @@ exports.gatherAppContext = async (userQuery, user) => {
           LEFT JOIN users u ON e.user_id = u.id 
           ORDER BY p.id DESC LIMIT 10
         `);
-        recentDisbursements = pRows.map(p => `${p.emp_name || 'Staff'}: Net Salary ₹${p.net_salary || p.basic_salary || p.total_amount || 0} (${p.payment_status || p.status || 'Paid'})`);
+        recentDisbursements = pRows.map(p => `${p.emp_name || 'Staff'}: Net Salary ₹${p.net_salary || p.basic_salary || 0} (${p.payment_status || 'Paid'})`);
       } catch (pErr) {
-        console.warn('Payroll query error, falling back to employee salaries:', pErr.message);
-        try {
-          const [[empSalaryRes]] = await pool.query('SELECT SUM(COALESCE(salary, 0)) as emp_payroll FROM employees');
-          grossPayroll = empSalaryRes?.emp_payroll || 0;
-        } catch (e2) { }
+        console.warn('Payroll query error:', pErr.message);
       }
 
       contextData.payroll_ledger = {
         gross_payroll_disbursed: grossPayroll,
+        stats: payrollStats,
         recent_disbursements: recentDisbursements
       };
+    }
+
+    // ── 5.5 EMPLOYEE PERSONAL DATA CONTEXT ──
+    if (role === 'EMPLOYEE') {
+      const isSelfQuery = queryLower.includes('my') || queryLower.includes(' i ') || queryLower.includes('latest') || queryLower.includes('own') || queryLower.includes(user.name.toLowerCase()) || queryLower.includes('balance');
+      const isOtherQuery = !isSelfQuery && (queryLower.includes('payslip') || queryLower.includes('leave') || queryLower.includes('training') || queryLower.includes('project') || queryLower.includes('task'));
+
+      if (isOtherQuery) {
+        contextData.unauthorized_cross_employee_query = true;
+      } else {
+        const empRecord = await getEmployeeRecord(user.id);
+        if (empRecord) {
+          const empId = empRecord.id;
+          
+          // Payslip
+          if (queryLower.includes('payslip') || queryLower.includes('pay') || queryLower.includes('salary')) {
+            try {
+              const [pRows] = await pool.query('SELECT * FROM payroll WHERE employee_id = ? ORDER BY id DESC LIMIT 5', [empId]);
+              contextData.personal_payslips = pRows;
+            } catch (e) {}
+          }
+
+          // Leaves
+          if (queryLower.includes('leave') || queryLower.includes('leaves')) {
+            try {
+              const [lRows] = await pool.query('SELECT * FROM leave_requests WHERE employee_id = ? ORDER BY id DESC LIMIT 5', [empId]);
+              contextData.personal_leaves = {
+                balance: empRecord.leave_balance,
+                requests: lRows
+              };
+            } catch (e) {}
+          }
+
+          // Projects / Assignments (Tasks)
+          if (queryLower.includes('project') || queryLower.includes('task') || queryLower.includes('assignment')) {
+            try {
+              const [tRows] = await pool.query('SELECT * FROM manager_tasks WHERE assigned_to = ? ORDER BY due_date ASC LIMIT 5', [empId]);
+              contextData.personal_assignments = tRows;
+            } catch (e) {}
+          }
+
+          // Training
+          if (queryLower.includes('training') || queryLower.includes('trainings')) {
+             contextData.personal_training_requested = true;
+          }
+        }
+      }
     }
 
     // ── 6. NOTIFICATIONS & AUDIT LOGS (ADMIN & HR Only) ──

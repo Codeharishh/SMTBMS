@@ -327,7 +327,7 @@ const NotificationsPage = () => {
             disabled={saving}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)`, fontSize: '0.85rem' }}
           >
-            {saving ? <><span className="spinner-border spinner-border-sm me-2" role="status" />Saving...</> : '🔔 Save Preferences'}
+            {saving ? <><span className="spinner-border spinner-border-sm me-2" role="status" />Saving...</> : ' Save Preferences'}
           </button>
         </div>
       </div>

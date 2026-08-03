@@ -5,12 +5,13 @@ const salesController = require('../controllers/salesController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 // Your Original Core Sales Routes
-router.get('/', protect, authorize('Admin', 'Manager', 'Sales'), salesController.getAllSales);
-router.get('/summary', protect, authorize('Admin', 'Manager', 'Sales'), salesController.getSalesSummary);
-router.get('/:id', protect, authorize('Admin', 'Manager', 'Sales'), salesController.getSaleById);
-router.post('/', protect, authorize('Admin', 'Sales'), salesController.createSale);
-router.put('/:id', protect, authorize('Admin', 'Sales'), salesController.updateSale);
-router.delete('/:id', protect, authorize('Admin', 'Sales'), salesController.deleteSale);
+router.get('/', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.getAllSales);
+router.get('/summary', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.getSalesSummary);
+router.get('/:id', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.getSaleById);
+router.post('/', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.createSale);
+router.put('/:id', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.updateSale);
+router.put('/:id/status', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.updateSaleStatus);
+router.delete('/:id', protect, authorize('Admin', 'Manager', 'Sales', 'Finance'), salesController.deleteSale);
 
 // 🟢 NEW CRM EXTENSION OPERATIONS (Appended for CRMPage View)
 router.get('/crm/quotations', protect, authorize('Admin', 'Manager', 'Sales'), salesController.getQuotations);

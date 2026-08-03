@@ -4,6 +4,7 @@ import { getCurrentUser } from '../utils/authHelpers';
 import { fetchEmployees } from '../services/employeeService';
 import { fetchTasks, createTask, deleteTask } from '../services/managerService';
 
+// ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
 const COLORS = {
   indigo: '#5B8DEF',
   emerald: '#2ED9C3',
@@ -16,9 +17,10 @@ const COLORS = {
   alert: '#FF6B6B'
 };
 
+// ── CRISP-OPTIMIZED VECTOR SVG MATRIX FOR METRIC CARDS ────────────────────
 const THIN_ICONS = {
   clipboard: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
       <path vectorEffect="non-scaling-stroke" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
       <rect vectorEffect="non-scaling-stroke" x="8" y="2" width="8" height="4" rx="1" ry="1" />
     </svg>
@@ -59,7 +61,27 @@ const THIN_ICONS = {
       <polyline vectorEffect="non-scaling-stroke" points="3 6 5 6 21 6" />
       <path vectorEffect="non-scaling-stroke" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
+  ),
+  arrowRight: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
+      <polyline vectorEffect="non-scaling-stroke" points="12 5 19 12 12 19" />
+    </svg>
   )
+};
+
+const STATUS_STYLES = {
+  Todo: { bg: '#F1F5F9', color: '#64748B' },
+  Pending: { bg: '#F1F5F9', color: '#64748B' },
+  'In Progress': { bg: '#E0F2FE', color: '#0369A1' },
+  Completed: { bg: '#D1FAE5', color: '#047857' },
+  Done: { bg: '#D1FAE5', color: '#047857' }
+};
+
+const PRIORITY_STYLES = {
+  High: { bg: '#FEE2E2', color: '#DC2626' },
+  Medium: { bg: '#FEF3C7', color: '#B45309' },
+  Low: { bg: '#F1F5F9', color: '#64748B' }
 };
 
 const TaskAssignmentPage = () => {
@@ -178,6 +200,7 @@ const TaskAssignmentPage = () => {
   };
 
   const handleDeleteTask = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this task?')) return;
     try {
       await deleteTask(id);
     } catch (err) {
@@ -186,6 +209,32 @@ const TaskAssignmentPage = () => {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
+  // 🟢 ADVANCE TASK TO NEXT STATUS IN THE SEQUENCE — triggered by the arrow (→) action button
+  const handleAdvanceStatus = async (task) => {
+    let nextStatus = '';
+    
+    if (task.status === 'Todo' || task.status === 'Pending') {
+      nextStatus = 'In Progress';
+    } else if (task.status === 'In Progress') {
+      nextStatus = 'Completed';
+    } else {
+      alert(`This task is already "${task.status}" — no further status to advance to.`);
+      return;
+    }
+    
+    // Optimistically update the UI
+    setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
+
+    try {
+      // API call to update status would go here
+      // await updateTask(task.id, { status: nextStatus });
+    } catch (error) {
+      alert('Failed to update status. Reverting change.');
+      setTasks(tasks.map(t => t.id === task.id ? { ...t, status: task.status } : t));
+    }
+  };
+
+  // ── METRIC CARD — MATCHES MaterialsPage.js EXACTLY (white bg, outlined icon circle) ──
   const MetricCard = ({ label, value, sub, icon, color }) => (
     <div className="card border-0 h-100 metric-card-lux" style={{ borderRadius: '22px', background: '#ffffff' }}>
       <div className="p-3 d-flex align-items-start gap-2">
@@ -217,6 +266,7 @@ const TaskAssignmentPage = () => {
     }}>
 
       <style>{`
+        /* Premium Card Configurations — matches MaterialsPage.js */
         .hover-premium-card {
           transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease !important;
           background-color: #ffffff !important;
@@ -237,14 +287,14 @@ const TaskAssignmentPage = () => {
         .hover-btn-lux { transition: all 0.2s ease !important; }
         .hover-btn-lux:hover {
           filter: brightness(1.05);
-          box-shadow: 0 6px 16px rgba(59, 130, 246, 0.28) !important;
+          box-shadow: 0 6px 16px rgba(255, 122, 69, 0.28) !important;
         }
         .section-eyebrow {
           font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em;
           text-transform: uppercase; color: #9ca3af; margin-bottom: 6px;
         }
 
-        /* FLOATING-ROW TASKS TABLE */
+        /* TASK REGISTER TABLE — MATCHES MaterialsPage.js */
         .theme-tasks table {
           width: 100% !important;
           border-collapse: separate !important;
@@ -280,33 +330,73 @@ const TaskAssignmentPage = () => {
         .theme-tasks tbody tr:hover {
           transform: translateY(-2px) !important;
           box-shadow: 0 8px 20px rgba(165, 175, 200, 0.12) !important;
+          background-color: #ffffff !important;
+        }
+
+        /* ── ACTION BUTTON STRUCTURAL OVERRIDES — MATCHES MaterialsPage.js ── */
+        .theme-tasks td .btn-action-del {
+          background-color: #fff1f2 !important;
+          color: #f43f5e !important;
+          border: none !important;
+          padding: 4px 12px !important;
+          border-radius: 6px !important;
+          font-size: 0.8rem !important;
+          font-weight: 700 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: none !important;
+          transform: none !important;
+        }
+        .theme-tasks td .btn-action-del:hover {
+          filter: brightness(0.95) !important;
+        }
+
+        .theme-tasks td .btn-action-advance {
+          background-color: #eff6ff !important;
+          color: ${COLORS.indigo} !important;
+          border: none !important;
+          padding: 4px 12px !important;
+          border-radius: 6px !important;
+          font-size: 0.8rem !important;
+          font-weight: 700 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: none !important;
+          transform: none !important;
+        }
+        .theme-tasks td .btn-action-advance:hover {
+          filter: brightness(0.95) !important;
         }
       `}</style>
 
-      {/* HEADER */}
+      {/* MATCHED HEADER — icon + title left, + Assign New Task button top-right (like OrderManagementPage) */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
         <div className="d-flex align-items-center gap-3">
-          <div className="d-flex align-items-center justify-content-center fw-bold text-white rounded-3 shadow-sm"
-            style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)', borderRadius: '14px' }}>
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
             {THIN_ICONS.clipboard}
           </div>
           <div>
             <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
               Task Assignment
-              <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>WORKFLOW</span>
+              <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>TASKS</span>
             </h3>
-            <p style={{ color: '#94a3b8' }} className="small mb-0">Assign, track and manage tasks dynamically across your recorded employees.</p>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Assign, track and manage tasks dynamically across your recorded employees</p>
           </div>
         </div>
 
-        <button
-          className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-          onClick={() => setShowModal(true)}
-          style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #60A5FA 100%)` }}
-        >
-          {THIN_ICONS.plus}
-          <span> Assign New Task</span>
-        </button>
+        <div className="d-flex align-items-center justify-content-end">
+          <button
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => setShowModal(true)}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+          >
+            {THIN_ICONS.plus}
+            <span> Assign New Task</span>
+          </button>
+        </div>
       </div>
 
       <div className="section-eyebrow">Overview</div>
@@ -314,10 +404,10 @@ const TaskAssignmentPage = () => {
       {/* METRICS ROW */}
       <div className="row g-3 mb-4">
         {[
-          { label: 'TOTAL TASKS', value: tasks.length.toString(), sub: 'Active Workforce Tasks', icon: THIN_ICONS.clipboard, color: COLORS.indigo },
-          { label: 'PENDING', value: tasks.filter(t => t.status === 'Pending').length.toString(), sub: 'Awaiting Action', icon: THIN_ICONS.clock, color: COLORS.slate },
-          { label: 'IN PROGRESS', value: tasks.filter(t => t.status === 'In Progress').length.toString(), sub: 'Currently Active', icon: THIN_ICONS.refresh, color: COLORS.sky },
-          { label: 'COMPLETED', value: tasks.filter(t => t.status === 'Completed').length.toString(), sub: 'Tasks Finished', icon: THIN_ICONS.checkCircle, color: COLORS.emerald }
+          { label: 'Total Tasks', value: tasks.length.toString(), sub: 'Active workforce tasks', icon: THIN_ICONS.clipboard, color: COLORS.indigo },
+          { label: 'Pending', value: tasks.filter(t => t.status === 'Pending').length.toString(), sub: 'Awaiting action', icon: THIN_ICONS.clock, color: COLORS.slate },
+          { label: 'In Progress', value: tasks.filter(t => t.status === 'In Progress').length.toString(), sub: 'Currently active', icon: THIN_ICONS.refresh, color: COLORS.sky },
+          { label: 'Completed', value: tasks.filter(t => t.status === 'Completed').length.toString(), sub: 'Tasks finished', icon: THIN_ICONS.checkCircle, color: COLORS.emerald }
         ].map((card, idx) => (
           <div key={idx} className="col-12 col-sm-6 col-xl-3">
             <MetricCard label={card.label} value={card.value} sub={card.sub} icon={card.icon} color={card.color} />
@@ -344,9 +434,12 @@ const TaskAssignmentPage = () => {
             {['All', 'Pending', 'In Progress', 'Completed'].map(st => (
               <button
                 key={st}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark border-0'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-white text-dark'}`}
                 onClick={() => setStatusFilter(st)}
-                style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
+                style={{
+                  background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {st}
               </button>
@@ -354,76 +447,99 @@ const TaskAssignmentPage = () => {
           </div>
         </div>
 
-        <div className="table-responsive p-4 pt-2">
-          <table>
-            <thead>
-              <tr>
-                <th>TASK</th>
-                <th>ASSIGNEE</th>
-                <th>CATEGORY</th>
-                <th>PRIORITY</th>
-                <th>DUE DATE</th>
-                <th>STATUS</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.map(t => (
-                <tr key={t.id}>
-                  <td className="fw-bold" style={{ color: '#1e293b' }}>{t.title}</td>
-                  <td>
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="badge rounded-circle bg-primary-subtle text-primary p-2" style={{ width: '28px', height: '28px', fontSize: '0.7rem' }}>{t.initials}</span>
-                      <span className="fw-bold">{t.assignee}</span>
-                    </div>
-                  </td>
-                  <td><span className="badge rounded-pill bg-light text-secondary border px-3">{t.category}</span></td>
-                  <td>
-                    <span className={`badge rounded-pill px-3 py-1 fw-bold ${t.priority === 'High' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning'}`}>
-                      • {t.priority}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={t.overdue ? 'text-danger fw-bold' : ''}>
-                      {t.dueDate}
-                      {t.overdue && <small className="d-block text-danger fw-bold" style={{ fontSize: '0.65rem' }}>OVERDUE</small>}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge rounded-pill px-3 py-1 fw-bold ${t.status === 'Completed' ? 'bg-success-subtle text-success' : t.status === 'In Progress' ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary'}`}>
-                      ● {t.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-danger border-0 rounded-3 p-1" onClick={() => handleDeleteTask(t.id)}>
-                      {THIN_ICONS.trash}
-                    </button>
-                  </td>
+        {loading ? (
+          <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
+            <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }}></div>
+            Synchronizing live task registries...
+          </div>
+        ) : (
+          <div className="table-responsive p-4 pt-2">
+            <table>
+              <thead>
+                <tr>
+                  <th>TASK</th>
+                  <th>ASSIGNEE</th>
+                  <th>CATEGORY</th>
+                  <th>PRIORITY</th>
+                  <th>DUE DATE</th>
+                  <th>STATUS</th>
+                  <th>ACTION</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredTasks.map(t => {
+                  const statusStyle = STATUS_STYLES[t.status] || STATUS_STYLES.Pending;
+                  const priorityStyle = PRIORITY_STYLES[t.priority] || PRIORITY_STYLES.Medium;
+                  return (
+                    <tr key={t.id}>
+                      <td className="fw-bold" style={{ color: '#1e293b' }}>{t.title}</td>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '28px', height: '28px', fontSize: '0.7rem', background: `${COLORS.indigo}1A`, color: COLORS.indigo }}>{t.initials}</span>
+                          <span className="fw-bold">{t.assignee}</span>
+                        </div>
+                      </td>
+                      <td><span className="badge rounded-pill bg-light border px-3" style={{ color: '#64748b' }}>{t.category}</span></td>
+                      <td>
+                        <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: priorityStyle.bg, color: priorityStyle.color }}>
+                          {t.priority}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="fw-semibold" style={{ color: t.overdue ? COLORS.alert : '#475569' }}>
+                          {t.dueDate}
+                          {t.overdue && <small className="d-block fw-bold" style={{ fontSize: '0.65rem', color: COLORS.alert }}>OVERDUE</small>}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: statusStyle.bg, color: statusStyle.color }}>
+                          ● {t.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          {(t.status !== 'Completed' && t.status !== 'Done') && (
+                            <button className="btn-action-advance" title="Advance Status" onClick={() => handleAdvanceStatus(t)}>
+                              {THIN_ICONS.arrowRight}
+                            </button>
+                          )}
+                          <button className="btn-action-del" title="Delete Task" onClick={() => handleDeleteTask(t.id)}>
+                            {THIN_ICONS.trash}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredTasks.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center" style={{ color: '#94a3b8' }}>No tasks match your search.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* DYNAMIC ASSIGN TASK MODAL */}
       {showModal && (
         <div className="modal fade show d-block" style={{ background: 'rgba(44, 37, 32, 0.35)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content rounded-4 border-0 shadow-lg p-3">
+            <div className="modal-content rounded-4 border-0 shadow-lg p-3" style={{ borderLeft: `4px solid ${COLORS.primary}` }}>
               <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold modal-title">Assign New Task</h5>
+                <h5 className="fw-bold modal-title" style={{ color: '#1e293b' }}>✨ Assign New Task</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <form onSubmit={handleCreateTask}>
                 <div className="modal-body py-3">
                   <div className="mb-3">
-                    <label className="form-label small fw-bold">Task Title *</label>
+                    <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>Task Title *</label>
                     <input type="text" className="form-control rounded-3" value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} required />
                   </div>
                   <div className="row g-3 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-bold">Assignee (Recorded Employee) *</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>Assignee (Recorded Employee) *</label>
                       <select
                         className="form-select rounded-3"
                         value={taskForm.assigned_to}
@@ -438,13 +554,13 @@ const TaskAssignmentPage = () => {
                       </select>
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-bold">Category</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>Category</label>
                       <input type="text" className="form-control rounded-3" value={taskForm.category} onChange={(e) => setTaskForm({ ...taskForm, category: e.target.value })} required />
                     </div>
                   </div>
                   <div className="row g-3 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-bold">Priority</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>Priority</label>
                       <select className="form-select rounded-3" value={taskForm.priority} onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}>
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
@@ -452,15 +568,17 @@ const TaskAssignmentPage = () => {
                       </select>
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-bold">Due Date</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>Due Date</label>
                       <input type="date" className="form-control rounded-3" value={taskForm.dueDate} onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })} required />
                     </div>
                   </div>
                 </div>
-                <div className="modal-footer border-0">
-                  <button type="button" className="btn rounded-pill px-4 bg-white border" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn rounded-pill px-4 border-0 text-white fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #60A5FA 100%)` }}>
+                <div className="modal-footer border-0 gap-2">
+                  <button type="submit" className="btn rounded-3 px-4 py-2 border-0 text-white fw-bold hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)`, flex: 1 }}>
                     Assign Task
+                  </button>
+                  <button type="button" className="btn rounded-3 px-4 py-2 bg-light border fw-bold text-secondary" style={{ flex: 1 }} onClick={() => setShowModal(false)}>
+                    Cancel
                   </button>
                 </div>
               </form>

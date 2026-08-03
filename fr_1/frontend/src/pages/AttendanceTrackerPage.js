@@ -59,7 +59,8 @@ const AttendanceTrackerPage = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDept, setSelectedDept] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
     loadData();
@@ -76,6 +77,22 @@ const AttendanceTrackerPage = () => {
       console.error('Error loading attendance logs:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePunch = async (log, isCheckOut) => {
+    const newStatus = isCheckOut ? 'Absent' : 'Present'; // Simplifying to toggle Absent/Present for demo
+    
+    // Optimistic UI update
+    setLogs(logs.map(l => l.id === log.id ? { ...l, status: newStatus } : l));
+    
+    try {
+      const empId = log.employee_id || log.id;
+      if (empId) {
+        await punchAttendance(empId, { status: newStatus });
+      }
+    } catch(err) {
+      console.error(err);
     }
   };
 
@@ -106,11 +123,16 @@ const AttendanceTrackerPage = () => {
     return logs.filter(log => {
       const query = searchTerm.toLowerCase();
       const nameMatch = (log.employee_name || log.name || '').toLowerCase().includes(query);
-      const deptMatch = (log.department || '').toLowerCase().includes(query);
-      const dateMatch = !selectedDate || (log.attendance_date || '').split('T')[0] === selectedDate;
-      return (nameMatch || deptMatch) && dateMatch;
+      
+      const dept = log.department || 'Operations';
+      const deptMatch = !selectedDept || dept === selectedDept;
+      
+      const stat = log.status || 'Present';
+      const statusMatch = !statusFilter || stat.toLowerCase().includes(statusFilter.toLowerCase());
+      
+      return nameMatch && deptMatch && statusMatch;
     });
-  }, [logs, searchTerm, selectedDate]);
+  }, [logs, searchTerm, selectedDept, statusFilter]);
 
   const formatTime = (timeStr, fallback = '--:--') => {
     if (!timeStr) return fallback;
@@ -254,7 +276,7 @@ const AttendanceTrackerPage = () => {
           <button
             className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
             onClick={() => alert('All active present logged!')}
-            style={{ background: `linear-gradient(135deg, ${COLORS.emerald} 0%, #0d9488 100%)` }}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.check}
             <span>Mark All Present</span>
@@ -290,16 +312,39 @@ const AttendanceTrackerPage = () => {
                 placeholder="Search employee..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ background: '#FAF8FF', border: '1px solid #e5e0f5' }}
+                style={{ background: '#ffffff', border: '1px solid #e5e0f5' }}
               />
             </div>
-            <input
-              type="date"
-              className="form-control rounded-pill small px-3"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ background: '#FAF8FF', border: '1px solid #e5e0f5', width: '160px' }}
-            />
+            
+            <div style={{ minWidth: '130px' }}>
+              <select 
+                className="form-select rounded-pill small text-muted" 
+                value={selectedDept}
+                onChange={(e) => setSelectedDept(e.target.value)}
+                style={{ backgroundColor: '#ffffff', border: '1px solid #e5e0f5' }}
+              >
+                <option value="">All Depts</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Sales">Sales</option>
+                <option value="Finance">Finance</option>
+                <option value="IT">IT</option>
+                <option value="Operations">Operations</option>
+              </select>
+            </div>
+            
+            <div style={{ minWidth: '110px' }}>
+              <select 
+                className="form-select rounded-pill small text-muted" 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{ backgroundColor: '#ffffff', border: '1px solid #e5e0f5' }}
+              >
+                <option value="">All</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Leave">On Leave</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -313,18 +358,19 @@ const AttendanceTrackerPage = () => {
             <table>
               <thead>
                 <tr>
-                  <th>Employee</th>
-                  <th>Emp ID</th>
-                  <th>Department</th>
-                  <th>Check In</th>
-                  <th>Check Out</th>
-                  <th>Hours</th>
-                  <th>Status</th>
+                  <th>EMPLOYEE</th>
+                  <th>EMP ID</th>
+                  <th>DEPARTMENT</th>
+                  <th>CHECK IN</th>
+                  <th>CHECK OUT</th>
+                  <th>HOURS</th>
+                  <th>STATUS</th>
+                  <th className="text-end">ACTION</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredLogs.length === 0 ? (
-                  <tr><td colSpan="7" className="text-center py-4" style={{ color: '#94a3b8' }}>No attendance logs found.</td></tr>
+                  <tr><td colSpan="8" className="text-center py-4" style={{ color: '#94a3b8' }}>No attendance logs found.</td></tr>
                 ) : (
                   filteredLogs.map(log => {
                     const empName = log.employee_name || log.name || 'Staff Member';
@@ -342,16 +388,49 @@ const AttendanceTrackerPage = () => {
                       <tr key={log.id}>
                         <td>
                           <div className="d-flex align-items-center gap-3">
-                            <div className="emp-avatar-badge">{getInitials(empName)}</div>
+                            <div className="emp-avatar-badge" style={{ background: `linear-gradient(135deg, ${COLORS.amber} 0%, ${COLORS.primary} 100%)` }}>{getInitials(empName)}</div>
                             <div className="fw-bold" style={{ color: '#1e293b' }}>{empName}</div>
                           </div>
                         </td>
                         <td className="small" style={{ color: '#94a3b8' }}>{empId}</td>
                         <td>{log.department || 'Operations'}</td>
-                        <td className="fw-semibold" style={{ color: '#059669' }}>{formatTime(log.check_in, '09:00 AM')}</td>
-                        <td className="fw-semibold" style={{ color: '#64748b' }}>{formatTime(log.check_out, '05:30 PM')}</td>
-                        <td className="fw-bold">8.5h</td>
+                        <td className="fw-semibold" style={{ color: '#64748b' }}>{formatTime(log.check_in, '09:00 AM')}</td>
+                        <td className="fw-semibold" style={{ color: '#64748b' }}>{formatTime(log.check_out, '06:00 PM')}</td>
+                        <td>
+                           <div className="d-flex align-items-center gap-2 fw-bold" style={{ color: '#1e293b' }}>
+                              <span style={{ width: '20px', height: '4px', background: COLORS.indigo, borderRadius: '2px', display: 'inline-block' }}></span>
+                              {status.includes('Absent') ? '0h' : '9h'}
+                           </div>
+                        </td>
                         <td>{statusBadge}</td>
+                        <td className="text-end">
+                          <div className="d-flex align-items-center justify-content-end gap-2">
+                            {status.includes('Present') ? (
+                              <button 
+                                className="btn btn-sm rounded-pill fw-bold px-3 py-1" 
+                                onClick={() => handlePunch(log, true)}
+                                style={{ border: `1px solid ${COLORS.alert}60`, color: COLORS.alert, background: '#ffffff', fontSize: '0.75rem' }}
+                              >
+                                Check Out
+                              </button>
+                            ) : (
+                              <button 
+                                className="btn btn-sm rounded-pill fw-bold px-3 py-1" 
+                                onClick={() => handlePunch(log, false)}
+                                style={{ border: `1px solid ${COLORS.emerald}60`, color: COLORS.emerald, background: '#ffffff', fontSize: '0.75rem' }}
+                              >
+                                Check In
+                              </button>
+                            )}
+                            <button className="btn btn-sm text-muted p-0 ms-1 hover-btn-lux">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="19" cy="12" r="1" />
+                                <circle cx="5" cy="12" r="1" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })

@@ -56,7 +56,6 @@ const THIN_ICONS = {
 
 const CustomerDataHubPage = () => {
   const user = getCurrentUser();
-  const canManage = ['Admin', 'Manager', 'Sales'].includes(user?.role);
 
   const defaultCustomers = [
     { id: 7, cus_code: 'CUS-007', company: 'Horizon Housing', contact_person: 'Manish Sharma', email: 'manish@horizon.in', city: 'Noida', segment: 'Mid-Market', status: 'Active', revenue: 52000, deals: 5 },
@@ -353,18 +352,28 @@ const CustomerDataHubPage = () => {
         }
       `}</style>
 
-      {/* HEADER */}
-      <div className="d-flex align-items-center gap-3 mb-4 pt-2">
-        <div className="d-flex align-items-center justify-content-center fw-bold text-white rounded-3 shadow-sm"
-          style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)', borderRadius: '14px' }}>
-          {THIN_ICONS.users}
+      {/* MATCHED HEADER — icon + title left, + Add Customer button top-right (like OrderManagementPage) */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+            {THIN_ICONS.users}
+          </div>
+          <div>
+            <h3 className="fw-bold mb-0" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Customer Data Hub</h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Manage customer profiles, account information, and relationship insights</p>
+          </div>
         </div>
-        <div>
-          <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
-            Customer Data Hub
-            <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>CUSTOMERS</span>
-          </h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Manage customer profiles, account information, and relationship insights.</p>
+
+        <div className="d-flex align-items-center justify-content-end">
+          <button
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => setShowModal(true)}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+          >
+            {THIN_ICONS.plus}
+            <span> Add Customer</span>
+          </button>
         </div>
       </div>
 
@@ -389,9 +398,9 @@ const CustomerDataHubPage = () => {
         <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
           <div>
             <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Customer Master</h5>
-            <p className="small text-muted mb-0">Full customer profiles and account health</p>
+            <p className="small mb-0" style={{ color: '#94a3b8' }}>Full customer profiles and account health</p>
           </div>
-          <div className="d-flex align-items-center gap-3 flex-wrap">
+          <div className="d-flex align-items-center gap-2 flex-wrap">
             <div className="position-relative" style={{ minWidth: '260px' }}>
               <span className="position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: '#94a3b8' }}>{THIN_ICONS.search}</span>
               <input
@@ -406,22 +415,16 @@ const CustomerDataHubPage = () => {
             {['All', 'Active', 'At Risk', 'Inactive'].map(st => (
               <button
                 key={st}
-                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark border-0'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark'}`}
                 onClick={() => setStatusFilter(st)}
-                style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined }}
+                style={{
+                  background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {st}
               </button>
             ))}
-
-            <button
-              className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-              onClick={() => setShowModal(true)}
-              style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
-            >
-              {THIN_ICONS.plus}
-              <span>Add Customer</span>
-            </button>
           </div>
         </div>
 
@@ -458,7 +461,7 @@ const CustomerDataHubPage = () => {
                       </div>
                     </td>
                     <td className="fw-semibold">{c.contact_person || 'Manish Sharma'}</td>
-                    <td className="small text-muted">{c.email || 'contact@company.in'}</td>
+                    <td className="small" style={{ color: '#94a3b8' }}>{c.email || 'contact@company.in'}</td>
                     <td>📍 {c.city || 'Noida'}</td>
                     <td>
                       <span className="badge rounded-pill bg-light text-primary border border-primary-subtle px-3">
@@ -477,7 +480,7 @@ const CustomerDataHubPage = () => {
                         <option value="Inactive">Inactive</option>
                       </select>
                     </td>
-                    <td className="fw-bold text-success">₹{(Number(c.revenue) || 52000).toLocaleString()}</td>
+                    <td className="fw-bold" style={{ color: COLORS.emerald }}>₹{(Number(c.revenue) || 52000).toLocaleString()}</td>
                     <td className="fw-bold text-center">{c.deals || 5}</td>
                     <td className="text-center">
                       <div className="d-flex align-items-center justify-content-center gap-2">
@@ -525,43 +528,43 @@ const CustomerDataHubPage = () => {
               <div className="modal-body py-3">
                 <div className="p-3 mb-3 rounded-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">CUSTOMER ID</span>
-                    <span className="fw-bold text-primary">{selectedCustomer.cus_code || `CUS-00${selectedCustomer.id}`}</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>CUSTOMER ID</span>
+                    <span className="fw-bold" style={{ color: COLORS.indigo }}>{selectedCustomer.cus_code || `CUS-00${selectedCustomer.id}`}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">CONTACT PERSON</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>CONTACT PERSON</span>
                     <span className="fw-semibold">{selectedCustomer.contact_person || 'N/A'}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">EMAIL</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>EMAIL</span>
                     <span className="fw-semibold">{selectedCustomer.email || 'N/A'}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">PHONE</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>PHONE</span>
                     <span className="fw-semibold">{selectedCustomer.phone || '+91-98200-XXXXX'}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">CITY</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>CITY</span>
                     <span className="fw-semibold">📍 {selectedCustomer.city || 'Noida'}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">SEGMENT</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>SEGMENT</span>
                     <span className="badge rounded-pill bg-light text-primary">{selectedCustomer.segment || 'Mid-Market'}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
-                    <span className="text-muted small fw-bold">ACCOUNT STATUS</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>ACCOUNT STATUS</span>
                     <span className={`badge rounded-pill ${selectedCustomer.status === 'Active' ? 'bg-success-subtle text-success' : selectedCustomer.status === 'At Risk' ? 'bg-warning-subtle text-warning' : 'bg-secondary-subtle text-secondary'}`}>
                       {selectedCustomer.status || 'Active'}
                     </span>
                   </div>
                   <div className="d-flex justify-content-between">
-                    <span className="text-muted small fw-bold">TOTAL REVENUE</span>
-                    <span className="fw-bold text-success">₹{(Number(selectedCustomer.revenue) || 52000).toLocaleString()}</span>
+                    <span className="small fw-bold" style={{ color: '#94a3b8' }}>TOTAL REVENUE</span>
+                    <span className="fw-bold" style={{ color: COLORS.emerald }}>₹{(Number(selectedCustomer.revenue) || 52000).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
               <div className="modal-footer border-0 pt-0">
-                <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowViewModal(false)}>Close</button>
+                <button type="button" className="btn rounded-pill px-4 bg-white border" style={{ borderColor: '#cbd5e1', color: '#475569' }} onClick={() => setShowViewModal(false)}>Close</button>
               </div>
             </div>
           </div>
@@ -583,7 +586,7 @@ const CustomerDataHubPage = () => {
                 <div className="modal-body py-3">
                   {/* AUTO GENERATED CUSTOMER ID */}
                   <div className="mb-3">
-                    <label className="form-label small fw-bold text-muted text-uppercase" style={{ fontSize: '0.72rem', letterSpacing: '0.05em' }}>
+                    <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b', letterSpacing: '0.05em' }}>
                       CUSTOMER ID (AUTO-GENERATED — YOU CAN EDIT IT)
                     </label>
                     <input
@@ -598,7 +601,7 @@ const CustomerDataHubPage = () => {
                   {/* COMPANY NAME & CONTACT PERSON */}
                   <div className="row g-3 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>COMPANY NAME *</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>COMPANY NAME *</label>
                       <input
                         type="text"
                         className="form-control rounded-3"
@@ -610,7 +613,7 @@ const CustomerDataHubPage = () => {
                       />
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>CONTACT PERSON *</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>CONTACT PERSON *</label>
                       <input
                         type="text"
                         className="form-control rounded-3"
@@ -626,7 +629,7 @@ const CustomerDataHubPage = () => {
                   {/* EMAIL & PHONE */}
                   <div className="row g-3 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>EMAIL</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>EMAIL</label>
                       <input
                         type="email"
                         className="form-control rounded-3"
@@ -637,7 +640,7 @@ const CustomerDataHubPage = () => {
                       />
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>PHONE</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>PHONE</label>
                       <input
                         type="text"
                         className="form-control rounded-3"
@@ -652,7 +655,7 @@ const CustomerDataHubPage = () => {
                   {/* CITY & SEGMENT */}
                   <div className="row g-3 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>CITY</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>CITY</label>
                       <input
                         type="text"
                         className="form-control rounded-3"
@@ -663,7 +666,7 @@ const CustomerDataHubPage = () => {
                       />
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>SEGMENT</label>
+                      <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>SEGMENT</label>
                       <select
                         className="form-select rounded-3"
                         value={custForm.segment}
@@ -679,7 +682,7 @@ const CustomerDataHubPage = () => {
 
                   {/* STATUS */}
                   <div className="mb-3">
-                    <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>STATUS</label>
+                    <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem', color: '#64748b' }}>STATUS</label>
                     <select
                       className="form-select rounded-3"
                       value={custForm.status}
@@ -694,10 +697,10 @@ const CustomerDataHubPage = () => {
                 </div>
 
                 <div className="modal-footer border-0 d-flex gap-2">
-                  <button type="submit" className="btn flex-grow-1 rounded-3 py-2 border-0 text-white fw-bold shadow-sm" style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #4FC3F7 100%)` }}>
+                  <button type="submit" className="btn flex-grow-1 rounded-3 py-2 border-0 text-white fw-bold shadow-sm hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}>
                     Add Customer
                   </button>
-                  <button type="button" className="btn flex-grow-1 rounded-3 py-2 bg-white border" onClick={() => setShowModal(false)}>
+                  <button type="button" className="btn flex-grow-1 rounded-3 py-2 bg-white border fw-bold text-secondary" onClick={() => setShowModal(false)}>
                     Cancel
                   </button>
                 </div>

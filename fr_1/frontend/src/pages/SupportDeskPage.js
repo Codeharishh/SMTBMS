@@ -278,15 +278,28 @@ const SupportDeskPage = () => {
         }
       `}</style>
 
-      {/* MATCHED MODERN NAVIGATION HEADER */}
-      <div className="d-flex align-items-center gap-3 mb-4 pt-2">
-        <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
-          style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
-          {THIN_ICONS.messageSquare}
+      {/* MATCHED HEADER — icon + title left, + New Ticket button top-right (like OrderManagementPage) */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+            {THIN_ICONS.messageSquare}
+          </div>
+          <div>
+            <h3 className="fw-bold mb-0" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Support & Service Desk</h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Monitor customer tickets, resolutions, and service performance</p>
+          </div>
         </div>
-        <div>
-          <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Support & Service Desk</h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Monitor customer tickets, resolutions, and service performance</p>
+
+        <div className="d-flex align-items-center justify-content-end">
+          <button
+            className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => setShowModal(true)}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+          >
+            {THIN_ICONS.plus}
+            <span> New Ticket</span>
+          </button>
         </div>
       </div>
 
@@ -327,22 +340,16 @@ const SupportDeskPage = () => {
             {['All', 'Open', 'In Progress', 'Escalated', 'Resolved'].map(st => (
               <button
                 key={st}
-                className={`filter-pill btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white hover-btn-lux' : 'bg-white text-dark'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-white text-dark'}`}
                 onClick={() => setStatusFilter(st)}
-                style={{ background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : '#ffffff', borderColor: statusFilter === st ? 'transparent' : '#e5e0f5' }}
+                style={{
+                  background: statusFilter === st ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
               >
                 {st}
               </button>
             ))}
-
-            <button
-              className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-              onClick={() => setShowModal(true)}
-              style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
-            >
-              {THIN_ICONS.plus}
-              <span> New Ticket</span>
-            </button>
           </div>
         </div>
 

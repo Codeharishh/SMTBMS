@@ -1,6 +1,6 @@
 // src/pages/MaterialMovementsPage.js
 import React, { useEffect, useState, useMemo } from 'react';
-import { fetchMovements, createMovement } from '../services/materialMovementService';
+import { fetchMovements, createMovement, updateMovement, deleteMovement } from '../services/materialMovementService';
 
 // ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
 const COLORS = {
@@ -47,6 +47,12 @@ const MOVEMENT_ICONS = {
       <polyline vectorEffect="non-scaling-stroke" points="7 23 3 19 7 15" />
       <path vectorEffect="non-scaling-stroke" d="M21 13v2a4 4 0 0 1-4 4H3" />
     </svg>
+  ),
+  search: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <circle vectorEffect="non-scaling-stroke" cx="11" cy="11" r="8" />
+      <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
   )
 };
 
@@ -68,6 +74,16 @@ const MaterialMovementsPage = () => {
 
   const [statusFilter, setStatusFilter] = useState('All');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    if (isFormOpen && !formData.material_id && !editingId) {
+      setFormData(prev => ({
+        ...prev,
+        material_id: `MAT-${Math.floor(100 + Math.random() * 900)}`
+      }));
+    }
+  }, [isFormOpen, editingId]);
 
   // Metrics Calculation
   const metrics = useMemo(() => {
@@ -99,14 +115,54 @@ const MaterialMovementsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createMovement(formData);
-      setSuccessMsg('Transaction recorded successfully.');
+      if (editingId) {
+        await updateMovement(editingId, formData);
+        setSuccessMsg('Transaction updated successfully.');
+      } else {
+        await createMovement(formData);
+        setSuccessMsg('Transaction recorded successfully.');
+      }
       setFormData({ material_id: '', material_name: '', type: 'Inbound', quantity: '', from_location: '', to_location: '', performed_by: '', notes: '' });
+      setEditingId(null);
       setIsFormOpen(false);
       await loadMovements();
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (error) {
       setErrorMsg(error.response?.data?.message || 'Unable to register transit records.');
+    }
+  };
+
+  const handleEdit = (movement) => {
+    setEditingId(movement.id);
+    
+    // Fix case matching for the select dropdown (e.g. 'inbound' -> 'Inbound')
+    const movementType = movement.type 
+      ? movement.type.charAt(0).toUpperCase() + movement.type.slice(1).toLowerCase() 
+      : 'Inbound';
+
+    setFormData({
+      material_id: movement.material_id || '',
+      material_name: movement.material_name || '',
+      type: movementType,
+      quantity: movement.quantity || '',
+      from_location: movement.from_location || '',
+      to_location: movement.to_location || '',
+      performed_by: movement.performed_by || '',
+      notes: movement.notes || ''
+    });
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this movement record?')) {
+      try {
+        await deleteMovement(id);
+        setSuccessMsg('Movement record deleted successfully.');
+        await loadMovements();
+        setTimeout(() => setSuccessMsg(''), 4000);
+      } catch (error) {
+        setErrorMsg(error.response?.data?.message || 'Failed to delete movement record.');
+      }
     }
   };
 
@@ -275,7 +331,7 @@ const MaterialMovementsPage = () => {
         }
       `}</style>
 
-      {/* MATCHED MODERN NAVIGATION HEADER WITH RECORD MOVEMENT BUTTON */}
+      {/* MATCHED MODERN NAVIGATION HEADER WITH RECORD MOVEMENT BUTTON (MATCHED TO MATERIALS PAGE) */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
         <div className="d-flex align-items-center gap-3">
           <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
@@ -283,17 +339,28 @@ const MaterialMovementsPage = () => {
             {MOVEMENT_ICONS.transfer}
           </div>
           <div>
-            <h3 className="fw-bold mb-0" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Material Movements Portal</h3>
-            <p style={{ color: '#94a3b8' }} className="small mb-0">Monitor incoming streams, internal logistics, and warehouse balance nodes</p>
+            <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
+              Material Movements
+              <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>MOVEMENTS</span>
+            </h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Monitor incoming streams, internal logistics, and warehouse balance nodes.</p>
           </div>
         </div>
         <div className="d-flex align-items-center justify-content-end">
           <button
-            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white"
-            onClick={() => setIsFormOpen(true)}
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => {
+              setEditingId(null);
+              setFormData({ material_id: '', material_name: '', type: 'Inbound', quantity: '', from_location: '', to_location: '', performed_by: '', notes: '' });
+              setIsFormOpen(true);
+            }}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
-            + Record Movement
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+              <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
+              <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span> Record Movement</span>
           </button>
         </div>
       </div>
@@ -317,26 +384,12 @@ const MaterialMovementsPage = () => {
         {[
           { label: 'Total Movements', value: metrics.total, sub: 'All recorded logs', icon: MOVEMENT_ICONS.ledger, color: COLORS.indigo },
           { label: 'Inbound Total', value: metrics.inbound, sub: 'Incoming shipments', icon: MOVEMENT_ICONS.inbound, color: COLORS.emerald },
-          { label: 'Outbound Total', value: metrics.outbound, sub: 'Outgoing dispatches', icon: MOVEMENT_ICONS.rose, color: COLORS.rose },
+          { label: 'Outbound Total', value: metrics.outbound, sub: 'Outgoing dispatches', icon: MOVEMENT_ICONS.outbound, color: COLORS.rose },
           { label: 'Internal Transfers', value: metrics.transfers, sub: 'Warehouse movements', icon: MOVEMENT_ICONS.transfer, color: COLORS.sky }
         ].map((card, idx) => (
           <div key={idx} className="col-12 col-sm-6 col-xl-3">
             <MetricCard label={card.label} value={card.value} sub={card.sub} icon={card.icon} color={card.color} />
           </div>
-        ))}
-      </div>
-
-      {/* FILTER PILLS MATRIX MATCHING DESIGN SCREENSHOT */}
-      <div className="d-flex align-items-center gap-2 mb-4">
-        {['All', 'Inbound', 'Outbound', 'Transfer'].map(tab => (
-          <button
-            key={tab}
-            className={`btn btn-sm px-4 py-2 rounded-pill fw-bold ${statusFilter === tab ? 'btn-primary text-white shadow-sm' : 'btn-light border text-muted'}`}
-            style={statusFilter === tab ? { background: '#2563eb', borderColor: '#2563eb' } : { backgroundColor: '#ffffff', color: '#475569' }}
-            onClick={() => setStatusFilter(tab)}
-          >
-            {tab === 'Inbound' ? 'IN' : tab === 'Outbound' ? 'OUT' : tab === 'Transfer' ? 'TRANSFER' : 'All'}
-          </button>
         ))}
       </div>
 
@@ -395,20 +448,30 @@ const MaterialMovementsPage = () => {
             <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
               <div className="d-flex align-items-center gap-2">
                 <span className="d-flex align-items-center justify-content-center rounded-3" style={{ width: '32px', height: '32px', background: '#F5F3FF', color: COLORS.indigo }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
+                  {editingId ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  )}
                 </span>
                 <h5 className="fw-bold mb-0" style={{ color: '#1e293b', fontSize: '1.25rem' }}>
-                  Record New Movement
+                  {editingId ? 'Edit Movement' : 'Record New Movement'}
                 </h5>
               </div>
               <button
                 type="button"
                 className="btn-close rounded-circle p-2"
                 style={{ backgroundColor: '#F1F5F9' }}
-                onClick={() => setIsFormOpen(false)}
+                onClick={() => {
+                  setIsFormOpen(false);
+                  setEditingId(null);
+                }}
                 aria-label="Close"
               ></button>
             </div>
@@ -417,7 +480,7 @@ const MaterialMovementsPage = () => {
             <form onSubmit={handleSubmit} className="p-2">
               <div className="row g-3">
                 <div className="col-12 col-md-6">
-                  <label className="modal-label-lux">MATERIAL ID *</label>
+                  <label className="modal-label-lux">MATERIAL ID (AUTO-GENERATED — YOU CAN EDIT IT)</label>
                   <input
                     type="text"
                     name="material_id"
@@ -530,7 +593,7 @@ const MaterialMovementsPage = () => {
                     disabled={loading}
                     style={{ background: 'linear-gradient(135deg, #FF7A45 0%, #FFA36C 100%)' }}
                   >
-                    {loading ? 'Processing...' : 'Record Movement'}
+                    {loading ? 'Processing...' : (editingId ? 'Save Changes' : 'Record Movement')}
                   </button>
                 </div>
                 <div className="col-12 col-md-6">
@@ -538,7 +601,10 @@ const MaterialMovementsPage = () => {
                     type="button"
                     className="btn w-100 py-2.5 rounded-3 fw-bold border-0"
                     style={{ background: '#F1F5F9', color: '#475569' }}
-                    onClick={() => setIsFormOpen(false)}
+                    onClick={() => {
+                      setIsFormOpen(false);
+                      setEditingId(null);
+                    }}
                   >
                     Cancel
                   </button>
@@ -549,75 +615,128 @@ const MaterialMovementsPage = () => {
         </div>
       )}
 
-      <div className="section-eyebrow">Movement Registers</div>
-
-      {/* CLEAN BACKGROUND WRAPPER CONTAINER FOR LOGISTICS TABLE */}
+      {/* CLEAN BACKGROUND WRAPPER CONTAINER FOR LOGISTICS TABLE — filter pills moved here, styled/placed like MaterialTable.js */}
       <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
-        {loading && movements.length === 0 ? (
-          <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
-            <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }}></div>
-            Synchronizing live ledger transit streams...
+        <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div>
+            <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Movement Registers</h5>
+            <p className="small text-muted mb-0">All recorded inbound, outbound, and transfer logs</p>
           </div>
-        ) : (
-          <div className="table-responsive">
-            <table className="table align-middle mb-0">
-              <thead>
-                <tr>
-                  <th className="px-4">Type</th>
-                  <th>Material Profile</th>
-                  <th>Qty</th>
-                  <th>Path Logistics</th>
-                  <th>Timestamp</th>
-                </tr>
-              </thead>
-              <tbody>
-                {movements
-                  .filter(m => {
-                    if (statusFilter === 'All') return true;
-                    return m.type?.toLowerCase() === statusFilter.toLowerCase();
-                  })
-                  .map((item) => {
-                  const typeClass = `badge-${(item.type || 'inbound').toLowerCase()}`;
-                  return (
-                    <tr key={item.id}>
-                      <td className="px-4">
-                        <span className={`movement-badge-base ${typeClass}`}>
-                          {item.type}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="mat-name-cell">{item.material_name}</div>
-                        <div className="mat-subtitle">ID: <span className="mat-id-cell">{item.material_id}</span></div>
-                      </td>
-                      <td className="mat-qty-cell">
-                        {Number(item.quantity || 0).toLocaleString()}
-                      </td>
-                      <td>
-                        <div className="fw-semibold text-dark" style={{ fontSize: '0.88rem' }}>
-                          {item.from_location || '—'} → {item.to_location || '—'}
-                        </div>
-                        {item.notes && <div className="mat-subtitle">Memo: {item.notes}</div>}
-                      </td>
-                      <td>
-                        <div className="fw-medium text-dark" style={{ fontSize: '0.85rem' }}>
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </div>
-                        <div className="mat-subtitle" style={{ fontSize: '0.74rem' }}>
-                          {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {movements.length === 0 && (
-                  <tr>
-                    <td colSpan="5" className="text-center p-5 text-muted fw-medium">No movement registries tracked yet.</td>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            {['All', 'Inbound', 'Outbound', 'Transfer'].map(tab => (
+              <button
+                key={tab}
+                className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === tab ? 'text-white' : 'bg-light text-dark'}`}
+                onClick={() => setStatusFilter(tab)}
+                style={{
+                  background: statusFilter === tab ? `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` : undefined,
+                  border: statusFilter === tab ? '1px solid transparent' : '1px solid #cbd5e1'
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-3">
+          {loading && movements.length === 0 ? (
+            <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
+              <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }}></div>
+              Synchronizing live ledger transit streams...
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="table align-middle mb-0">
+                <thead style={{ backgroundColor: '#F8FAFC' }}>
+                  <tr style={{ fontSize: '0.85rem', color: '#64748B', borderColor: '#E2E8F0' }} className="text-uppercase tracking-wider fw-bold">
+                    <th className="px-4 py-3 border-0">Type</th>
+                    <th className="py-3 border-0">Material Profile</th>
+                    <th className="py-3 border-0">Qty</th>
+                    <th className="py-3 border-0">Path Logistics</th>
+                    <th className="py-3 border-0">Timestamp</th>
+                    <th className="text-center py-3 border-0" style={{ textAlign: 'center' }}>Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {movements
+                    .filter(m => {
+                      if (statusFilter === 'All') return true;
+                      return m.type?.toLowerCase() === statusFilter.toLowerCase();
+                    })
+                    .map((item) => {
+                      const typeClass = `badge-${(item.type || 'inbound').toLowerCase()}`;
+                      return (
+                        <tr key={item.id}>
+                          <td className="px-4">
+                            <span className={`movement-badge-base ${typeClass}`}>
+                              {item.type}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="mat-name-cell">{item.material_name}</div>
+                            <div className="mat-subtitle">ID: <span className="mat-id-cell">{item.material_id}</span></div>
+                          </td>
+                          <td className="mat-qty-cell">
+                            {Number(item.quantity || 0).toLocaleString()}
+                          </td>
+                          <td>
+                            <div className="fw-semibold text-dark" style={{ fontSize: '0.88rem' }}>
+                              {item.from_location || '—'} → {item.to_location || '—'}
+                            </div>
+                            {item.notes && <div className="mat-subtitle">Memo: {item.notes}</div>}
+                          </td>
+                          <td>
+                            <div className="fw-medium text-dark" style={{ fontSize: '0.85rem' }}>
+                              {new Date(item.created_at).toLocaleDateString()}
+                            </div>
+                            <div className="mat-subtitle" style={{ fontSize: '0.74rem' }}>
+                              {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            <div className="d-flex gap-2 justify-content-center align-items-center">
+                              <button
+                                className="btn-action-icon edit-icon-btn"
+                                onClick={() => handleEdit(item)}
+                                title="Edit Movement"
+                                style={{
+                                  width: '32px', height: '32px', borderRadius: '10px', border: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', backgroundColor: '#EFF6FF', color: '#3B82F6'
+                                }}
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                              </button>
+                              <button
+                                className="btn-action-icon del-icon-btn"
+                                onClick={() => handleDelete(item.id)}
+                                title="Delete Movement"
+                                style={{
+                                  width: '32px', height: '32px', borderRadius: '10px', border: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', backgroundColor: '#FFF1F2', color: '#F43F5E'
+                                }}
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  {movements.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="text-center p-5 text-muted fw-medium">No movement registries tracked yet.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

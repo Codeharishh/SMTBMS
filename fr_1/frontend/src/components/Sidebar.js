@@ -146,6 +146,12 @@ const THIN_ICONS = {
       <polyline vectorEffect="non-scaling-stroke" points="14 2 14 8 20 8" />
     </svg>
   ),
+  clock: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="10"></circle>
+      <polyline vectorEffect="non-scaling-stroke" points="12 6 12 12 16 14"></polyline>
+    </svg>
+  ),
   target: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
       <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="10" />
@@ -199,10 +205,11 @@ const menuItems = [
     isDropdown: true,
     dropdownKey: 'material',
     subItems: [
-      { to: '/materials', label: 'Inventory' },
-      { to: '/material-movements', label: 'Movement Tracking' },
-      { to: '/stock-monitoring', label: 'Stock Monitoring' },
-      { to: '/barcode-qr', label: 'Barcode / QR' },
+      { to: '/materials', label: 'Inventory', roles: ['Admin', 'Manager'] },
+      { to: '/material-movements', label: 'Movement Tracking', roles: ['Admin', 'Manager'] },
+      { to: '/stock-monitoring', label: 'Stock Monitoring', roles: ['Admin', 'Manager'] },
+      { to: '/barcode-qr', label: 'Barcode / QR', roles: ['Admin', 'Manager'] },
+      { to: '/ocr-scanner', label: 'OCR Scanner', roles: ['Admin', 'Manager'] },
     ]
   },
   {
@@ -212,10 +219,10 @@ const menuItems = [
     isDropdown: true,
     dropdownKey: 'erp',
     subItems: [
-      { to: '/erp/procurement', label: 'Procurement Management' },
-      { to: '/erp/finance', label: 'Financial Operations' },
-      { to: '/erp/orders', label: 'Order Management' },
-      { to: '/vendors', label: 'Vendor Management' },
+      { to: '/erp/procurement', label: 'Procurement Management', roles: ['Admin', 'Manager'] },
+      { to: '/erp/finance', label: 'Financial Operations', roles: ['Admin', 'Manager'] },
+      { to: '/erp/orders', label: 'Order Management', roles: ['Admin', 'Manager'] },
+      { to: '/vendors', label: 'Vendor Management', roles: ['Admin', 'Manager'] },
     ]
   },
   {
@@ -225,18 +232,19 @@ const menuItems = [
     isDropdown: true,
     dropdownKey: 'hrms',
     subItems: [
-      { to: '/hrms/directory', label: 'Employee Directory' },
-      { to: '/hrms/attendance', label: 'Attendance Tracker' },
-      { to: '/hrms/leaves', label: 'Leave Management' },
-      { to: '/hrms/performance', label: 'Performance Reviews' },
-      { to: '/hrms/recruitment', label: 'Recruitment Portal' },
-      { to: '/hrms/training', label: 'Training Tracker' },
-      { to: '/hrms/holidays', label: 'Holiday Calendar' },
-      { to: '/hrms/documents', label: 'HR Documents' },
-      { to: '/payroll', label: 'Payroll' },
+      { to: '/hrms/directory', label: 'Employee Directory', roles: ['Admin', 'HR'] },
+      { to: '/hrms/attendance', label: 'Attendance Tracker', roles: ['Admin', 'HR'] },
+      { to: '/hrms/leaves', label: 'Leave Management', roles: ['Admin', 'HR'] },
+      { to: '/hrms/performance', label: 'Performance Reviews', roles: ['Admin', 'HR'] },
+      { to: '/hrms/recruitment', label: 'Recruitment Portal', roles: ['Admin', 'HR'] },
+      { to: '/hrms/training', label: 'Training Tracker', roles: ['Admin', 'HR'] },
+      { to: '/hrms/holidays', label: 'Holiday Calendar', roles: ['Admin', 'HR'] },
+      { to: '/hrms/documents', label: 'HR Documents', roles: ['Admin', 'HR'] },
+      { to: '/payroll', label: 'Payroll', roles: ['Admin', 'HR'] },
     ]
   },
   { to: '/leave-management', label: 'My Leaves', icon: THIN_ICONS.clipboard, roles: ['Employee', 'Sales'] },
+  { to: '/employee/attendance', label: 'Attendance', icon: THIN_ICONS.clock, roles: ['Employee', 'Sales'] },
   { to: '/employee/projects', label: 'Projects', icon: THIN_ICONS.folder, roles: ['Employee'] },
   { to: '/payroll', label: 'Payslips', icon: THIN_ICONS.creditCard, roles: ['Employee'] },
   { to: '/employee/training', label: 'Training', icon: THIN_ICONS.graduationCap, roles: ['Employee'] },
@@ -247,10 +255,10 @@ const menuItems = [
     isDropdown: true,
     dropdownKey: 'crm',
     subItems: [
-      { to: '/crm/leads', label: 'Lead Management' },
-      { to: '/customers', label: 'Customer Data Hub' },
-      { to: '/crm/support', label: 'Support & Service Desk' },
-      { to: '/crm/pipeline', label: 'Sales Pipeline Overview' },
+      { to: '/crm/leads', label: 'Lead Management', roles: ['Admin', 'Sales', 'Manager'] },
+      { to: '/customers', label: 'Customer Data Hub', roles: ['Admin', 'Sales', 'Manager'] },
+      { to: '/crm/support', label: 'Support & Service Desk', roles: ['Admin', 'Sales', 'Manager'] },
+      { to: '/crm/pipeline', label: 'Sales Pipeline Overview', roles: ['Admin', 'Sales', 'Manager'] },
     ]
   },
   { to: '/sales/opportunities', label: 'Opportunities', icon: THIN_ICONS.briefcase, roles: ['Sales'] },
@@ -259,7 +267,7 @@ const menuItems = [
   { to: '/sales/targets', label: 'Sales Targets', icon: THIN_ICONS.target, roles: ['Sales'] },
   { to: '/sales/revenue', label: 'Revenue Tracking', icon: THIN_ICONS.trendingUp, roles: ['Sales'] },
   { to: '/manager/team', label: 'Team Monitoring', icon: THIN_ICONS.users, roles: ['Manager'] },
-  { to: '/manager/tasks', label: 'Task Assignment', icon: THIN_ICONS.clipboard, roles: ['Manager'] },
+  { to: '/manager/tasks', label: 'Task Assignment', icon: THIN_ICONS.clipboard, roles: ['Admin', 'Manager'] },
   { to: '/manager/projects', label: 'Project Tracking', icon: THIN_ICONS.building, roles: ['Manager'] },
   { to: '/manager/approvals', label: 'Approvals', icon: THIN_ICONS.checkCircle, roles: ['Manager'] },
   { to: '/reports', label: 'Reports & Analytics', icon: THIN_ICONS.barChart, roles: ['Admin', 'Manager', 'HR', 'Sales'] },
@@ -281,7 +289,7 @@ const Sidebar = () => {
   const [hasPayrollAlert, setHasPayrollAlert] = useState(false);
 
   // Auto-expand dropdown if any child subItem route is currently active
-  const isMaterialChildActive = ['/materials', '/material-movements', '/stock-monitoring', '/barcode-qr'].includes(location.pathname);
+  const isMaterialChildActive = ['/materials', '/material-movements', '/stock-monitoring', '/barcode-qr', '/ocr-scanner'].includes(location.pathname);
   const isHrmsChildActive = ['/hrms', '/hrms/directory', '/hrms/attendance', '/hrms/leaves', '/hrms/performance', '/payroll', '/payroll-management'].includes(location.pathname);
   const isCrmChildActive = ['/crm/leads', '/customers', '/crm/support', '/crm/pipeline'].includes(location.pathname);
   const isErpChildActive = ['/erp/procurement', '/erp/finance', '/erp/orders', '/vendors'].includes(location.pathname);
@@ -302,6 +310,15 @@ const Sidebar = () => {
     if (isHrmsChildActive) {
       setOpenDropdowns(prev => ({ ...prev, hrms: true }));
     }
+    if (isCrmChildActive) {
+      setOpenDropdowns(prev => ({ ...prev, crm: true }));
+    }
+    if (isErpChildActive) {
+      setOpenDropdowns(prev => ({ ...prev, erp: true }));
+    }
+    if (isManagerChildActive) {
+      setOpenDropdowns(prev => ({ ...prev, manager: true }));
+    }
   }, [location.pathname]);
 
   useEffect(() => {
@@ -311,7 +328,6 @@ const Sidebar = () => {
         const history = await fetchPayrollHistory();
         if (!history || !Array.isArray(history)) return;
 
-        // FIXED: Case-insensitive conditional check for background updates
         const currentUpperRole = user.role.toUpperCase();
         if (currentUpperRole === 'ADMIN') {
           setHasPayrollAlert(history.some(i => i.payment_status === 'Pending'));
@@ -333,7 +349,7 @@ const Sidebar = () => {
     navigate('/login');
   };
 
-  // FIXED: Maps allowed menu items case-insensitively using uppercase array structures
+  // Maps parent items case-insensitively based on user authentication token criteria 
   const allowedMenuItems = menuItems.filter(
     item => user && item.roles.map(r => r.toUpperCase()).includes(user.role.toUpperCase())
   );
@@ -344,7 +360,6 @@ const Sidebar = () => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
-  // FIXED: Role display mapped strictly to standardized uppercase criteria keys
   const roleLabel = {
     ADMIN: 'Super Admin',
     HR: 'HR Manager',
@@ -355,7 +370,6 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* 🟢 SPECIFICITY SPECIFICATION OVERRIDES TO PREVENT GLOBAL THEME CLASHING OVERLAYS */}
       <style>{`
         .smtbms-sidebar {
           width: 260px;
@@ -370,7 +384,6 @@ const Sidebar = () => {
           overflow: hidden;
         }
 
-        /* LOGO HEADER STRUCTURES */
         .smtbms-sidebar .smtbms-logo {
           padding: 22px 20px 18px;
           display: flex;
@@ -394,7 +407,6 @@ const Sidebar = () => {
           letter-spacing: 0.05em;
         }
 
-        /* USER PROFILE PLACEMENT LOGS */
         .smtbms-sidebar .smtbms-profile {
           padding: 18px 20px 20px;
           display: flex;
@@ -440,7 +452,6 @@ const Sidebar = () => {
           50% { opacity:0.7; transform:scale(0.85); }
         }
 
-        /* SCROLLABLE LINKS LIST REGISTRY CONTAINER */
         .smtbms-sidebar .smtbms-nav {
           flex: 1;
           overflow-y: auto;
@@ -465,7 +476,6 @@ const Sidebar = () => {
           user-select: none;
         }
         
-        /* 🟢 FORCIBLY CAPTURES INTERNAL LETTER RE-COLORING HOOKS AND PREVENTS CASCADING BREAKS */
         .smtbms-sidebar .smtbms-link,
         .smtbms-sidebar .smtbms-link span,
         .smtbms-sidebar .smtbms-link .smtbms-link-label {
@@ -484,7 +494,6 @@ const Sidebar = () => {
           border-color: rgba(255,255,255,0.04) !important;
         }
 
-        /* ACTIVE ELEMENT RE-RENDERING THEMES */
         .smtbms-sidebar .smtbms-link.active {
           background: linear-gradient(135deg, rgba(234,88,12,0.25), rgba(249,115,22,0.15)) !important;
           border-color: rgba(234,88,12,0.4) !important;
@@ -537,7 +546,6 @@ const Sidebar = () => {
           color: #ffffff !important;
         }
 
-        /* SUB-ITEM DROPDOWN STYLES */
         .smtbms-sidebar .smtbms-sub-menu {
           padding-left: 28px;
           margin-top: 2px;
@@ -584,7 +592,6 @@ const Sidebar = () => {
           background: #ffffff;
         }
 
-        /* COMPLIANCE WARNING DOTS */
         .smtbms-sidebar .smtbms-alert-dot {
           width: 7px; height: 7px;
           background: #ef4444 !important;
@@ -593,7 +600,6 @@ const Sidebar = () => {
           flex-shrink: 0;
         }
 
-        /* DISCONNECT LOGOUT UTILITY */
         .smtbms-sidebar .smtbms-footer {
           padding: 14px;
           border-top: 1px solid rgba(255,255,255,0.08) !important;
@@ -627,14 +633,11 @@ const Sidebar = () => {
       `}</style>
 
       <aside className="smtbms-sidebar">
-
-        {/* LOGO HEADER LAYOUT */}
         <div className="smtbms-logo">
           <div className="smtbms-logo-icon">💎</div>
           <span className="smtbms-logo-text">SMTBMS</span>
         </div>
 
-        {/* PROFILE BADGE NODES */}
         <div className="smtbms-profile">
           <div className="smtbms-avatar">
             {getInitials(user?.name)}
@@ -648,13 +651,20 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* DYNAMIC PERMISSIONS LINKS LEDGER LIST */}
         <nav className="smtbms-nav">
           {allowedMenuItems.map(item => {
             if (item.isDropdown) {
               const dKey = item.dropdownKey;
               const isOpen = !!openDropdowns[dKey];
               const isChildActive = item.subItems.some(sub => location.pathname === sub.to || (sub.to !== '/' && location.pathname.startsWith(sub.to)));
+
+              // 🟢 Filters specific submenu items case-insensitively based on user profile privileges
+              const allowedSubItems = item.subItems.filter(sub =>
+                sub.roles.map(r => r.toUpperCase()).includes(user.role.toUpperCase())
+              );
+
+              // Hide empty dropdown headers completely if current role doesn't match any subItems
+              if (allowedSubItems.length === 0) return null;
 
               return (
                 <div key={item.label}>
@@ -671,7 +681,7 @@ const Sidebar = () => {
 
                   {isOpen && (
                     <div className="smtbms-sub-menu">
-                      {item.subItems.map(sub => (
+                      {allowedSubItems.map(sub => (
                         <NavLink
                           key={sub.to}
                           to={sub.to}
@@ -706,14 +716,12 @@ const Sidebar = () => {
           })}
         </nav>
 
-        {/* EXIT FOOTER */}
         <div className="smtbms-footer">
           <button className="smtbms-logout" onClick={handleLogout}>
             {THIN_ICONS.logout}
             <span>Logout</span>
           </button>
         </div>
-
       </aside>
     </>
   );

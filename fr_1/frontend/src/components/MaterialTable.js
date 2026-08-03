@@ -51,116 +51,67 @@ const MaterialTable = ({
   }, [materials, searchValue, selectedCategory, statusFilter]);
 
   return (
-    <div className="table-wrapper p-3" style={{ background: 'var(--surface)', borderRadius: '16px' }}>
-
-      {/* MICRO-INTERACTION PREMIUM HOVER STYLE SHEET */}
-      <style>{`
-        .hover-input-lux {
-          transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
-          background-color: var(--surface-alt) !important;
-          border: 1px solid var(--card-border) !important;
-          color: var(--text) !important;
-        }
-        .hover-input-lux:focus, .hover-input-lux:hover {
-          border-color: var(--primary) !important;
-          box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15) !important;
-          background-color: var(--surface) !important;
-          outline: none;
-        }
-        .hover-premium-row-lux {
-          transition: background-color 0.2s ease, transform 0.15s ease !important;
-        }
-        .hover-premium-row-lux:hover {
-          background-color: var(--surface-alt) !important;
-          transform: scale(1.002);
-        }
-
-        /* ── ACTION ICON BUTTONS ── */
-        .btn-action-icon {
-          width: 32px !important;
-          height: 32px !important;
-          border-radius: 10px !important;
-          border: none !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          transition: all 0.2s ease !important;
-          cursor: pointer !important;
-        }
-        .edit-icon-btn {
-          background-color: #EFF6FF !important;
-          color: #3B82F6 !important;
-        }
-        .edit-icon-btn:hover {
-          background-color: #3B82F6 !important;
-          color: #ffffff !important;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
-          transform: translateY(-1px);
-        }
-        .del-icon-btn {
-          background-color: #FFF1F2 !important;
-          color: #F43F5E !important;
-        }
-        .del-icon-btn:hover {
-          background-color: #F43F5E !important;
-          color: #ffffff !important;
-          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
-          transform: translateY(-1px);
-        }
-      `}</style>
-
-      {/* FILTER SEARCH AND CONTROLS ROW */}
-      <div className="d-flex flex-wrap gap-3 align-items-center justify-content-between mb-4">
-        <div className="d-flex flex-wrap gap-2 align-items-center flex-grow-1">
-          <div className="position-relative" style={{ minWidth: '240px' }}>
-            <span className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}>🔍</span>
+    <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
+      <div className="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+          <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Material Inventory</h5>
+          <p className="small text-muted mb-0">Track stock levels and warehouse distribution metrics</p>
+        </div>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <div className="position-relative" style={{ minWidth: '220px' }}>
+            <span className="position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: '#94a3b8' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+                <circle vectorEffect="non-scaling-stroke" cx="11" cy="11" r="8" />
+                <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </span>
             <input
               type="text"
-              className="form-control hover-input-lux ps-5 small"
+              className="form-control rounded-pill ps-5 small"
               placeholder="Search material..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              style={{ borderRadius: '12px', padding: '0.6rem 1rem' }}
+              style={{ background: '#FAF8FF', border: '1px solid #e5e0f5' }}
             />
           </div>
 
-          <div style={{ minWidth: '180px' }}>
+          <div style={{ minWidth: '150px', position: 'relative' }}>
             <select
-              className="form-select hover-input-lux small"
+              className="form-select rounded-pill small"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{ borderRadius: '12px', padding: '0.6rem 1rem' }}
+              style={{ background: '#FAF8FF', border: '1px solid #e5e0f5', appearance: 'none', paddingRight: '30px', cursor: 'pointer' }}
             >
-              <option value="">All categories</option>
+              <option value="">All Categories</option>
               {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
+                <option key={category} value={category}>{category}</option>
               ))}
             </select>
+            <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748B' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
           </div>
-        </div>
 
-        {/* STATUS FILTER PILLS MATCHING SCREENSHOT */}
-        {setStatusFilter && (
-          <div className="d-flex align-items-center gap-1 bg-light p-1 rounded-3 border" style={{ backgroundColor: '#FAF8FF' }}>
-            {['All', 'In Stock', 'Low Stock', 'Out of Stock'].map((st) => (
-              <button
-                key={st}
-                type="button"
-                className={`btn btn-sm px-3 py-1.5 rounded-3 fw-bold ${statusFilter === st ? 'btn-primary text-white shadow-sm' : 'text-secondary border-0 bg-transparent'}`}
-                style={{ fontSize: '0.78rem' }}
-                onClick={() => setStatusFilter(st)}
-              >
-                {st}
-              </button>
-            ))}
-          </div>
-        )}
+          {['All', 'In Stock', 'Low Stock', 'Out of Stock'].map(st => (
+            <button
+              key={st}
+              className={`btn btn-sm rounded-pill px-3 fw-bold ${statusFilter === st ? 'text-white' : 'bg-light text-dark'}`}
+              onClick={() => setStatusFilter(st)}
+              style={{
+                background: statusFilter === st ? `linear-gradient(135deg, #FF7A45 0%, #FFA36C 100%)` : undefined,
+                border: statusFilter === st ? '1px solid transparent' : '1px solid #cbd5e1'
+              }}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* RE-STYLED RESPONSIVE TABLE LAYER */}
-      <div className="table-responsive rounded-3 border" style={{ borderColor: 'var(--card-border)' }}>
+      <div className="table-responsive p-4 pt-2">
         <table className="table align-middle mb-0">
           <thead style={{ backgroundColor: 'var(--surface-alt)' }}>
             <tr style={{ fontSize: '0.85rem', color: 'var(--muted)', borderColor: 'var(--card-border)' }} className="text-uppercase tracking-wider fw-bold">

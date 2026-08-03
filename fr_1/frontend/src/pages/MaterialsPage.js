@@ -269,51 +269,37 @@ const MaterialsPage = () => {
           background-color: #ffffff !important;
         }
 
-        /* ── ACTION BUTTON STRUCTURAL OVERRIDES (FORCING CONTEXT SPECIFICITY) ── */
-        .theme-materials td button:first-of-type,
-        .theme-materials td .btn-action-edit,
-        .theme-materials .btn-action-edit {
-          background-color: #eff6ff !important;
-          color: #3b82f6 !important;
+        /* ── ACTION ICON BUTTONS (matched to VendorsPage) ── */
+        .btn-action-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
           border: none !important;
-          padding: 4px 12px !important;
-          border-radius: 6px !important;
-          font-size: 0.8rem !important;
-          font-weight: 700 !important;
-          margin-right: 6px !important;
-          display: inline-block !important;
-          box-shadow: none !important;
-          transform: none !important;
-          height: auto !important;
-          min-height: unset !important;
-          line-height: normal !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
         }
-
-        .theme-materials td button:last-of-type,
-        .theme-materials td .btn-action-del,
-        .theme-materials .btn-action-del {
-          background-color: #fff1f2 !important;
-          color: #f43f5e !important;
-          border: none !important;
-          padding: 4px 12px !important;
-          border-radius: 6px !important;
-          font-size: 0.8rem !important;
-          font-weight: 700 !important;
-          display: inline-block !important;
-          box-shadow: none !important;
-          transform: none !important;
-          height: auto !important;
-          min-height: unset !important;
-          line-height: normal !important;
+        .edit-icon-btn {
+          background-color: #EFF6FF !important;
+          color: #3B82F6 !important;
         }
-
-        .theme-materials td button:first-of-type:hover,
-        .theme-materials td button:last-of-type:hover,
-        .theme-materials .btn-action-edit:hover,
-        .theme-materials .btn-action-del:hover {
-          filter: brightness(0.95) !important;
-          transform: none !important;
-          box-shadow: none !important;
+        .edit-icon-btn:hover {
+          background-color: #3B82F6 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+          transform: translateY(-1px);
+        }
+        .del-icon-btn {
+          background-color: #FFF1F2 !important;
+          color: #F43F5E !important;
+        }
+        .del-icon-btn:hover {
+          background-color: #F43F5E !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+          transform: translateY(-1px);
         }
       `}</style>
 
@@ -409,29 +395,27 @@ const MaterialsPage = () => {
         </div>
       )}
 
-      <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
-        {loading ? (
+      {loading ? (
+        <div className="card border-0 shadow-sm overflow-hidden hover-premium-card" style={{ backgroundColor: '#ffffff', borderRadius: '22px' }}>
           <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
             <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }}></div>
             Synchronizing live inventory registries...
           </div>
-        ) : (
-          <div className="table-responsive">
-            <MaterialTable
-              materials={materials}
-              onEdit={(item) => setActiveMaterial(item)}
-              onDelete={handleDelete}
-              searchValue={searchValue}
-              setSearchValue={setSearchValue}
-              categories={categories}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-            />
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <MaterialTable
+          materials={materials}
+          onEdit={(item) => setActiveMaterial(item)}
+          onDelete={handleDelete}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+        />
+      )}
     </div>
   );
 };
