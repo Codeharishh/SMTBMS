@@ -281,10 +281,10 @@ const EmployeeDirectoryPage = () => {
               />
             </div>
             <select
-              className="form-select rounded-pill small px-3"
+              className="form-select rounded-pill small"
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              style={{ background: '#FAF8FF', border: '1px solid #e5e0f5', width: '160px' }}
+              style={{ backgroundColor: '#FAF8FF', border: '1px solid #e5e0f5', width: '160px' }}
             >
               <option value="All">All Depts</option>
               <option value="IT">IT</option>
