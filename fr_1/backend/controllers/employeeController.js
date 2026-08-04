@@ -11,7 +11,7 @@ exports.getAllEmployees = async (req, res) => {
     );
 
     const [rows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+      `SELECT e.*, COALESCE(e.name, u.name) as name, COALESCE(e.email, u.email) as email, u.role as user_role,
               COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
@@ -27,7 +27,7 @@ exports.getAllEmployees = async (req, res) => {
 exports.getEmployeeById = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT e.*, u.id as user_id, u.name as name, u.email as email, u.role as user_role,
+      `SELECT e.*, u.id as user_id, COALESCE(e.name, u.name) as name, COALESCE(e.email, u.email) as email, u.role as user_role,
               COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
@@ -53,7 +53,7 @@ exports.getEmployeeById = async (req, res) => {
 exports.getMyProfile = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT e.*, u.id as user_id, u.name as name, u.email as email, u.role as user_role,
+      `SELECT e.*, u.id as user_id, COALESCE(e.name, u.name) as name, COALESCE(e.email, u.email) as email, u.role as user_role,
               COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
@@ -72,7 +72,9 @@ exports.getMyProfile = async (req, res) => {
 
 exports.createEmployee = async (req, res) => {
   try {
-    const { user_id, department, designation, salary, join_date, attendance_status, leave_balance } = req.body;
+    const { user_id, name, email, department, designation, salary, base_salary, join_date, hire_date, attendance_status, leave_balance, employee_code, role } = req.body;
+    const finalSalary = salary || base_salary || 0;
+    const finalJoinDate = join_date || hire_date || new Date();
 
     if (user_id) {
       const [userCheck] = await pool.query('SELECT id, name FROM users WHERE id = ?', [user_id]);
@@ -87,11 +89,11 @@ exports.createEmployee = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      'INSERT INTO employees (user_id, department, designation, salary, join_date, attendance_status, leave_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [user_id || null, department, designation, salary || 0, join_date || new Date(), attendance_status || 'Present', leave_balance || 0]
+      'INSERT INTO employees (user_id, name, email, department, designation, salary, join_date, attendance_status, leave_balance, employee_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [user_id || null, name || 'New Employee', email || null, department, designation || role, finalSalary, finalJoinDate, attendance_status || 'Present', leave_balance || 0, employee_code || null]
     );
     const [rows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+      `SELECT e.*, COALESCE(e.name, u.name) as name, COALESCE(e.email, u.email) as email, u.role as user_role,
               COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
@@ -107,13 +109,16 @@ exports.createEmployee = async (req, res) => {
 
 exports.updateEmployee = async (req, res) => {
   try {
-    const { department, designation, salary, join_date, attendance_status, leave_balance } = req.body;
+    const { name, email, department, designation, role, salary, base_salary, join_date, hire_date, attendance_status, leave_balance, employee_code } = req.body;
+    const finalSalary = salary || base_salary || 0;
+    const finalJoinDate = join_date || hire_date || null;
+    
     await pool.query(
-      'UPDATE employees SET department = ?, designation = ?, salary = ?, join_date = ?, attendance_status = ?, leave_balance = ? WHERE id = ?',
-      [department, designation, salary || 0, join_date, attendance_status || 'Present', leave_balance || 0, req.params.id]
+      'UPDATE employees SET name = ?, email = ?, department = ?, designation = ?, salary = ?, join_date = ?, attendance_status = ?, leave_balance = ?, employee_code = ? WHERE id = ?',
+      [name || null, email || null, department, designation || role, finalSalary, finalJoinDate, attendance_status || 'Present', leave_balance || 0, employee_code || null, req.params.id]
     );
     const [rows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+      `SELECT e.*, COALESCE(e.name, u.name) as name, COALESCE(e.email, u.email) as email, u.role as user_role,
               COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id
@@ -155,7 +160,7 @@ exports.punchAttendance = async (req, res) => {
     await pool.query('UPDATE employees SET attendance_status = ? WHERE id = ?', [updatedStatus, employeeId]);
 
     const [updatedRows] = await pool.query(
-      `SELECT e.*, u.name as name, u.email as email, u.role as user_role,
+      `SELECT e.*, COALESCE(e.name, u.name) as name, COALESCE(e.email, u.email) as email, u.role as user_role,
               COALESCE(NULLIF(e.department,''), NULLIF(u.department,''), 'General') as department
        FROM employees e
        LEFT JOIN users u ON e.user_id = u.id

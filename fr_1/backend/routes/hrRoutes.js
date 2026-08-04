@@ -99,4 +99,10 @@ router.post(
   hrController.createDocument
 );
 
+router.post(
+  '/document/:id/download',
+  protect,
+  hrController.incrementDocumentDownload
+);
+
 module.exports = router;

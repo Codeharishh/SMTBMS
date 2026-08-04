@@ -261,11 +261,28 @@ const ReportsPage = () => {
   };
 
   const handleExportPDF = () => {
-    alert('Exporting executive PDF summary report...');
+    window.print();
   };
 
   const handleExportCSV = () => {
-    alert('Exporting raw dataset as CSV...');
+    const labels = chartData.labels;
+    const rev = chartData.datasets[0].data;
+    const exp = chartData.datasets[1].data;
+    const prof = chartData.datasets[2].data;
+    
+    let csvContent = "Month,Revenue (INR),Expenses (INR),Net Profit (INR)\n";
+    for(let i = 0; i < labels.length; i++) {
+      csvContent += `${labels[i]},${rev[i]},${exp[i]},${prof[i]}\n`;
+    }
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'financial_trend_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const MetricCard = ({ label, value, sub, icon, color }) => (
@@ -341,8 +358,138 @@ const ReportsPage = () => {
         .reports-ctrl-btn:hover {
           background: #FAF8FF;
         }
+        @media print {
+          @page { margin: 0; }
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            margin: 0;
+            padding: 0;
+            background: #ffffff !important;
+          }
+          .app-shell > div {
+            margin-left: 0 !important;
+          }
+          .reports-dashboard, .smtbms-sidebar, .smtbms-topnav, .sidebar, .tnav-search-wrap, header {
+            display: none !important;
+          }
+          .d-print-block {
+            display: block !important;
+          }
+          
+          .print-container {
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+          }
+          .print-header {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .print-header h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 24px;
+            color: #ffffff !important;
+          }
+          .print-header span {
+            font-size: 14px;
+            color: #ffffff !important;
+          }
+          
+          .print-content {
+            padding: 40px;
+          }
+          .print-title {
+            color: #1e3a8a !important;
+            font-weight: 800;
+            font-size: 28px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eff6ff !important;
+            padding-bottom: 15px;
+          }
+          .print-subtitle {
+            color: #2563eb !important;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 20px;
+          }
+          
+          .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          .print-table th {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 15px;
+          }
+          .print-table td {
+            padding: 12px 16px;
+            color: #475569 !important;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9 !important;
+          }
+          .print-table tbody tr:nth-child(odd) {
+            background-color: #f8fafc !important;
+          }
+          .print-table tbody tr:nth-child(even) {
+            background-color: #ffffff !important;
+          }
+        }
       `}</style>
 
+      {/* HIDDEN PRINT-ONLY LAYOUT */}
+      <div className="d-none d-print-block print-container">
+        <div className="print-header">
+          <h2>Reports & Analytics</h2>
+          <span>Generated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+        </div>
+        <div className="print-content">
+          <h1 className="print-title">Overview Report</h1>
+          <h3 className="print-subtitle">Monthly Revenue, Expenses & Profit</h3>
+          
+          <table className="print-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Revenue</th>
+                <th>Expenses</th>
+                <th>Net Profit</th>
+                <th>Margin %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chartData.labels.map((month, idx) => {
+                const rev = chartData.datasets[0].data[idx];
+                const exp = chartData.datasets[1].data[idx];
+                const profit = chartData.datasets[2].data[idx];
+                const margin = rev > 0 ? ((profit / rev) * 100).toFixed(1) : 0;
+                
+                return (
+                  <tr key={month}>
+                    <td>{month.split(' ')[0]}</td>
+                    <td>₹{rev.toLocaleString()}</td>
+                    <td>₹{exp.toLocaleString()}</td>
+                    <td>₹{profit.toLocaleString()}</td>
+                    <td>{margin}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="reports-dashboard">
       {/* MATCHED MODERN NAVIGATION HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
         <div className="d-flex align-items-center gap-3">
@@ -419,6 +566,8 @@ const ReportsPage = () => {
         <div style={{ height: '340px' }}>
           <Line data={chartData} options={chartOptions} />
         </div>
+      </div>
+
       </div>
     </div>
   );

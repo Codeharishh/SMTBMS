@@ -24,13 +24,18 @@ exports.applyLeave = async (req, res) => {
       [req.user.id]
     );
 
+    let employee_id;
     if (!employeeRows.length) {
-      return res.status(404).json({
-        message: 'Employee record not found',
-      });
+      const [userRows] = await pool.query('SELECT name FROM users WHERE id = ?', [req.user.id]);
+      const name = userRows.length ? userRows[0].name : 'Admin';
+      const [insertResult] = await pool.query(
+        'INSERT INTO employees (user_id, name, department, designation, salary) VALUES (?, ?, ?, ?, ?)',
+        [req.user.id, name, 'Admin', req.user.role || 'Admin', 0]
+      );
+      employee_id = insertResult.insertId;
+    } else {
+      employee_id = employeeRows[0].id;
     }
-
-    const employee_id = employeeRows[0].id;
 
 
     // INSERT LEAVE REQUEST
@@ -87,13 +92,18 @@ exports.getEmployeeLeaves = async (req, res) => {
       [req.user.id]
     );
 
+    let employee_id;
     if (!employeeRows.length) {
-      return res.status(404).json({
-        message: 'Employee record not found',
-      });
+      const [userRows] = await pool.query('SELECT name FROM users WHERE id = ?', [req.user.id]);
+      const name = userRows.length ? userRows[0].name : 'Admin';
+      const [insertResult] = await pool.query(
+        'INSERT INTO employees (user_id, name, department, designation, salary) VALUES (?, ?, ?, ?, ?)',
+        [req.user.id, name, 'Admin', req.user.role || 'Admin', 0]
+      );
+      employee_id = insertResult.insertId;
+    } else {
+      employee_id = employeeRows[0].id;
     }
-
-    const employee_id = employeeRows[0].id;
 
 
     const [rows] = await pool.query(

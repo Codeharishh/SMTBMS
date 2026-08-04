@@ -74,3 +74,8 @@ export const createDocument = async (data) => {
   const response = await api.post('/hr/document', data);
   return response.data;
 };
+
+export const recordDocumentDownload = async (id) => {
+  const response = await api.post(`/hr/document/${id}/download`);
+  return response.data;
+};

@@ -272,3 +272,15 @@ exports.createDocument = async (req, res) => {
     res.status(500).json({ message: 'Unable to register document' });
   }
 };
+
+exports.incrementDocumentDownload = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('UPDATE hr_documents SET downloads = downloads + 1 WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Download count incremented' });
+  } catch (error) {
+    console.error('Increment download error', error);
+    res.status(500).json({ message: 'Unable to update download count' });
+  }
+};
+

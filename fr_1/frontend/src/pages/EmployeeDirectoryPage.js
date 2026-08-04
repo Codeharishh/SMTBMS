@@ -1,6 +1,6 @@
 // src/pages/EmployeeDirectoryPage.js
 import React, { useEffect, useMemo, useState } from 'react';
-import { fetchEmployees, punchAttendance } from '../services/employeeService';
+import { fetchEmployees, punchAttendance, createEmployee, updateEmployee, deleteEmployee } from '../services/employeeService';
 import { getCurrentUser } from '../utils/authHelpers';
 import { fetchAllLeaves, updateLeaveStatus } from '../services/leaveService';
 
@@ -66,6 +66,12 @@ const EmployeeDirectoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('All');
+  
+  const [showModal, setShowModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [activeEmployeeId, setActiveEmployeeId] = useState(null);
+  const [viewingEmployee, setViewingEmployee] = useState(null);
+  const [newEmployee, setNewEmployee] = useState({ employee_id: '', name: '', email: '', role: 'Employee', department: 'IT', hire_date: '', base_salary: '' });
 
   useEffect(() => {
     loadData();
@@ -83,6 +89,57 @@ const EmployeeDirectoryPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateEmployeeId = () => {
+    return 'EMP-' + Math.floor(1000 + Math.random() * 9000);
+  };
+
+  const handleAddEmployee = async (e) => {
+    e.preventDefault();
+    try {
+      if (editMode) {
+        await updateEmployee(activeEmployeeId, newEmployee);
+      } else {
+        await createEmployee(newEmployee);
+      }
+      setShowModal(false);
+      setEditMode(false);
+      setActiveEmployeeId(null);
+      setNewEmployee({ employee_id: '', name: '', email: '', role: 'Employee', department: 'IT', hire_date: '', base_salary: '' });
+      loadData();
+    } catch (err) {
+      alert(editMode ? 'Failed to update employee' : 'Failed to add employee');
+    }
+  };
+
+  const handleEdit = (emp) => {
+    setNewEmployee({
+      employee_id: emp.employee_code || `EMP-${String(emp.id).padStart(3, '0')}`,
+      name: emp.name || '',
+      email: emp.email || '',
+      role: emp.user_role || emp.designation || 'Employee',
+      department: emp.department || 'IT',
+      hire_date: emp.join_date ? emp.join_date.split('T')[0] : '',
+      base_salary: emp.salary || ''
+    });
+    setEditMode(true);
+    setActiveEmployeeId(emp.id);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this employee record?')) return;
+    try {
+      await deleteEmployee(id);
+      loadData();
+    } catch (err) {
+      alert('Failed to delete employee');
+    }
+  };
+
+  const handleView = (emp) => {
+    setViewingEmployee(emp);
   };
 
   const metrics = useMemo(() => {
@@ -205,6 +262,18 @@ const EmployeeDirectoryPage = () => {
           box-shadow: 0 8px 20px rgba(165, 175, 200, 0.12) !important;
         }
 
+        .btn-action-icon {
+          width: 32px !important; height: 32px !important; border-radius: 10px !important;
+          border: none !important; display: inline-flex !important; align-items: center !important;
+          justify-content: center !important; transition: all 0.2s ease !important; cursor: pointer !important;
+        }
+        .view-icon-btn { background-color: #ECFDF5 !important; color: #10B981 !important; }
+        .view-icon-btn:hover { background-color: #10B981 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important; transform: translateY(-1px); }
+        .edit-icon-btn { background-color: #EFF6FF !important; color: #3B82F6 !important; }
+        .edit-icon-btn:hover { background-color: #3B82F6 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important; transform: translateY(-1px); }
+        .del-icon-btn { background-color: #FFF1F2 !important; color: #F43F5E !important; }
+        .del-icon-btn:hover { background-color: #F43F5E !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important; transform: translateY(-1px); }
+
         .emp-avatar-badge {
           width: 38px; height: 38px;
           border-radius: 50%;
@@ -240,7 +309,12 @@ const EmployeeDirectoryPage = () => {
         {canManageHR && (
           <button
             className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
-            onClick={() => alert('Add Employee Modal initialized')}
+            onClick={() => {
+              setEditMode(false);
+              setActiveEmployeeId(null);
+              setNewEmployee({ employee_id: generateEmployeeId(), name: '', email: '', role: 'Employee', department: 'IT', hire_date: '', base_salary: '' });
+              setShowModal(true);
+            }}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
@@ -312,11 +386,12 @@ const EmployeeDirectoryPage = () => {
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Status</th>
+                  <th className="text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEmployees.length === 0 ? (
-                  <tr><td colSpan="6" className="text-center py-4" style={{ color: '#94a3b8' }}>No employee records found.</td></tr>
+                  <tr><td colSpan="7" className="text-center py-4" style={{ color: '#94a3b8' }}>No employee records found.</td></tr>
                 ) : (
                   filteredEmployees.map(emp => (
                     <tr key={emp.id}>
@@ -325,7 +400,7 @@ const EmployeeDirectoryPage = () => {
                           <div className="emp-avatar-badge">{getInitials(emp.name)}</div>
                           <div>
                             <div className="fw-bold" style={{ color: '#1e293b' }}>{emp.name || `Employee ${emp.id}`}</div>
-                            <div className="small" style={{ color: '#94a3b8' }}>EMP-{String(emp.id).padStart(3, '0')}</div>
+                            <div className="small" style={{ color: '#94a3b8' }}>{emp.employee_code || `EMP-${String(emp.id).padStart(3, '0')}`}</div>
                           </div>
                         </div>
                       </td>
@@ -338,6 +413,28 @@ const EmployeeDirectoryPage = () => {
                           • Active
                         </span>
                       </td>
+                      <td className="text-center">
+                        <div className="d-flex gap-2 justify-content-center align-items-center">
+                          <button className="btn-action-icon view-icon-btn" title="View Profile" onClick={() => handleView(emp)}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                          </button>
+                          <button className="btn-action-icon edit-icon-btn" title="Edit Employee" onClick={() => handleEdit(emp)}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button className="btn-action-icon del-icon-btn" title="Delete Employee" onClick={() => handleDelete(emp.id)}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -346,6 +443,126 @@ const EmployeeDirectoryPage = () => {
           </div>
         )}
       </div>
+
+      {/* ADD EMPLOYEE MODAL */}
+      {showModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '22px' }}>
+              <div className="modal-header border-0 px-4 pt-4">
+                <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>{editMode ? 'Edit Employee' : 'Add New Employee'}</h5>
+                <button type="button" className="btn-close shadow-none" onClick={() => setShowModal(false)}></button>
+              </div>
+              <div className="modal-body px-4 py-4">
+                <form onSubmit={handleAddEmployee}>
+                  <div className="mb-3">
+                    <label className="form-label fw-bold text-muted small">Employee ID</label>
+                    <input type="text" className="form-control" required value={newEmployee.employee_id} onChange={e => setNewEmployee({...newEmployee, employee_id: e.target.value})} style={{ borderRadius: '12px', background: '#f8fafc' }} />
+                  </div>
+                  <div className="row g-3 mb-3">
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-muted small">Full Name</label>
+                      <input type="text" className="form-control" required value={newEmployee.name} onChange={e => setNewEmployee({...newEmployee, name: e.target.value})} style={{ borderRadius: '12px' }} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-muted small">Email Address</label>
+                      <input type="email" className="form-control" required value={newEmployee.email} onChange={e => setNewEmployee({...newEmployee, email: e.target.value})} style={{ borderRadius: '12px' }} />
+                    </div>
+                  </div>
+                  <div className="row g-3 mb-3">
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-muted small">Role</label>
+                      <select className="form-select" value={newEmployee.role} onChange={e => setNewEmployee({...newEmployee, role: e.target.value})} style={{ borderRadius: '12px' }}>
+                        <option>Employee</option>
+                        <option>Manager</option>
+                        <option>HR</option>
+                        <option>Admin</option>
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-muted small">Department</label>
+                      <select className="form-select" value={newEmployee.department} onChange={e => setNewEmployee({...newEmployee, department: e.target.value})} style={{ borderRadius: '12px' }}>
+                        <option value="IT">IT</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Sales">Sales</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="row g-3 mb-4">
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-muted small">Hire Date</label>
+                      <input type="date" className="form-control" value={newEmployee.hire_date} onChange={e => setNewEmployee({...newEmployee, hire_date: e.target.value})} style={{ borderRadius: '12px' }} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-muted small">Base Salary</label>
+                      <input type="number" className="form-control" value={newEmployee.base_salary} onChange={e => setNewEmployee({...newEmployee, base_salary: e.target.value})} style={{ borderRadius: '12px' }} />
+                    </div>
+                  </div>
+                  <div className="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" className="btn px-4 py-2 fw-semibold" onClick={() => setShowModal(false)} style={{ borderRadius: '12px', background: '#f1f5f9', color: '#64748b' }}>Cancel</button>
+                    <button type="submit" className="btn px-4 py-2 fw-bold text-white border-0" style={{ borderRadius: '12px', background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}>{editMode ? 'Update Employee' : 'Create Employee'}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW PROFILE MODAL */}
+      {viewingEmployee && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '22px' }}>
+              <div className="modal-header px-4 pt-4 pb-3" style={{ borderBottom: '1px solid #f1f5f9', borderTopLeftRadius: '22px', borderTopRightRadius: '22px' }}>
+                <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>Employee Profile</h5>
+                <button type="button" className="btn-close shadow-none" onClick={() => setViewingEmployee(null)} style={{ backgroundSize: '10px', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '12px' }}></button>
+              </div>
+              <div className="modal-body px-4 py-4">
+                <div className="text-center mb-4">
+                  <div className="mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
+                       style={{ width: '80px', height: '80px', borderRadius: '50%', fontSize: '2rem', background: 'linear-gradient(135deg, #f43f5e 0%, #a855f7 100%)' }}>
+                    {getInitials(viewingEmployee.name)}
+                  </div>
+                  <h4 className="fw-bold mb-1" style={{ color: '#1e293b' }}>{viewingEmployee.name || 'Unknown'}</h4>
+                  <div className="small mb-2" style={{ color: '#64748b' }}>
+                    {viewingEmployee.user_role || viewingEmployee.designation || 'Employee'} · {viewingEmployee.department || 'General'}
+                  </div>
+                  <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#ECFDF5', color: '#10B981', border: '1px solid #A7F3D0' }}>
+                    <span style={{ fontSize: '14px', marginRight: '4px' }}>•</span> Active
+                  </span>
+                </div>
+                
+                <hr style={{ borderColor: '#e2e8f0', margin: '1.5rem 0' }} />
+
+                <div className="d-flex flex-column gap-3">
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Employee ID</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingEmployee.employee_code || `EMP-${String(viewingEmployee.id).padStart(3, '0')}`}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Email</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingEmployee.email || `${(viewingEmployee.name || 'emp').toLowerCase().replace(/\s+/g, '.')}@smtbms.in`}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Phone</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingEmployee.phone || '9876543223'}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Date of Joining</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingEmployee.join_date ? viewingEmployee.join_date.split('T')[0] : 'N/A'}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Monthly Salary</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>₹{Number(viewingEmployee.salary || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

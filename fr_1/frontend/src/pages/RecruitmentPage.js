@@ -336,7 +336,7 @@ const RecruitmentPage = () => {
             <button
               className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
               onClick={() => setShowJobModal(true)}
-              style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #4FC3F7 100%)` }}
+              style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
             >
               {THIN_ICONS.plus}
               <span> Post Job</span>
@@ -612,7 +612,7 @@ const RecruitmentPage = () => {
                 </div>
                 <div className="modal-footer border-0">
                   <button type="button" className="btn rounded-pill px-4 bg-white border" onClick={() => setShowJobModal(false)}>Cancel</button>
-                  <button type="submit" className="btn rounded-pill px-4 border-0 text-white fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #4FC3F7 100%)` }}>
+                  <button type="submit" className="btn rounded-pill px-4 border-0 text-white fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}>
                     Publish Opening
                   </button>
                 </div>

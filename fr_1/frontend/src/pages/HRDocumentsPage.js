@@ -1,6 +1,6 @@
 // src/pages/HRDocumentsPage.js
 import React, { useEffect, useMemo, useState } from 'react';
-import { fetchDocuments, createDocument } from '../services/hrService';
+import { fetchDocuments, createDocument, recordDocumentDownload } from '../services/hrService';
 import { getCurrentUser } from '../utils/authHelpers';
 
 const COLORS = {
@@ -64,7 +64,7 @@ const HRDocumentsPage = () => {
   const [showModal, setShowModal] = useState(false);
 
   const [form, setForm] = useState({
-    title: '', category: 'Policy', access_level: 'All Employees', file_size: '1.2 MB'
+    title: '', category: 'Policy', access_level: 'All Employees', file_size: '1.2 MB', file_name: ''
   });
 
   const defaultDocs = [
@@ -118,6 +118,22 @@ const HRDocumentsPage = () => {
       loadDocs();
     } catch (err) {
       alert('Failed to upload document.');
+    }
+  };
+
+  const handleDownload = async (d) => {
+    try {
+      if (d.id && !defaultDocs.find(x => x.id === d.id)) {
+        await recordDocumentDownload(d.id);
+        setDocs(docs.map(doc => doc.id === d.id ? { ...doc, downloads: (doc.downloads || 0) + 1 } : doc));
+      } else if (d.id) {
+        // Just mock update for default docs
+        setDocs(docs.map(doc => doc.id === d.id ? { ...doc, downloads: (doc.downloads || 0) + 1 } : doc));
+      }
+      alert(`Downloading ${d.title}...`);
+    } catch (err) {
+      console.error(err);
+      alert(`Downloading ${d.title}...`);
     }
   };
 
@@ -313,16 +329,16 @@ const HRDocumentsPage = () => {
                     </span>
                   </td>
                   <td>{d.file_size || '1.1 MB'}</td>
-                  <td className="fw-semibold">{d.uploaded_by || 'Priya Sharma'}</td>
+                  <td className="fw-semibold">{d.uploaded_by_name || (typeof d.uploaded_by === 'string' ? d.uploaded_by : 'Admin')}</td>
                   <td>{d.date || '01 Jan 2026'}</td>
                   <td>
                     <span className="badge rounded-pill bg-primary-subtle text-primary px-3 py-1 fw-bold">
                       {d.access_level || 'All Employees'}
                     </span>
                   </td>
-                  <td className="fw-bold">⬇️ {d.downloads || 45}</td>
+                  <td className="fw-bold">⬇️ {d.downloads || 0}</td>
                   <td>
-                    <button className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onClick={() => alert(`Downloading ${d.title}...`)}>
+                    <button className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onClick={() => handleDownload(d)}>
                       Download
                     </button>
                   </td>
@@ -356,7 +372,8 @@ const HRDocumentsPage = () => {
                           const formattedSize = sizeMB > 1 ? `${sizeMB} MB` : `${(file.size / 1024).toFixed(0)} KB`;
                           setForm({
                             ...form,
-                            title: file.name,
+                            title: file.name.split('.')[0] || file.name,
+                            file_name: file.name,
                             file_size: formattedSize
                           });
                         }

@@ -116,7 +116,6 @@ const BRAND_LOGOS = {
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole] = useState('Sales');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -126,7 +125,7 @@ const LoginPage = () => {
     event.preventDefault();
     setError('');
     try {
-      const data = await login({ email, password, role: selectedRole, rememberMe });
+      const data = await login({ email, password, rememberMe });
       localStorage.setItem('smtbms_token', data.token);
       localStorage.setItem('smtbms_user', JSON.stringify(data.user));
       navigate('/');
@@ -139,7 +138,7 @@ const LoginPage = () => {
     onSuccess: async (tokenResponse) => {
       setError('');
       try {
-        const data = await googleLogin({ token: tokenResponse.access_token, role: selectedRole });
+        const data = await googleLogin({ token: tokenResponse.access_token });
         localStorage.setItem('smtbms_token', data.token);
         localStorage.setItem('smtbms_user', JSON.stringify(data.user));
         navigate('/');

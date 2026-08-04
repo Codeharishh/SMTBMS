@@ -97,6 +97,16 @@ const HolidayCalendarPage = () => {
     }
   };
 
+  const formatToDDMMYYYY = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const metrics = useMemo(() => {
     const list = holidays.length ? holidays : defaultHolidays;
     const total = list.length;
@@ -382,7 +392,7 @@ const HolidayCalendarPage = () => {
                       {h.name}
                     </div>
                   </td>
-                  <td className="fw-semibold">{h.holiday_date}</td>
+                  <td className="fw-semibold">{formatToDDMMYYYY(h.holiday_date)}</td>
                   <td>{!isNaN(new Date(h.holiday_date)) ? new Date(h.holiday_date).toLocaleDateString('en-US', { weekday: 'long' }) : h.day}</td>
                   <td>
                     <span className={`badge rounded-pill px-3 py-1 fw-bold ${h.type === 'National' ? 'bg-primary-subtle text-primary' : 'bg-info-subtle text-info'}`}>

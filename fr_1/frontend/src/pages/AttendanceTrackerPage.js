@@ -106,7 +106,7 @@ const AttendanceTrackerPage = () => {
       status: log.status || 'Present',
       checkIn: log.check_in || '09:00 AM',
       checkOut: log.check_out || '06:00 PM',
-      totalHours: log.total_hours !== undefined ? log.total_hours : (log.status?.includes('Absent') ? '0' : '9')
+      totalHours: (log.total_hours !== undefined && log.total_hours !== null && log.total_hours !== '') ? log.total_hours : (log.status?.includes('Absent') ? '0' : calculateHours(log.check_in || '09:00 AM', log.check_out || '06:00 PM'))
     });
     setShowEditModal(true);
   };
@@ -174,6 +174,28 @@ const AttendanceTrackerPage = () => {
       return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
     }
     return fallback;
+  };
+
+  const calculateHours = (checkIn, checkOut, fallback = '9') => {
+    if (!checkIn || !checkOut || checkIn === '--:--' || checkOut === '--:--') return fallback;
+    try {
+      const parseTime = (t) => {
+        let [time, modifier] = t.trim().split(' ');
+        let [h, m] = time.split(':').map(Number);
+        if (modifier) {
+          modifier = modifier.toUpperCase();
+          if (modifier === 'PM' && h !== 12) h += 12;
+          if (modifier === 'AM' && h === 12) h = 0;
+        }
+        return (h * 60) + (m || 0);
+      };
+      let diff = parseTime(checkOut) - parseTime(checkIn);
+      if (diff < 0) diff += 24 * 60;
+      const hrs = diff / 60;
+      return Number.isInteger(hrs) ? hrs.toString() : hrs.toFixed(1);
+    } catch (e) {
+      return fallback;
+    }
   };
 
   const getInitials = (name) => {
@@ -451,7 +473,7 @@ const AttendanceTrackerPage = () => {
                         <td>
                            <div className="d-flex align-items-center gap-2 fw-bold" style={{ color: '#1e293b' }}>
                               <span style={{ width: '20px', height: '4px', background: COLORS.indigo, borderRadius: '2px', display: 'inline-block' }}></span>
-                              {log.total_hours !== undefined ? `${log.total_hours}h` : (status.includes('Absent') ? '0h' : '9h')}
+                              {(log.total_hours !== undefined && log.total_hours !== null && log.total_hours !== '') ? `${log.total_hours}h` : (status.includes('Absent') ? '0h' : `${calculateHours(log.check_in || '09:00 AM', log.check_out || '06:00 PM')}h`)}
                            </div>
                         </td>
                         <td>{statusBadge}</td>

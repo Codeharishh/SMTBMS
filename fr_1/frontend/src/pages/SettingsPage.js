@@ -81,9 +81,10 @@ const THIN_ICONS = {
 
 const SettingsPage = () => {
   const user = getCurrentUser() || {};
-  const currentRole = user.role || 'Sales Manager';
-  const displayName = user.name || 'Sales Manager';
-  const emailAddr = user.email || 'salesmanager@smtbms.com';
+  const currentRole = user.role || 'User';
+  const displayName = user.name || 'User Name';
+  const emailAddr = user.email || 'user@smtbms.com';
+  const currentDept = user.department || 'General';
 
   const fileInputRef = useRef(null);
   const [avatarUrl, setAvatarUrl] = useState('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80');
@@ -92,10 +93,10 @@ const SettingsPage = () => {
     fullName: displayName,
     email: emailAddr,
     phone: '+91 98765 43210',
-    department: 'Sales',
+    department: currentDept,
     designation: currentRole,
     location: 'Mumbai, India',
-    bio: 'Overseeing quarterly sales targets and key client accounts across regional construction projects.'
+    bio: ''
   });
 
   const [saving, setSaving] = useState(false);
@@ -357,9 +358,9 @@ const SettingsPage = () => {
                 <div className="p-3 rounded-4 d-flex align-items-center justify-content-between" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
                   <div className="d-flex align-items-center gap-2" style={{ color: '#D97706' }}>
                     {THIN_ICONS.crown}
-                    <span className="fw-bold small">Role</span>
+                    <span className="fw-bold small">Department</span>
                   </div>
-                  <span className="fw-extrabold" style={{ color: '#D97706' }}>Sales Team</span>
+                  <span className="fw-extrabold" style={{ color: '#D97706' }}>{form.department || currentDept}</span>
                 </div>
 
                 {/* ACCESS LEVEL */}
@@ -368,7 +369,7 @@ const SettingsPage = () => {
                     {THIN_ICONS.shield}
                     <span className="fw-bold small">Access Level</span>
                   </div>
-                  <span className="fw-extrabold" style={{ color: COLORS.violet }}>Sales Manager</span>
+                  <span className="fw-extrabold" style={{ color: COLORS.violet }}>{form.designation || currentRole}</span>
                 </div>
 
                 {/* STATUS */}
