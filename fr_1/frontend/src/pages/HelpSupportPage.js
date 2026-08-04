@@ -85,8 +85,10 @@ const HelpSupportPage = () => {
   };
 
   const defaultMockTickets = [
-    { id: 1, title: 'Unable to export PDF billing statements', category: 'Reporting', description: 'Backend timeout error', priority: 'Medium', status: 'In Progress', created_at: new Date() },
-    { id: 2, title: 'MySQL primary cluster latency check', category: 'Infrastructure', description: 'SPI pool latency has spiked up by 150ms over the last week.', priority: 'High', status: 'Open', created_at: new Date() }
+    { id: 1, title: 'Unable to access payroll module', category: 'Payroll', description: '', priority: 'High', status: 'Open', user_name: 'Arjun Mehta', response: 'Awaiting response...', created_at: new Date('2026-06-14') },
+    { id: 2, title: 'Wrong attendance entry on 10 Jun', category: 'Attendance', description: '', priority: 'Medium', status: 'In Progress', user_name: 'Deepak Joshi', response: 'We are looking into this.', created_at: new Date('2026-06-12') },
+    { id: 3, title: 'Payslip not generated for May', category: 'Payroll', description: '', priority: 'High', status: 'Resolved', user_name: 'Sunita Nair', response: 'Issue fixed. Payslip is now available.', created_at: new Date('2026-06-02') },
+    { id: 4, title: 'Training certificate not issued', category: 'Training', description: '', priority: 'Low', status: 'Open', user_name: 'Rahul Verma', response: 'Awaiting response...', created_at: new Date('2026-06-15') }
   ];
 
   const showToast = (message) => {
@@ -306,13 +308,15 @@ const HelpSupportPage = () => {
                     className="form-select rounded-3"
                     value={ticketForm.category}
                     onChange={(e) => setTicketForm({ ...ticketForm, category: e.target.value })}
-                    style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
+                    style={{ backgroundColor: '#FAF8FF', border: '1px solid #E5E0F5' }}
                   >
                     <option value="General">General</option>
-                    <option value="HRMS">HRMS</option>
-                    <option value="Inventory">Inventory</option>
-                    <option value="Reporting">Reporting</option>
-                    <option value="Infrastructure">Infrastructure</option>
+                    <option value="Leave">Leave</option>
+                    <option value="Payroll">Payroll</option>
+                    <option value="Attendance">Attendance</option>
+                    <option value="Training">Training</option>
+                    <option value="IT">IT</option>
+                    <option value="Profile">Profile</option>
                   </select>
                 </div>
                 <div className="col-6">
@@ -321,7 +325,7 @@ const HelpSupportPage = () => {
                     className="form-select rounded-3"
                     value={ticketForm.priority}
                     onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value })}
-                    style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
+                    style={{ backgroundColor: '#FAF8FF', border: '1px solid #E5E0F5' }}
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -354,6 +358,80 @@ const HelpSupportPage = () => {
               </button>
             </form>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <div className="table-responsive rounded-4 shadow-sm border bg-white" style={{ borderColor: '#e5e0f5' }}>
+          <table className="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style={{ minWidth: '100px' }}>TICKET ID</th>
+                <th style={{ minWidth: '220px' }}>SUBJECT</th>
+                <th style={{ minWidth: '120px' }}>CATEGORY</th>
+                <th style={{ minWidth: '100px' }}>PRIORITY</th>
+                <th style={{ minWidth: '140px' }}>STATUS</th>
+                <th style={{ minWidth: '150px' }}>SUBMITTED BY</th>
+                <th style={{ minWidth: '110px' }}>DATE</th>
+                <th style={{ minWidth: '180px' }}>RESPONSE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tickets.map(ticket => (
+                <tr key={ticket.id}>
+                  <td className="fw-bold text-muted small">TKT-{String(ticket.id).padStart(3, '0')}</td>
+                  <td className="fw-bold text-dark">{ticket.title}</td>
+                  <td>
+                    <span className="badge rounded-pill px-3 py-1 fw-bold" style={{
+                      background: ticket.category === 'Payroll' || ticket.category === 'Training' ? '#ECFDF5' : '#EEF2FF',
+                      color: ticket.category === 'Payroll' || ticket.category === 'Training' ? '#10B981' : '#6366F1'
+                    }}>
+                      {ticket.category}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="badge rounded-pill px-3 py-1 fw-bold" style={{
+                      background: ticket.priority === 'High' ? '#FEF2F2' : ticket.priority === 'Medium' ? '#FFFBEB' : '#F0F9FF',
+                      color: ticket.priority === 'High' ? '#EF4444' : ticket.priority === 'Medium' ? '#F59E0B' : '#3B82F6'
+                    }}>
+                      {ticket.priority}
+                    </span>
+                  </td>
+                  <td>
+                    <select
+                      className="form-select form-select-sm fw-bold border-0 shadow-none"
+                      value={ticket.status}
+                      onChange={(e) => {
+                        const newTickets = tickets.map(t => t.id === ticket.id ? { ...t, status: e.target.value } : t);
+                        setTickets(newTickets);
+                      }}
+                      style={{
+                        backgroundColor: ticket.status === 'Resolved' ? '#ECFDF5' : ticket.status === 'In Progress' ? '#EEF2FF' : '#FFFBEB',
+                        color: ticket.status === 'Resolved' ? '#10B981' : ticket.status === 'In Progress' ? '#6366F1' : '#F59E0B',
+                        borderRadius: '20px',
+                        width: 'auto',
+                        padding: '4px 30px 4px 12px'
+                      }}
+                    >
+                      <option value="Open">Open</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Resolved">Resolved</option>
+                    </select>
+                  </td>
+                  <td className="text-muted small">{ticket.user_name || 'Admin User'}</td>
+                  <td className="text-muted small">
+                    {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                  </td>
+                  <td className="text-muted small">{ticket.response || (ticket.status === 'Resolved' ? 'Issue fixed.' : ticket.status === 'In Progress' ? 'We are looking into this.' : 'Awaiting response...')}</td>
+                </tr>
+              ))}
+              {tickets.length === 0 && (
+                <tr>
+                  <td colSpan="8" className="text-center py-4 text-muted">No support tickets found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
