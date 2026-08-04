@@ -55,6 +55,30 @@ const THIN_ICONS = {
       <polyline points="3 6 5 6 21 6" vectorEffect="non-scaling-stroke"></polyline>
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" vectorEffect="non-scaling-stroke"></path>
     </svg>
+  ),
+  view: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  edit: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path vectorEffect="non-scaling-stroke" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  ),
+  lock: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  ),
+  unlock: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+    </svg>
   )
 };
 
@@ -83,6 +107,8 @@ const RecruitmentPage = () => {
   // Modals state
   const [showJobModal, setShowJobModal] = useState(false);
   const [showCandidateModal, setShowCandidateModal] = useState(false);
+  const [viewingJob, setViewingJob] = useState(null);
+  const [editJobId, setEditJobId] = useState(null);
 
   // Default initial job listings
   const [jobOpenings, setJobOpenings] = useState([
@@ -161,16 +187,41 @@ const RecruitmentPage = () => {
 
   const handleCreateJob = (e) => {
     e.preventDefault();
-    const newJob = {
-      id: Date.now(),
-      ...jobForm,
-      applicants: 0,
-      status: 'Active'
-    };
-    setJobOpenings([newJob, ...jobOpenings]);
-    alert('Job opening posted successfully!');
+    if (editJobId) {
+      setJobOpenings(jobOpenings.map(j => j.id === editJobId ? { ...j, ...jobForm } : j));
+      alert('Job opening updated successfully!');
+    } else {
+      const newJob = {
+        id: Date.now(),
+        ...jobForm,
+        applicants: 0,
+        status: 'Active'
+      };
+      setJobOpenings([newJob, ...jobOpenings]);
+      alert('Job opening posted successfully!');
+    }
     setShowJobModal(false);
     setJobForm({ title: '', dept: 'HR', location: 'Mumbai', type: 'Full-time', vacancies: 1, deadline: '30 Jul 2026' });
+    setEditJobId(null);
+  };
+
+  const handleEditJob = (job) => {
+    setEditJobId(job.id);
+    setJobForm(job);
+    setShowJobModal(true);
+    setOpenDropdownId(null);
+  };
+
+  const handleDeleteJob = (id) => {
+    if (window.confirm('Are you sure you want to delete this job opening?')) {
+      setJobOpenings(jobOpenings.filter(job => job.id !== id));
+      setOpenDropdownId(null);
+    }
+  };
+
+  const handleViewJob = (job) => {
+    setViewingJob(job);
+    setOpenDropdownId(null);
   };
 
   const handleAddCandidate = async (e) => {
@@ -335,7 +386,11 @@ const RecruitmentPage = () => {
           <div className="d-flex gap-2">
             <button
               className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
-              onClick={() => setShowJobModal(true)}
+              onClick={() => {
+                setEditJobId(null);
+                setJobForm({ title: '', dept: 'HR', location: 'Mumbai', type: 'Full-time', vacancies: 1, deadline: '30 Jul 2026' });
+                setShowJobModal(true);
+              }}
               style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
             >
               {THIN_ICONS.plus}
@@ -469,13 +524,13 @@ const RecruitmentPage = () => {
                           {openDropdownId === job.id && (
                             <ul className="dropdown-menu border-0 shadow-lg rounded-3 p-2 show" style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1000, minWidth: '160px' }}>
                               <li>
-                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold" style={{ color: '#1e293b' }} onClick={() => setOpenDropdownId(null)}>
-                                  <span>👁</span> View Details
+                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold" style={{ color: '#1e293b' }} onClick={() => handleViewJob(job)}>
+                                  {THIN_ICONS.view} View Details
                                 </button>
                               </li>
                               <li>
-                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold" style={{ color: '#1e293b' }} onClick={() => setOpenDropdownId(null)}>
-                                  <span>✏️</span> Edit Job
+                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold" style={{ color: '#1e293b' }} onClick={() => handleEditJob(job)}>
+                                  {THIN_ICONS.edit} Edit Job
                                 </button>
                               </li>
                               <li>
@@ -484,13 +539,13 @@ const RecruitmentPage = () => {
                                   style={{ color: '#1e293b' }}
                                   onClick={() => toggleJobStatus(job.id)}
                                 >
-                                  <span>🔒</span> {job.status === 'Inactive' ? 'Open Job' : 'Close Job'}
+                                  {job.status === 'Inactive' ? THIN_ICONS.unlock : THIN_ICONS.lock} {job.status === 'Inactive' ? 'Open Job' : 'Close Job'}
                                 </button>
                               </li>
                               <li><hr className="dropdown-divider my-1" /></li>
                               <li>
-                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold text-danger" onClick={() => setOpenDropdownId(null)}>
-                                  <span>🗑️</span> Delete
+                                <button className="dropdown-item rounded-2 d-flex align-items-center gap-2 fw-semibold text-danger" onClick={() => handleDeleteJob(job.id)}>
+                                  {THIN_ICONS.trash} Delete
                                 </button>
                               </li>
                             </ul>
@@ -574,7 +629,7 @@ const RecruitmentPage = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow-lg">
               <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold modal-title">Post New Job Opening</h5>
+                <h5 className="fw-bold modal-title">{editJobId ? 'Edit Job Opening' : 'Post New Job Opening'}</h5>
                 <button type="button" className="btn-close" onClick={() => setShowJobModal(false)}></button>
               </div>
               <form onSubmit={handleCreateJob}>
@@ -613,7 +668,7 @@ const RecruitmentPage = () => {
                 <div className="modal-footer border-0">
                   <button type="button" className="btn rounded-pill px-4 bg-white border" onClick={() => setShowJobModal(false)}>Cancel</button>
                   <button type="submit" className="btn rounded-pill px-4 border-0 text-white fw-semibold" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}>
-                    Publish Opening
+                    {editJobId ? 'Update Opening' : 'Publish Opening'}
                   </button>
                 </div>
               </form>
@@ -667,6 +722,66 @@ const RecruitmentPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW JOB MODAL */}
+      {viewingJob && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '22px' }}>
+              <div className="modal-header px-4 pt-4 pb-3" style={{ borderBottom: '1px solid #f1f5f9', borderTopLeftRadius: '22px', borderTopRightRadius: '22px' }}>
+                <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>Job Details</h5>
+                <button type="button" className="btn-close shadow-none" onClick={() => setViewingJob(null)} style={{ backgroundSize: '10px', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '12px' }}></button>
+              </div>
+              <div className="modal-body px-4 py-4">
+                <div className="text-center mb-4">
+                  <div className="mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
+                       style={{ width: '60px', height: '60px', borderRadius: '16px', fontSize: '1.5rem', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #4FC3F7 100%)` }}>
+                    {viewingJob.title ? viewingJob.title.substring(0, 2).toUpperCase() : 'JB'}
+                  </div>
+                  <h4 className="fw-bold mb-1" style={{ color: '#1e293b' }}>{viewingJob.title}</h4>
+                  <div className="small mb-2" style={{ color: '#64748b' }}>
+                    {viewingJob.dept} Department
+                  </div>
+                  {viewingJob.status === 'Inactive' ? (
+                    <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.alert}1A`, color: '#dc2626', border: `1px solid ${COLORS.alert}40` }}>
+                      <span style={{ fontSize: '14px', marginRight: '4px' }}>•</span> Inactive
+                    </span>
+                  ) : (
+                    <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#ECFDF5', color: '#10B981', border: '1px solid #A7F3D0' }}>
+                      <span style={{ fontSize: '14px', marginRight: '4px' }}>•</span> Active
+                    </span>
+                  )}
+                </div>
+                
+                <hr style={{ borderColor: '#e2e8f0', margin: '1.5rem 0' }} />
+
+                <div className="d-flex flex-column gap-3">
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Location</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>📍 {viewingJob.location}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Job Type</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingJob.type || 'Full-time'}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Vacancies</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingJob.vacancies}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Total Applicants</span>
+                    <span className="fw-bold text-primary">{viewingJob.applicants}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pb-2" style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <span className="fw-bold small" style={{ color: '#94a3b8' }}>Application Deadline</span>
+                    <span className="fw-bold" style={{ color: '#1e293b' }}>{viewingJob.deadline}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
