@@ -54,6 +54,16 @@ export const createHoliday = async (data) => {
   return response.data;
 };
 
+export const updateHoliday = async (id, data) => {
+  const response = await api.put(`/hr/holiday/${id}`, data);
+  return response.data;
+};
+
+export const deleteHoliday = async (id) => {
+  const response = await api.delete(`/hr/holiday/${id}`);
+  return response.data;
+};
+
 // 5. HR Documents
 export const fetchDocuments = async () => {
   const response = await api.get('/hr/document');

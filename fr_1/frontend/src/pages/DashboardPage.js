@@ -159,7 +159,7 @@ const THIN_ICONS = {
 const QUICK_ACTIONS = [
   { label: 'Add New Employee', desc: 'Onboard to the workforce roster', icon: THIN_ICONS.userPlus, color: COLORS.indigo, path: '/admin/users' },
   { label: 'Add New Material', desc: 'Log new inventory stock', icon: THIN_ICONS.box, color: COLORS.emerald, path: '/materials' },
-  { label: 'Add New Lead', desc: 'Register a CRM prospect', icon: THIN_ICONS.target, color: COLORS.rose, path: '/leads' },
+  { label: 'Add New Lead', desc: 'Register a CRM prospect', icon: THIN_ICONS.target, color: COLORS.rose, path: '/crm/leads' },
   { label: 'Add New Customer', desc: 'Register a CRM Customer', icon: THIN_ICONS.briefcase, color: COLORS.violet, path: '/customers' },
 ];
 

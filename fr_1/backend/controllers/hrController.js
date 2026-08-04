@@ -205,6 +205,30 @@ exports.createHoliday = async (req, res) => {
   }
 };
 
+exports.updateHoliday = async (req, res) => {
+  try {
+    const { name, holiday_date, description, type } = req.body;
+    await pool.query(
+      'UPDATE holidays SET name=?, holiday_date=?, description=?, type=? WHERE id=?',
+      [name, holiday_date, description || '', type || 'National', req.params.id]
+    );
+    res.json({ success: true, message: 'Holiday updated' });
+  } catch (error) {
+    console.error('Update holiday error', error);
+    res.status(500).json({ message: 'Unable to update holiday' });
+  }
+};
+
+exports.deleteHoliday = async (req, res) => {
+  try {
+    await pool.query('DELETE FROM holidays WHERE id=?', [req.params.id]);
+    res.json({ success: true, message: 'Holiday deleted' });
+  } catch (error) {
+    console.error('Delete holiday error', error);
+    res.status(500).json({ message: 'Unable to delete holiday' });
+  }
+};
+
 // ==========================================
 // 5. DOCUMENTS
 // ==========================================

@@ -256,17 +256,30 @@ const LeadManagementCenterPage = () => {
       `}</style>
 
       {/* HEADER */}
-      <div className="d-flex align-items-center gap-3 mb-4 pt-2">
-        <div className="d-flex align-items-center justify-content-center fw-bold text-white rounded-3 shadow-sm"
-          style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #5B8DEF 0%, #4FC3F7 100%)', borderRadius: '14px' }}>
-          {THIN_ICONS.target}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center fw-bold text-white rounded-3 shadow-sm"
+            style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #5B8DEF 0%, #4FC3F7 100%)', borderRadius: '14px' }}>
+            {THIN_ICONS.target}
+          </div>
+          <div>
+            <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
+              Lead Management Center
+              <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>LEADS</span>
+            </h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Capture, qualify, and convert prospects into valuable customers.</p>
+          </div>
         </div>
-        <div>
-          <h3 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>
-            Lead Management Center
-            <span className="badge rounded-pill bg-light text-primary border px-3" style={{ fontSize: '0.65rem' }}>LEADS</span>
-          </h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Capture, qualify, and convert prospects into valuable customers.</p>
+
+        <div className="d-flex align-items-center justify-content-end">
+          <button
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
+            onClick={() => setShowModal(true)}
+            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
+          >
+            {THIN_ICONS.plus}
+            <span> Add Lead</span>
+          </button>
         </div>
       </div>
 
@@ -309,7 +322,7 @@ const LeadManagementCenterPage = () => {
               className="form-select rounded-pill px-3 small fw-bold"
               value={stageFilter}
               onChange={(e) => setStageFilter(e.target.value)}
-              style={{ background: '#FAF8FF', border: '1px solid #e5e0f5', width: '130px' }}
+              style={{ backgroundColor: '#FAF8FF', border: '1px solid #e5e0f5', width: '130px' }}
             >
               <option value="All">All Stages</option>
               <option value="Qualified">Qualified</option>
@@ -317,15 +330,6 @@ const LeadManagementCenterPage = () => {
               <option value="Negotiation">Negotiation</option>
               <option value="Closed Won">Closed Won</option>
             </select>
-
-            <button
-              className="btn px-4 py-2 rounded-3 fw-bold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2 ms-auto"
-              onClick={() => setShowModal(true)}
-              style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
-            >
-              {THIN_ICONS.plus}
-              <span> New Lead</span>
-            </button>
           </div>
         </div>
 

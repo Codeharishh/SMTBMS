@@ -1,6 +1,6 @@
 // src/pages/HolidayCalendarPage.js
 import React, { useEffect, useMemo, useState } from 'react';
-import { fetchHolidays, createHoliday } from '../services/hrService';
+import { fetchHolidays, createHoliday, updateHoliday, deleteHoliday } from '../services/hrService';
 import { getCurrentUser } from '../utils/authHelpers';
 
 const COLORS = {
@@ -66,18 +66,18 @@ const HolidayCalendarPage = () => {
   const [showModal, setShowModal] = useState(false);
 
   const [form, setForm] = useState({
-    title: '', holiday_date: new Date().toISOString().split('T')[0], day: 'Thursday', type: 'National', status: 'Upcoming'
+    id: null, name: '', holiday_date: new Date().toISOString().split('T')[0], day: 'Thursday', type: 'National', status: 'Upcoming'
   });
 
   const defaultHolidays = [
-    { id: 1, title: "New Year's Day", holiday_date: '01 Jan 2026', day: 'Thursday', type: 'National', status: 'Past' },
-    { id: 2, title: 'Republic Day', holiday_date: '26 Jan 2026', day: 'Monday', type: 'National', status: 'Past' },
-    { id: 3, title: 'Holi Festival', holiday_date: '14 Mar 2026', day: 'Saturday', type: 'Festival', status: 'Past' },
-    { id: 4, title: 'Independence Day', holiday_date: '15 Aug 2026', day: 'Saturday', type: 'National', status: 'Upcoming' },
-    { id: 5, title: 'Janmashtami', holiday_date: '20 Aug 2026', day: 'Thursday', type: 'Festival', status: 'Upcoming' },
-    { id: 6, title: 'Gandhi Jayanti', holiday_date: '02 Oct 2026', day: 'Friday', type: 'National', status: 'Upcoming' },
-    { id: 7, title: 'Diwali Deepavali', holiday_date: '08 Nov 2026', day: 'Sunday', type: 'Festival', status: 'Upcoming' },
-    { id: 8, title: 'Christmas Day', holiday_date: '25 Dec 2026', day: 'Friday', type: 'Festival', status: 'Upcoming' }
+    { id: 1, name: "New Year's Day", holiday_date: '01 Jan 2026', day: 'Thursday', type: 'National', status: 'Past' },
+    { id: 2, name: 'Republic Day', holiday_date: '26 Jan 2026', day: 'Monday', type: 'National', status: 'Past' },
+    { id: 3, name: 'Holi Festival', holiday_date: '14 Mar 2026', day: 'Saturday', type: 'Festival', status: 'Past' },
+    { id: 4, name: 'Independence Day', holiday_date: '15 Aug 2026', day: 'Saturday', type: 'National', status: 'Upcoming' },
+    { id: 5, name: 'Janmashtami', holiday_date: '20 Aug 2026', day: 'Thursday', type: 'Festival', status: 'Upcoming' },
+    { id: 6, name: 'Gandhi Jayanti', holiday_date: '02 Oct 2026', day: 'Friday', type: 'National', status: 'Upcoming' },
+    { id: 7, name: 'Diwali Deepavali', holiday_date: '08 Nov 2026', day: 'Sunday', type: 'Festival', status: 'Upcoming' },
+    { id: 8, name: 'Christmas Day', holiday_date: '25 Dec 2026', day: 'Friday', type: 'Festival', status: 'Upcoming' }
   ];
 
   useEffect(() => {
@@ -110,7 +110,7 @@ const HolidayCalendarPage = () => {
     const list = holidays.length ? holidays : defaultHolidays;
     return list.filter(h => {
       const q = searchTerm.toLowerCase();
-      const nameMatch = (h.title || '').toLowerCase().includes(q);
+      const nameMatch = (h.name || '').toLowerCase().includes(q);
       const typeMatch = selectedType === 'All' || h.type === selectedType;
       return nameMatch && typeMatch;
     });
@@ -119,13 +119,39 @@ const HolidayCalendarPage = () => {
   const handleAddHoliday = async (e) => {
     e.preventDefault();
     try {
-      await createHoliday(form);
-      alert('Holiday added!');
+      if (form.id) {
+        await updateHoliday(form.id, form);
+        alert('Holiday updated!');
+      } else {
+        await createHoliday(form);
+        alert('Holiday added!');
+      }
       setShowModal(false);
       loadHolidays();
     } catch (err) {
-      alert('Failed to add holiday.');
+      alert('Failed to save holiday.');
     }
+  };
+
+  const handleEdit = (holiday) => {
+    setForm(holiday);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this holiday?')) return;
+    try {
+      await deleteHoliday(id);
+      alert('Holiday deleted!');
+      loadHolidays();
+    } catch (err) {
+      alert('Failed to delete holiday.');
+    }
+  };
+
+  const openAddModal = () => {
+    setForm({ id: null, name: '', holiday_date: new Date().toISOString().split('T')[0], day: 'Thursday', type: 'National', status: 'Upcoming' });
+    setShowModal(true);
   };
 
   const MetricCard = ({ label, value, sub, icon, color }) => (
@@ -223,6 +249,39 @@ const HolidayCalendarPage = () => {
           transform: translateY(-2px) !important;
           box-shadow: 0 8px 20px rgba(165, 175, 200, 0.12) !important;
         }
+
+        /* ── ACTION ICON BUTTONS ── */
+        .btn-action-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
+          border: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
+        }
+        .edit-icon-btn {
+          background-color: #EFF6FF !important;
+          color: #3B82F6 !important;
+        }
+        .edit-icon-btn:hover {
+          background-color: #3B82F6 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+          transform: translateY(-1px);
+        }
+        .del-icon-btn {
+          background-color: #FFF1F2 !important;
+          color: #F43F5E !important;
+        }
+        .del-icon-btn:hover {
+          background-color: #F43F5E !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+          transform: translateY(-1px);
+        }
       `}</style>
 
       {/* HEADER */}
@@ -240,7 +299,7 @@ const HolidayCalendarPage = () => {
         {canManage && (
           <button
             className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
-            onClick={() => setShowModal(true)}
+            onClick={openAddModal}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
@@ -280,7 +339,7 @@ const HolidayCalendarPage = () => {
                 style={{ background: '#FAF8FF', border: '1px solid #e5e0f5' }}
               />
             </div>
-            {['All', 'National', 'Festival'].map(type => (
+            {['All', 'National', 'Festival', 'Regional', 'Optional'].map(type => (
               <button
                 key={type}
                 className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap ${selectedType === type ? 'text-white' : 'bg-light text-dark'}`}
@@ -306,15 +365,25 @@ const HolidayCalendarPage = () => {
                 <th>Day</th>
                 <th>Type</th>
                 <th>Status</th>
+                {canManage && <th className="text-end">Action</th>}
               </tr>
             </thead>
             <tbody>
               {filteredHolidays.map((h, idx) => (
                 <tr key={h.id || idx}>
                   <td className="fw-bold text-muted">{idx + 1}</td>
-                  <td className="fw-bold" style={{ color: '#1e293b' }}>⭐ {h.title}</td>
+                  <td className="fw-bold" style={{ color: '#1e293b' }}>
+                    <div className="d-flex align-items-center gap-2">
+                      <span style={{ color: COLORS.amber, display: 'flex' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon vectorEffect="non-scaling-stroke" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                      </span>
+                      {h.name}
+                    </div>
+                  </td>
                   <td className="fw-semibold">{h.holiday_date}</td>
-                  <td>{h.day || 'Thursday'}</td>
+                  <td>{!isNaN(new Date(h.holiday_date)) ? new Date(h.holiday_date).toLocaleDateString('en-US', { weekday: 'long' }) : h.day}</td>
                   <td>
                     <span className={`badge rounded-pill px-3 py-1 fw-bold ${h.type === 'National' ? 'bg-primary-subtle text-primary' : 'bg-info-subtle text-info'}`}>
                       {h.type}
@@ -325,6 +394,32 @@ const HolidayCalendarPage = () => {
                       • {h.status || 'Upcoming'}
                     </span>
                   </td>
+                  {canManage && (
+                    <td className="text-end">
+                      <div className="d-flex align-items-center justify-content-end gap-2">
+                        <button
+                          className="btn-action-icon edit-icon-btn"
+                          onClick={() => handleEdit(h)}
+                          title="Edit Holiday"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className="btn-action-icon del-icon-btn"
+                          onClick={() => handleDelete(h.id)}
+                          title="Delete Holiday"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -338,18 +433,27 @@ const HolidayCalendarPage = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow-lg">
               <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold modal-title">Add Official Holiday</h5>
+                <h5 className="fw-bold modal-title">{form.id ? 'Edit Holiday' : 'Add Official Holiday'}</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <form onSubmit={handleAddHoliday}>
                 <div className="modal-body py-3">
                   <div className="mb-3">
                     <label className="form-label small fw-bold">Holiday Name</label>
-                    <input type="text" className="form-control rounded-3" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+                    <input type="text" className="form-control rounded-3" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                   </div>
                   <div className="mb-3">
                     <label className="form-label small fw-bold">Date</label>
                     <input type="date" className="form-control rounded-3" value={form.holiday_date} onChange={(e) => setForm({ ...form, holiday_date: e.target.value })} required />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">Holiday Type</label>
+                    <select className="form-select rounded-3" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required>
+                      <option value="National">National</option>
+                      <option value="Festival">Festival</option>
+                      <option value="Regional">Regional</option>
+                      <option value="Optional">Optional</option>
+                    </select>
                   </div>
                 </div>
                 <div className="modal-footer border-0">

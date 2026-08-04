@@ -71,6 +71,20 @@ router.post(
   hrController.createHoliday
 );
 
+router.put(
+  '/holiday/:id',
+  protect,
+  authorize('Admin', 'HR'),
+  hrController.updateHoliday
+);
+
+router.delete(
+  '/holiday/:id',
+  protect,
+  authorize('Admin', 'HR'),
+  hrController.deleteHoliday
+);
+
 // Documents routes
 router.get(
   '/document',

@@ -62,6 +62,9 @@ const AttendanceTrackerPage = () => {
   const [selectedDept, setSelectedDept] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({ id: null, employeeName: '', status: '', checkIn: '', checkOut: '', totalHours: '' });
+
   useEffect(() => {
     loadData();
   }, []);
@@ -94,6 +97,32 @@ const AttendanceTrackerPage = () => {
     } catch(err) {
       console.error(err);
     }
+  };
+
+  const handleEditClick = (log, empName) => {
+    setEditForm({
+      id: log.id,
+      employeeName: empName,
+      status: log.status || 'Present',
+      checkIn: log.check_in || '09:00 AM',
+      checkOut: log.check_out || '06:00 PM',
+      totalHours: log.total_hours !== undefined ? log.total_hours : (log.status?.includes('Absent') ? '0' : '9')
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setLogs(logs.map(l => l.id === editForm.id ? { ...l, status: editForm.status, check_in: editForm.checkIn, check_out: editForm.checkOut, total_hours: editForm.totalHours } : l));
+    try {
+      const empId = logs.find(l => l.id === editForm.id)?.employee_id || editForm.id;
+      if (empId) {
+        await punchAttendance(empId, { status: editForm.status });
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    setShowEditModal(false);
   };
 
   const metrics = useMemo(() => {
@@ -199,6 +228,29 @@ const AttendanceTrackerPage = () => {
         .metric-card-lux:hover {
           transform: translateY(-4px);
           box-shadow: 0 14px 26px rgba(31,41,55,0.09) !important;
+        }
+        
+        /* ── ACTION ICON BUTTONS ── */
+        .btn-action-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
+          border: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
+        }
+        .edit-icon-btn {
+          background-color: #EFF6FF !important;
+          color: #3B82F6 !important;
+        }
+        .edit-icon-btn:hover {
+          background-color: #3B82F6 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+          transform: translateY(-1px);
         }
         .hover-btn-lux { transition: all 0.2s ease !important; }
         .hover-btn-lux:hover {
@@ -399,7 +451,7 @@ const AttendanceTrackerPage = () => {
                         <td>
                            <div className="d-flex align-items-center gap-2 fw-bold" style={{ color: '#1e293b' }}>
                               <span style={{ width: '20px', height: '4px', background: COLORS.indigo, borderRadius: '2px', display: 'inline-block' }}></span>
-                              {status.includes('Absent') ? '0h' : '9h'}
+                              {log.total_hours !== undefined ? `${log.total_hours}h` : (status.includes('Absent') ? '0h' : '9h')}
                            </div>
                         </td>
                         <td>{statusBadge}</td>
@@ -422,11 +474,14 @@ const AttendanceTrackerPage = () => {
                                 Check In
                               </button>
                             )}
-                            <button className="btn btn-sm text-muted p-0 ms-1 hover-btn-lux">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="1" />
-                                <circle cx="19" cy="12" r="1" />
-                                <circle cx="5" cy="12" r="1" />
+                            <button 
+                              className="btn-action-icon edit-icon-btn ms-1"
+                              onClick={() => handleEditClick(log, empName)}
+                              title="Edit Attendance"
+                            >
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                               </svg>
                             </button>
                           </div>
@@ -440,6 +495,84 @@ const AttendanceTrackerPage = () => {
           </div>
         )}
       </div>
+
+      {showEditModal && (
+        <div className="modal fade show d-block" style={{ background: 'rgba(44, 37, 32, 0.35)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '400px' }}>
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '16px' }}>
+              <div className="modal-header border-bottom py-3 px-4">
+                <h6 className="fw-bold modal-title" style={{ color: '#1e293b' }}>
+                  Edit Attendance — {editForm.employeeName}
+                </h6>
+                <button type="button" className="btn btn-sm btn-light rounded-3" onClick={() => setShowEditModal(false)}>
+                  <span aria-hidden="true" className="fw-bold">&times;</span>
+                </button>
+              </div>
+              <form onSubmit={handleEditSubmit}>
+                <div className="modal-body p-4">
+                  
+                  <div className="mb-3">
+                    <label className="form-label text-uppercase fw-bold" style={{ fontSize: '0.65rem', letterSpacing: '1px', color: '#64748b' }}>Status</label>
+                    <select 
+                      className="form-select rounded-3 shadow-sm border-0" 
+                      style={{ background: '#f8fafc', color: '#334155' }}
+                      value={editForm.status} 
+                      onChange={e => setEditForm({...editForm, status: e.target.value})}
+                    >
+                      <option value="Present">Present</option>
+                      <option value="Absent">Absent</option>
+                      <option value="On Leave">On Leave</option>
+                    </select>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <label className="form-label text-uppercase fw-bold" style={{ fontSize: '0.65rem', letterSpacing: '1px', color: '#64748b' }}>Check In</label>
+                    <input 
+                      type="text" 
+                      className="form-control rounded-3 shadow-sm border-0" 
+                      style={{ background: '#f8fafc', color: '#334155' }}
+                      value={editForm.checkIn} 
+                      onChange={e => setEditForm({...editForm, checkIn: e.target.value})} 
+                    />
+                  </div>
+                  
+                  <div className="mb-3">
+                    <label className="form-label text-uppercase fw-bold" style={{ fontSize: '0.65rem', letterSpacing: '1px', color: '#64748b' }}>Check Out</label>
+                    <input 
+                      type="text" 
+                      className="form-control rounded-3 shadow-sm border-0" 
+                      style={{ background: '#f8fafc', color: '#334155' }}
+                      value={editForm.checkOut} 
+                      onChange={e => setEditForm({...editForm, checkOut: e.target.value})} 
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="form-label text-uppercase fw-bold" style={{ fontSize: '0.65rem', letterSpacing: '1px', color: '#64748b' }}>Total Hours</label>
+                    <input 
+                      type="number" 
+                      className="form-control rounded-3 shadow-sm border-0" 
+                      style={{ background: '#f8fafc', color: '#334155' }}
+                      value={editForm.totalHours} 
+                      onChange={e => setEditForm({...editForm, totalHours: e.target.value})} 
+                    />
+                  </div>
+
+                  <div className="d-flex gap-2">
+                    <button type="submit" className="btn btn-primary rounded-3 px-4 fw-bold" style={{ background: '#3b82f6', border: 'none' }}>
+                      Save
+                    </button>
+                    <button type="button" className="btn btn-light rounded-3 px-4 fw-bold border shadow-sm" style={{ color: '#475569' }} onClick={() => setShowEditModal(false)}>
+                      Cancel
+                    </button>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
