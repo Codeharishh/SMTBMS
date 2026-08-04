@@ -197,7 +197,7 @@ const HelpSupportPage = () => {
 
       {/* TOAST ALERT */}
       {successMsg && (
-        <div className="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-4 shadow border position-fixed top-0 end-0 m-4 z-3" style={{ maxWidth: '400px', backgroundColor: '#ffffff', borderColor: '#e2e8f0' }}>
+        <div className="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-4 shadow-lg border position-fixed end-0 m-4" style={{ top: '80px', zIndex: 1050, maxWidth: '400px', backgroundColor: '#ffffff', borderColor: '#e2e8f0' }}>
           <div className="d-flex align-items-center gap-2">
             <span className="text-success">{THIN_ICONS.checkCircle}</span>
             <div>
