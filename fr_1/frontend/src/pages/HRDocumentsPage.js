@@ -130,10 +130,27 @@ const HRDocumentsPage = () => {
         // Just mock update for default docs
         setDocs(docs.map(doc => doc.id === d.id ? { ...doc, downloads: (doc.downloads || 0) + 1 } : doc));
       }
-      alert(`Downloading ${d.title}...`);
+      
+      const fileContent = `This is a generated PDF mock file for document: ${d.title}\nCategory: ${d.category}\n\nSince this is a demo environment, this file simulates a real PDF document download.`;
+      const blob = new Blob([fileContent], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Ensure the file downloads as a .pdf
+      let fileName = d.title;
+      if (fileName.includes('.')) {
+        fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+      }
+      link.setAttribute('download', `${fileName}.pdf`);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert(`Downloading ${d.title}...`);
+      alert(`Failed to download ${d.title}`);
     }
   };
 
