@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { fetchDocuments, createDocument, recordDocumentDownload } from '../services/hrService';
-import { getCurrentUser } from '../utils/authHelpers';
+import { getCurrentUser, hasRole } from '../utils/authHelpers';
 
 const COLORS = {
   indigo: '#5B8DEF',
@@ -56,7 +56,7 @@ const THIN_ICONS = {
 
 const HRDocumentsPage = () => {
   const user = getCurrentUser();
-  const canManage = ['Admin', 'HR'].includes(user?.role);
+  const canManage = hasRole(['Admin', 'HR']);
 
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
