@@ -52,7 +52,7 @@ exports.createPerformanceReview = async (req, res) => {
       `INSERT INTO performance_reviews (employee_id, reviewer_id, review_date, rating, feedback, goals, kpi_score, attendance_score, targets_met, teamwork, appraisal) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        employee_id, reviewer_id, finalDate, rating, finalFeedback, goals || '', 
+        employee_id, reviewer_id, finalDate, rating, finalFeedback, goals || '',
         kpi_score || 85, attendance_score || 96, targets_met || 88, teamwork || 84, appraisal || '10%'
       ]
     );
@@ -72,7 +72,7 @@ exports.updatePerformanceReview = async (req, res) => {
   try {
     const { id } = req.params;
     const { employee_id, rating, feedback, goals, kpi_score, attendance_score, targets_met, teamwork, appraisal } = req.body;
-    
+
     const finalFeedback = feedback || 'Performance reviewed based on core KPIs.';
 
     await pool.query(
@@ -167,15 +167,15 @@ exports.getTrainings = async (req, res) => {
 
 exports.createTraining = async (req, res) => {
   try {
-    const { title, description, department, trainer, scheduled_date, status = 'Upcoming' } = req.body;
+    const { title, description, department, trainer, scheduled_date, status = 'Upcoming', category, duration_hours, mode, max_capacity, current_enrollment } = req.body;
     if (!title || !scheduled_date) {
       return res.status(400).json({ message: 'Missing required training fields' });
     }
 
     const [result] = await pool.query(
-      `INSERT INTO trainings (title, description, department, trainer, scheduled_date, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, description || '', department || 'All', trainer || '', scheduled_date, status]
+      `INSERT INTO trainings (title, description, department, trainer, scheduled_date, status, category, duration_hours, mode, max_capacity, current_enrollment) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description || '', department || 'All', trainer || '', scheduled_date, status, category || 'Technical', duration_hours || 8, mode || 'Online', max_capacity || 15, current_enrollment || 0]
     );
 
     res.status(201).json({
@@ -285,22 +285,22 @@ exports.getDocuments = async (req, res) => {
 
 exports.createDocument = async (req, res) => {
   try {
-    const { title, category, file_name, description } = req.body;
-    if (!title || !category || !file_name) {
-      return res.status(400).json({ message: 'Missing required document fields' });
+    const { title, category, file_name, description, file_base64, mime_type } = req.body;
+    const uploaded_by = req.user ? req.user.id : 1;
+
+    if (!title || !file_name) {
+      return res.status(400).json({ message: 'Title and file are required' });
     }
 
-    const uploaded_by = req.user.id;
-
     const [result] = await pool.query(
-      `INSERT INTO hr_documents (title, category, file_name, file_path, description, uploaded_by) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, category, file_name, `/documents/${file_name}`, description || '', uploaded_by]
+      `INSERT INTO hr_documents (title, category, file_name, file_path, description, uploaded_by, file_base64, mime_type) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, category, file_name, `/documents/${file_name}`, description || '', uploaded_by, file_base64 || null, mime_type || null]
     );
 
     res.status(201).json({
       success: true,
-      message: 'Document cataloged successfully',
+      message: 'Document uploaded successfully',
       id: result.insertId
     });
   } catch (error) {

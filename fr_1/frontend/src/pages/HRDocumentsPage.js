@@ -1,5 +1,6 @@
 // src/pages/HRDocumentsPage.js
 import React, { useEffect, useMemo, useState } from 'react';
+import { jsPDF } from 'jspdf';
 import { fetchDocuments, createDocument, recordDocumentDownload } from '../services/hrService';
 import { getCurrentUser } from '../utils/authHelpers';
 
@@ -126,24 +127,50 @@ const HRDocumentsPage = () => {
       if (d.id && !defaultDocs.find(x => x.id === d.id)) {
         await recordDocumentDownload(d.id);
         setDocs(docs.map(doc => doc.id === d.id ? { ...doc, downloads: (doc.downloads || 0) + 1 } : doc));
-      } else if (d.id) {
-        // Just mock update for default docs
-        setDocs(docs.map(doc => doc.id === d.id ? { ...doc, downloads: (doc.downloads || 0) + 1 } : doc));
       }
-      
-      const fileContent = `This is a generated PDF mock file for document: ${d.title}\nCategory: ${d.category}\n\nSince this is a demo environment, this file simulates a real PDF document download.`;
-      const blob = new Blob([fileContent], { type: 'application/pdf' });
+
+      // Ensure the file downloads as a .pdf (or original format)
+      let fileName = d.file_name || d.title;
+
+      let blob;
+      if (d.file_base64 && d.mime_type) {
+        // ACTUAL FILE DOWNLOAD: User uploaded a real file!
+        const base64Data = d.file_base64.split(',')[1] || d.file_base64;
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        blob = new Blob([byteArray], { type: d.mime_type });
+      } else {
+        // FALLBACK: Generate dynamic PDF for seeded data
+        if (!fileName.includes('.')) fileName += '.pdf';
+
+        const doc = new jsPDF();
+        doc.setFontSize(22);
+        doc.setTextColor(30, 41, 59);
+        doc.text(d.title, 14, 25);
+        doc.setFontSize(12);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Category: ${d.category || 'General'}`, 14, 35);
+        doc.setDrawColor(226, 232, 240);
+        doc.line(14, 42, 196, 42);
+        doc.setFontSize(12);
+        doc.setTextColor(51, 65, 85);
+        const bodyText = d.description || 'No detailed content was provided for this document during upload.';
+        const splitBody = doc.splitTextToSize(bodyText, 180);
+        doc.text(splitBody, 14, 55);
+        doc.setFontSize(9);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`SMTBMS Document System • Downloaded on: ${new Date().toLocaleString()}`, 14, 280);
+        blob = doc.output('blob');
+      }
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
-      // Ensure the file downloads as a .pdf
-      let fileName = d.title;
-      if (fileName.includes('.')) {
-        fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-      }
-      link.setAttribute('download', `${fileName}.pdf`);
-      
+      link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
@@ -387,14 +414,22 @@ const HRDocumentsPage = () => {
                         if (file) {
                           const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
                           const formattedSize = sizeMB > 1 ? `${sizeMB} MB` : `${(file.size / 1024).toFixed(0)} KB`;
-                          setForm({
-                            ...form,
-                            title: file.name.split('.')[0] || file.name,
-                            file_name: file.name,
-                            file_size: formattedSize
-                          });
+
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            setForm({
+                              ...form,
+                              title: file.name.split('.')[0] || file.name,
+                              file_name: file.name,
+                              file_size: formattedSize,
+                              file_base64: event.target.result,
+                              mime_type: file.type || 'application/octet-stream'
+                            });
+                          };
+                          reader.readAsDataURL(file);
                         }
                       }}
+                      required
                     />
                   </div>
                   <div className="mb-3">

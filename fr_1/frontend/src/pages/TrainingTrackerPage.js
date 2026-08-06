@@ -118,9 +118,14 @@ const TrainingTrackerPage = () => {
         title: form.title,
         description: `${form.category} training program by ${form.trainer}`,
         department: form.category === 'IT' ? 'IT' : form.category === 'Finance' ? 'Finance' : 'All',
-        trainer: form.trainer || 'Arjun Mehta',
+        trainer: form.trainer,
         scheduled_date: form.scheduled_date || new Date().toISOString().split('T')[0],
-        status: form.status || 'Upcoming'
+        status: form.status,
+        category: form.category,
+        duration_hours: form.duration_hours,
+        mode: form.mode,
+        max_capacity: form.max_capacity,
+        current_enrollment: form.current_enrollment
       };
       await createTraining(payload);
       alert('Training program created!');
@@ -271,11 +276,11 @@ const TrainingTrackerPage = () => {
               </div>
               <h5 className="fw-bold mb-2" style={{ color: '#1e293b' }}>{p.title}</h5>
               <div className="small text-muted mb-3">
-                <span>👤 Trainer: {p.trainer || 'Arjun Mehta'}</span> • <span>⏱️ {p.duration_hours || 8} hrs</span> • <span>🌐 {p.mode || 'Online'}</span>
+                <span>👤 Trainer: {p.trainer}</span> • <span>⏱️ {p.duration_hours} hrs</span> • <span>🌐 {p.mode}</span>
               </div>
               <div className="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
                 <span className="small text-muted fw-bold">Enrollment</span>
-                <span className="fw-bold text-primary">{p.current_enrollment || 8}/{p.max_capacity || 12}</span>
+                <span className="fw-bold text-primary">{p.current_enrollment}/{p.max_capacity}</span>
               </div>
             </div>
           </div>
@@ -325,6 +330,16 @@ const TrainingTrackerPage = () => {
                         <option value="Offline">Offline</option>
                         <option value="Hybrid">Hybrid</option>
                       </select>
+                    </div>
+                  </div>
+                  <div className="row g-3 mb-3">
+                    <div className="col-6">
+                      <label className="form-label small fw-bold">Max Capacity</label>
+                      <input type="number" className="form-control rounded-3" value={form.max_capacity} onChange={(e) => setForm({ ...form, max_capacity: Number(e.target.value) })} required />
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label small fw-bold">Current Enrollment</label>
+                      <input type="number" className="form-control rounded-3" value={form.current_enrollment} onChange={(e) => setForm({ ...form, current_enrollment: Number(e.target.value) })} required />
                     </div>
                   </div>
                   <div className="mb-3">
