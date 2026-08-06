@@ -59,8 +59,28 @@ router.get(
 router.post(
   '/training',
   protect,
-  authorize('Admin', 'HR', 'Manager'),
+  authorize('Admin', 'HR'),
   hrController.createTraining
+);
+
+router.put(
+  '/training/:id',
+  protect,
+  authorize('Admin', 'HR'),
+  hrController.updateTraining
+);
+
+router.delete(
+  '/training/:id',
+  protect,
+  authorize('Admin', 'HR'),
+  hrController.deleteTraining
+);
+
+router.post(
+  '/training/:id/enroll',
+  protect,
+  hrController.enrollTraining
 );
 router.put(
   '/training/:id/status',

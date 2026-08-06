@@ -1,6 +1,6 @@
 // src/pages/TrainingTrackerPage.js
 import React, { useEffect, useMemo, useState } from 'react';
-import { fetchTrainings, createTraining, updateTrainingStatus } from '../services/hrService';
+import { fetchTrainings, createTraining, updateTrainingStatus, updateTraining, deleteTraining } from '../services/hrService';
 import { getCurrentUser } from '../utils/authHelpers';
 
 const COLORS = {
@@ -52,6 +52,18 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
       <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
     </svg>
+  ),
+  edit: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  ),
+  trash: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
   )
 };
 
@@ -64,6 +76,7 @@ const TrainingTrackerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [form, setForm] = useState({
     title: '', category: 'Technical', trainer: '', duration_hours: 8, mode: 'Online', max_capacity: 15, current_enrollment: 0, status: 'Upcoming'
@@ -127,12 +140,41 @@ const TrainingTrackerPage = () => {
         max_capacity: form.max_capacity,
         current_enrollment: form.current_enrollment
       };
-      await createTraining(payload);
-      alert('Training program created!');
+      
+      if (editingId) {
+        await updateTraining(editingId, payload);
+        alert('Training program updated!');
+      } else {
+        await createTraining(payload);
+        alert('Training program created!');
+      }
       setShowModal(false);
+      setEditingId(null);
       loadTrainings();
     } catch (err) {
-      alert('Failed to create training program: ' + (err.response?.data?.message || err.message));
+      alert(`Failed to ${editingId ? 'update' : 'create'} training program: ` + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEdit = (p) => {
+    setForm({
+      title: p.title, category: p.category || 'Technical', trainer: p.trainer || '', 
+      duration_hours: p.duration_hours || 8, mode: p.mode || 'Online', 
+      max_capacity: p.max_capacity || 15, current_enrollment: p.current_enrollment || 0, 
+      status: p.status || 'Upcoming', scheduled_date: p.scheduled_date ? p.scheduled_date.split('T')[0] : ''
+    });
+    setEditingId(p.id);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this training program?')) return;
+    try {
+      await deleteTraining(id);
+      alert('Training program deleted.');
+      loadTrainings();
+    } catch (err) {
+      alert('Failed to delete: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -210,7 +252,11 @@ const TrainingTrackerPage = () => {
         {canManage && (
           <button
             className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingId(null);
+              setForm({ title: '', category: 'Technical', trainer: '', duration_hours: 8, mode: 'Online', max_capacity: 15, current_enrollment: 0, status: 'Upcoming' });
+              setShowModal(true);
+            }}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
@@ -270,9 +316,21 @@ const TrainingTrackerPage = () => {
                 <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.indigo}1A`, color: COLORS.indigo }}>
                   {p.category}
                 </span>
-                <span className={`badge rounded-pill px-3 py-1 fw-bold ${p.status === 'Ongoing' ? 'bg-warning-subtle text-warning' : p.status === 'Completed' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'}`}>
-                  • {p.status}
-                </span>
+                <div className="d-flex align-items-center gap-2">
+                  <span className={`badge rounded-pill px-3 py-1 fw-bold ${p.status === 'Ongoing' ? 'bg-warning-subtle text-warning' : p.status === 'Completed' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'}`}>
+                    • {p.status}
+                  </span>
+                  {canManage && (
+                    <div className="d-flex gap-1">
+                      <button className="btn btn-sm btn-light rounded-circle" style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => handleEdit(p)}>
+                        {THIN_ICONS.edit}
+                      </button>
+                      <button className="btn btn-sm btn-light rounded-circle text-danger" style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => handleDelete(p.id)}>
+                        {THIN_ICONS.trash}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <h5 className="fw-bold mb-2" style={{ color: '#1e293b' }}>{p.title}</h5>
               <div className="small text-muted mb-3">
@@ -293,7 +351,7 @@ const TrainingTrackerPage = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow-lg">
               <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold modal-title">Create Training Program</h5>
+                <h5 className="fw-bold modal-title">{editingId ? 'Edit' : 'Create'} Training Program</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <form onSubmit={handleAddProgram}>

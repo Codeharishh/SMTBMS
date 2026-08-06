@@ -189,6 +189,47 @@ exports.createTraining = async (req, res) => {
   }
 };
 
+exports.enrollTraining = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('UPDATE trainings SET current_enrollment = current_enrollment + 1 WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Enrolled successfully' });
+  } catch (error) {
+    console.error('Enroll training error', error);
+    res.status(500).json({ message: 'Unable to enroll in training' });
+  }
+};
+
+exports.updateTraining = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, department, trainer, scheduled_date, status, category, duration_hours, mode, max_capacity, current_enrollment } = req.body;
+    
+    await pool.query(
+      `UPDATE trainings SET 
+        title = ?, description = ?, department = ?, trainer = ?, scheduled_date = ?, 
+        status = ?, category = ?, duration_hours = ?, mode = ?, max_capacity = ?, current_enrollment = ?
+       WHERE id = ?`,
+      [title, description || '', department || 'All', trainer || '', scheduled_date, status || 'Upcoming', category || 'Technical', duration_hours || 8, mode || 'Online', max_capacity || 15, current_enrollment || 0, id]
+    );
+    res.json({ success: true, message: 'Training updated successfully' });
+  } catch (error) {
+    console.error('Update training error', error);
+    res.status(500).json({ message: 'Unable to update training' });
+  }
+};
+
+exports.deleteTraining = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM trainings WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Training deleted successfully' });
+  } catch (error) {
+    console.error('Delete training error', error);
+    res.status(500).json({ message: 'Unable to delete training' });
+  }
+};
+
 exports.updateTrainingStatus = async (req, res) => {
   try {
     const { id } = req.params;

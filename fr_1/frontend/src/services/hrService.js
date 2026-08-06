@@ -48,6 +48,21 @@ export const createTraining = async (data) => {
   return response.data;
 };
 
+export const enrollInTraining = async (id) => {
+  const response = await api.post(`/hr/training/${id}/enroll`);
+  return response.data;
+};
+
+export const updateTraining = async (id, data) => {
+  const response = await api.put(`/hr/training/${id}`, data);
+  return response.data;
+};
+
+export const deleteTraining = async (id) => {
+  const response = await api.delete(`/hr/training/${id}`);
+  return response.data;
+};
+
 export const updateTrainingStatus = async (id, status) => {
   const response = await api.put(`/hr/training/${id}/status`, { status });
   return response.data;

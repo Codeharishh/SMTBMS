@@ -1,6 +1,6 @@
 // src/pages/EmployeeTrainingPage.js
 import React, { useState, useEffect } from 'react';
-import { fetchTrainings } from '../services/hrService';
+import { fetchTrainings, enrollInTraining } from '../services/hrService';
 
 const COLORS = {
   indigo: '#5B8DEF',
@@ -132,9 +132,14 @@ const EmployeeTrainingPage = () => {
     }
   };
 
-  const handleRegister = (id) => {
-    setCourses(prev => prev.map(c => c.id === id ? { ...c, enrolled: true } : c));
-    alert('🎉 Successfully registered for training program!');
+  const handleRegister = async (id) => {
+    try {
+      await enrollInTraining(id);
+      setCourses(prev => prev.map(c => c.id === id ? { ...c, enrolled: true } : c));
+      alert('🎉 Successfully registered for training program!');
+    } catch (err) {
+      alert('Failed to register: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const myEnrolledCourses = courses.filter(c => c.enrolled);
