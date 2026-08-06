@@ -66,7 +66,7 @@ const EmployeeDirectoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('All');
-  
+
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [activeEmployeeId, setActiveEmployeeId] = useState(null);
@@ -277,7 +277,7 @@ const EmployeeDirectoryPage = () => {
         .emp-avatar-badge {
           width: 38px; height: 38px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+          background: linear-gradient(135deg, #FFA36C 0%, #FF7A45 100%);
           color: #ffffff;
           font-weight: 800;
           font-size: 0.85rem;
@@ -457,22 +457,22 @@ const EmployeeDirectoryPage = () => {
                 <form onSubmit={handleAddEmployee}>
                   <div className="mb-3">
                     <label className="form-label fw-bold text-muted small">Employee ID</label>
-                    <input type="text" className="form-control" required value={newEmployee.employee_id} onChange={e => setNewEmployee({...newEmployee, employee_id: e.target.value})} style={{ borderRadius: '12px', background: '#f8fafc' }} />
+                    <input type="text" className="form-control" required value={newEmployee.employee_id} onChange={e => setNewEmployee({ ...newEmployee, employee_id: e.target.value })} style={{ borderRadius: '12px', background: '#f8fafc' }} />
                   </div>
                   <div className="row g-3 mb-3">
                     <div className="col-md-6">
                       <label className="form-label fw-bold text-muted small">Full Name</label>
-                      <input type="text" className="form-control" required value={newEmployee.name} onChange={e => setNewEmployee({...newEmployee, name: e.target.value})} style={{ borderRadius: '12px' }} />
+                      <input type="text" className="form-control" required value={newEmployee.name} onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} style={{ borderRadius: '12px' }} />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-bold text-muted small">Email Address</label>
-                      <input type="email" className="form-control" required value={newEmployee.email} onChange={e => setNewEmployee({...newEmployee, email: e.target.value})} style={{ borderRadius: '12px' }} />
+                      <input type="email" className="form-control" required value={newEmployee.email} onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })} style={{ borderRadius: '12px' }} />
                     </div>
                   </div>
                   <div className="row g-3 mb-3">
                     <div className="col-md-6">
                       <label className="form-label fw-bold text-muted small">Role</label>
-                      <select className="form-select" value={newEmployee.role} onChange={e => setNewEmployee({...newEmployee, role: e.target.value})} style={{ borderRadius: '12px' }}>
+                      <select className="form-select" value={newEmployee.role} onChange={e => setNewEmployee({ ...newEmployee, role: e.target.value })} style={{ borderRadius: '12px' }}>
                         <option>Employee</option>
                         <option>Manager</option>
                         <option>HR</option>
@@ -481,7 +481,7 @@ const EmployeeDirectoryPage = () => {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-bold text-muted small">Department</label>
-                      <select className="form-select" value={newEmployee.department} onChange={e => setNewEmployee({...newEmployee, department: e.target.value})} style={{ borderRadius: '12px' }}>
+                      <select className="form-select" value={newEmployee.department} onChange={e => setNewEmployee({ ...newEmployee, department: e.target.value })} style={{ borderRadius: '12px' }}>
                         <option value="IT">IT</option>
                         <option value="Engineering">Engineering</option>
                         <option value="Operations">Operations</option>
@@ -492,11 +492,11 @@ const EmployeeDirectoryPage = () => {
                   <div className="row g-3 mb-4">
                     <div className="col-md-6">
                       <label className="form-label fw-bold text-muted small">Hire Date</label>
-                      <input type="date" className="form-control" value={newEmployee.hire_date} onChange={e => setNewEmployee({...newEmployee, hire_date: e.target.value})} style={{ borderRadius: '12px' }} />
+                      <input type="date" className="form-control" value={newEmployee.hire_date} onChange={e => setNewEmployee({ ...newEmployee, hire_date: e.target.value })} style={{ borderRadius: '12px' }} />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-bold text-muted small">Base Salary</label>
-                      <input type="number" className="form-control" value={newEmployee.base_salary} onChange={e => setNewEmployee({...newEmployee, base_salary: e.target.value})} style={{ borderRadius: '12px' }} />
+                      <input type="number" className="form-control" value={newEmployee.base_salary} onChange={e => setNewEmployee({ ...newEmployee, base_salary: e.target.value })} style={{ borderRadius: '12px' }} />
                     </div>
                   </div>
                   <div className="d-flex justify-content-end gap-2 mt-4">
@@ -522,7 +522,7 @@ const EmployeeDirectoryPage = () => {
               <div className="modal-body px-4 py-4">
                 <div className="text-center mb-4">
                   <div className="mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
-                       style={{ width: '80px', height: '80px', borderRadius: '50%', fontSize: '2rem', background: 'linear-gradient(135deg, #f43f5e 0%, #a855f7 100%)' }}>
+                    style={{ width: '80px', height: '80px', borderRadius: '50%', fontSize: '2rem', background: 'linear-gradient(135deg, #FFA36C 0%, #FF7A45 100%)' }}>
                     {getInitials(viewingEmployee.name)}
                   </div>
                   <h4 className="fw-bold mb-1" style={{ color: '#1e293b' }}>{viewingEmployee.name || 'Unknown'}</h4>
@@ -533,7 +533,7 @@ const EmployeeDirectoryPage = () => {
                     <span style={{ fontSize: '14px', marginRight: '4px' }}>•</span> Active
                   </span>
                 </div>
-                
+
                 <hr style={{ borderColor: '#e2e8f0', margin: '1.5rem 0' }} />
 
                 <div className="d-flex flex-column gap-3">

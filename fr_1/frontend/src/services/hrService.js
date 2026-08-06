@@ -11,6 +11,16 @@ export const createPerformanceReview = async (data) => {
   return response.data;
 };
 
+export const updatePerformanceReview = async (id, data) => {
+  const response = await api.put(`/hr/performance/${id}`, data);
+  return response.data;
+};
+
+export const deletePerformanceReview = async (id) => {
+  const response = await api.delete(`/hr/performance/${id}`);
+  return response.data;
+};
+
 // 2. Recruitment Candidates
 export const fetchCandidates = async () => {
   const response = await api.get('/hr/recruitment');

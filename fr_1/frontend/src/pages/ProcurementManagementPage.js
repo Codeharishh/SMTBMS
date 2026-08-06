@@ -51,6 +51,11 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
       <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
     </svg>
+  ),
+  chevronDown: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <polyline vectorEffect="non-scaling-stroke" points="6 9 12 15 18 9" />
+    </svg>
   )
 };
 
@@ -378,7 +383,7 @@ const ProcurementManagementPage = () => {
             <div className="modal-content rounded-4 border-0 shadow-lg">
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-                  🛒 Raise New Purchase Order
+                  {THIN_ICONS.cart} Raise New Purchase Order
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
@@ -441,18 +446,23 @@ const ProcurementManagementPage = () => {
                     </div>
                     <div className="col-6">
                       <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>UNIT</label>
-                      <select
-                        className="form-select rounded-3"
-                        value={poForm.unit || 'pcs'}
-                        onChange={(e) => setPoForm({ ...poForm, unit: e.target.value })}
-                        style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
-                      >
-                        <option value="pcs">pcs</option>
-                        <option value="kg">kg</option>
-                        <option value="tons">tons</option>
-                        <option value="liters">liters</option>
-                        <option value="boxes">boxes</option>
-                      </select>
+                      <div className="position-relative">
+                        <select
+                          className="form-select rounded-3 pe-5"
+                          value={poForm.unit || 'pcs'}
+                          onChange={(e) => setPoForm({ ...poForm, unit: e.target.value })}
+                          style={{ background: '#FAF8FF', border: '1px solid #E5E0F5', appearance: 'none' }}
+                        >
+                          <option value="pcs">pcs</option>
+                          <option value="kg">kg</option>
+                          <option value="tons">tons</option>
+                          <option value="liters">liters</option>
+                          <option value="boxes">boxes</option>
+                        </select>
+                        <div className="position-absolute top-50 end-0 translate-middle-y pe-3" style={{ pointerEvents: 'none', color: '#94a3b8' }}>
+                          {THIN_ICONS.chevronDown}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -473,9 +483,8 @@ const ProcurementManagementPage = () => {
                     <div className="col-6">
                       <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>EXPECTED DELIVERY</label>
                       <input
-                        type="text"
+                        type="date"
                         className="form-control rounded-3"
-                        placeholder="e.g. 5 Jun 2026"
                         value={poForm.delivery_date || ''}
                         onChange={(e) => setPoForm({ ...poForm, delivery_date: e.target.value })}
                         style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
@@ -487,17 +496,22 @@ const ProcurementManagementPage = () => {
                   <div className="row g-3 mb-3">
                     <div className="col-6">
                       <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>PRIORITY</label>
-                      <select
-                        className="form-select rounded-3"
-                        value={poForm.priority || 'Medium'}
-                        onChange={(e) => setPoForm({ ...poForm, priority: e.target.value })}
-                        style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
-                      >
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Critical">Critical</option>
-                      </select>
+                      <div className="position-relative">
+                        <select
+                          className="form-select rounded-3 pe-5"
+                          value={poForm.priority || 'Medium'}
+                          onChange={(e) => setPoForm({ ...poForm, priority: e.target.value })}
+                          style={{ background: '#FAF8FF', border: '1px solid #E5E0F5', appearance: 'none' }}
+                        >
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                          <option value="Critical">Critical</option>
+                        </select>
+                        <div className="position-absolute top-50 end-0 translate-middle-y pe-3" style={{ pointerEvents: 'none', color: '#94a3b8' }}>
+                          {THIN_ICONS.chevronDown}
+                        </div>
+                      </div>
                     </div>
                     <div className="col-6">
                       <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>DEPARTMENT</label>
@@ -514,16 +528,21 @@ const ProcurementManagementPage = () => {
                   {/* APPROVER */}
                   <div className="mb-3">
                     <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>APPROVER</label>
-                    <select
-                      className="form-select rounded-3"
-                      value={poForm.approver || 'Manager'}
-                      onChange={(e) => setPoForm({ ...poForm, approver: e.target.value })}
-                      style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
-                    >
-                      <option value="Manager">Manager</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Finance Lead">Finance Lead</option>
-                    </select>
+                    <div className="position-relative">
+                      <select
+                        className="form-select rounded-3 pe-5"
+                        value={poForm.approver || 'Manager'}
+                        onChange={(e) => setPoForm({ ...poForm, approver: e.target.value })}
+                        style={{ background: '#FAF8FF', border: '1px solid #E5E0F5', appearance: 'none' }}
+                      >
+                        <option value="Manager">Manager</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Finance Lead">Finance Lead</option>
+                      </select>
+                      <div className="position-absolute top-50 end-0 translate-middle-y pe-3" style={{ pointerEvents: 'none', color: '#94a3b8' }}>
+                        {THIN_ICONS.chevronDown}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

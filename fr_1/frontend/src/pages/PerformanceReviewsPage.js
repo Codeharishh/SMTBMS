@@ -1,6 +1,6 @@
 // src/pages/PerformanceReviewsPage.js
 import React, { useEffect, useMemo, useState } from 'react';
-import { fetchPerformanceReviews, createPerformanceReview } from '../services/hrService';
+import { fetchPerformanceReviews, createPerformanceReview, updatePerformanceReview, deletePerformanceReview } from '../services/hrService';
 import { fetchEmployees } from '../services/employeeService';
 import { getCurrentUser } from '../utils/authHelpers';
 
@@ -49,6 +49,24 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
       <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
     </svg>
+  ),
+  edit: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path vectorEffect="non-scaling-stroke" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  ),
+  trash: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <polyline vectorEffect="non-scaling-stroke" points="3 6 5 6 21 6" />
+      <path vectorEffect="non-scaling-stroke" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  ),
+  eye: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <path vectorEffect="non-scaling-stroke" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="3" />
+    </svg>
   )
 };
 
@@ -62,7 +80,8 @@ const PerformanceReviewsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState('All');
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ employee_id: '', rating: 5, feedback: '', goals: '', review_date: new Date().toISOString().split('T')[0] });
+  const [form, setForm] = useState({ id: null, employee_id: '', kpi_score: '', attendance_score: '', targets_met: '', teamwork: '', rating: 'Excellent', appraisal: '' });
+  const [viewingReview, setViewingReview] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -86,18 +105,30 @@ const PerformanceReviewsPage = () => {
     let excellent = 0;
     let good = 0;
     let average = 0;
+    let totalScore = 0;
+    let count = 0;
 
     reviews.forEach(r => {
-      const rating = Number(r.rating || 4);
-      if (rating >= 5) excellent++;
-      else if (rating >= 4) good++;
+      const rating = r.rating || 'Excellent';
+      if (rating === 'Excellent' || Number(r.rating) >= 5) excellent++;
+      else if (rating === 'Good' || Number(r.rating) === 4) good++;
       else average++;
+
+      const kpi = Number(r.kpi_score || 0);
+      const att = Number(r.attendance_score || 0);
+      const tgt = Number(r.targets_met || 0);
+      const team = Number(r.teamwork || 0);
+      const overall = Math.round((kpi + att + tgt + team) / 4);
+      totalScore += overall;
+      count++;
     });
 
+    const finalAvg = count > 0 ? Math.round(totalScore / count) : 0;
+
     return {
-      avgScore: '84/100',
-      excellent: excellent || 4,
-      good: good || 5,
+      avgScore: `${finalAvg}/100`,
+      excellent: excellent || (reviews.length ? 0 : 4),
+      good: good || (reviews.length ? 0 : 5),
       belowAvg: average
     };
   }, [reviews]);
@@ -119,13 +150,48 @@ const PerformanceReviewsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createPerformanceReview(form);
-      loadData();
+      if (form.id) {
+        // Edit mode
+        await updatePerformanceReview(form.id, form);
+      } else {
+        // Create mode
+        await createPerformanceReview(form);
+      }
+      await loadData();
       setShowModal(false);
-      setForm({ employee_id: '', rating: 5, feedback: '', goals: '', review_date: new Date().toISOString().split('T')[0] });
+      setForm({ id: null, employee_id: '', kpi_score: '', attendance_score: '', targets_met: '', teamwork: '', rating: 'Excellent', appraisal: '' });
     } catch (err) {
       alert('Failed to log review.');
     }
+  };
+
+  const handleEdit = (r) => {
+    setForm({
+      id: r.id,
+      employee_id: r.employee_id || '',
+      kpi_score: r.kpi_score || 0,
+      attendance_score: r.attendance_score || 0,
+      targets_met: r.targets_met || 0,
+      teamwork: r.teamwork || 0,
+      rating: r.rating || 'Excellent',
+      appraisal: r.appraisal || '0%'
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this performance review?')) {
+      try {
+        await deletePerformanceReview(id);
+        await loadData();
+      } catch (err) {
+        alert('Failed to delete review');
+      }
+    }
+  };
+
+  const handleView = (r) => {
+    setViewingReview(r);
   };
 
   const getInitials = (name) => {
@@ -229,10 +295,22 @@ const PerformanceReviewsPage = () => {
           box-shadow: 0 8px 20px rgba(165, 175, 200, 0.12) !important;
         }
 
+        .btn-action-icon {
+          width: 32px !important; height: 32px !important; border-radius: 10px !important;
+          border: none !important; display: inline-flex !important; align-items: center !important;
+          justify-content: center !important; transition: all 0.2s ease !important; cursor: pointer !important;
+        }
+        .view-icon-btn { background-color: #ECFDF5 !important; color: #10B981 !important; }
+        .view-icon-btn:hover { background-color: #10B981 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important; transform: translateY(-1px); }
+        .edit-icon-btn { background-color: #EFF6FF !important; color: #3B82F6 !important; }
+        .edit-icon-btn:hover { background-color: #3B82F6 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important; transform: translateY(-1px); }
+        .del-icon-btn { background-color: #FFF1F2 !important; color: #F43F5E !important; }
+        .del-icon-btn:hover { background-color: #F43F5E !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important; transform: translateY(-1px); }
+
         .emp-avatar-badge {
           width: 38px; height: 38px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+          background: linear-gradient(135deg, #FFA36C 0%, #FF7A45 100%);
           color: #ffffff;
           font-weight: 800;
           font-size: 0.85rem;
@@ -325,9 +403,11 @@ const PerformanceReviewsPage = () => {
                   <th>KPI Score</th>
                   <th>Attendance</th>
                   <th>Targets</th>
+                  <th>Teamwork</th>
                   <th>Overall</th>
                   <th>Rating</th>
                   <th>Appraisal</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -336,13 +416,15 @@ const PerformanceReviewsPage = () => {
                 ) : (
                   filteredReviews.map(r => {
                     const empName = r.employee_name || `Employee ${r.employee_id}`;
-                    const rating = Number(r.rating || 4);
+                    const ratingText = r.rating || 'Excellent';
                     let badge = <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.emerald}1A`, color: '#0f9488' }}>• Excellent</span>;
-                    if (rating === 4) {
+                    if (ratingText === 'Good') {
                       badge = <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.indigo}1A`, color: '#2563eb' }}>• Good</span>;
-                    } else if (rating < 4) {
+                    } else if (ratingText === 'Average' || ratingText === 'Needs Improvement') {
                       badge = <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.amber}22`, color: '#b45309' }}>• Average</span>;
                     }
+
+                    const overallScore = Math.round((Number(r.kpi_score || 0) + Number(r.attendance_score || 0) + Number(r.targets_met || 0) + Number(r.teamwork || 0)) / 4);
 
                     return (
                       <tr key={r.id}>
@@ -353,16 +435,24 @@ const PerformanceReviewsPage = () => {
                           </div>
                         </td>
                         <td>{r.department || 'Sales'}</td>
-                        <td className="fw-bold">85/100</td>
-                        <td className="fw-bold text-success">94%</td>
-                        <td className="fw-bold">88%</td>
+                        <td className="fw-bold">{r.kpi_score || 0}/100</td>
+                        <td className="fw-bold text-success">{r.attendance_score || 0}%</td>
+                        <td className="fw-bold">{r.targets_met || 0}%</td>
+                        <td className="fw-bold text-primary">{r.teamwork || 0}/100</td>
                         <td>
                           <div style={{ width: 34, height: 34, borderRadius: '50%', border: `3px solid ${COLORS.emerald}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.78rem' }}>
-                            88
+                            {overallScore}
                           </div>
                         </td>
                         <td>{badge}</td>
-                        <td className="fw-bold" style={{ color: COLORS.emerald }}>+10%</td>
+                        <td className="fw-bold" style={{ color: COLORS.emerald }}>{r.appraisal || '0%'}</td>
+                        <td>
+                          <div className="d-flex gap-2">
+                            <button className="btn-action-icon view-icon-btn" onClick={() => handleView(r)} title="View Review">{THIN_ICONS.eye}</button>
+                            <button className="btn-action-icon edit-icon-btn" onClick={() => handleEdit(r)} title="Edit Review">{THIN_ICONS.edit}</button>
+                            <button className="btn-action-icon del-icon-btn" onClick={() => handleDelete(r.id)} title="Delete Review">{THIN_ICONS.trash}</button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })
@@ -385,7 +475,7 @@ const PerformanceReviewsPage = () => {
               <form onSubmit={handleSubmit}>
                 <div className="modal-body py-3">
                   <div className="mb-3">
-                    <label className="form-label small fw-bold">Select Employee</label>
+                    <label className="form-label small fw-bold text-uppercase text-muted">Select Employee</label>
                     <select className="form-select rounded-3" value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })} required>
                       <option value="">Choose employee...</option>
                       {employees.map(e => (
@@ -393,13 +483,39 @@ const PerformanceReviewsPage = () => {
                       ))}
                     </select>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label small fw-bold">Rating (1-5 Stars)</label>
-                    <input type="number" className="form-control rounded-3" min={1} max={5} value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })} />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label small fw-bold">Feedback / Remarks</label>
-                    <textarea className="form-control rounded-3" rows={3} value={form.feedback} onChange={(e) => setForm({ ...form, feedback: e.target.value })} placeholder="Key achievements and strengths..." />
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold text-uppercase text-muted">KPI SCORE (0-100)</label>
+                      <input type="number" className="form-control rounded-3" value={form.kpi_score} onChange={e => setForm({...form, kpi_score: e.target.value})} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold text-uppercase text-muted">ATTENDANCE SCORE</label>
+                      <input type="number" className="form-control rounded-3" value={form.attendance_score} onChange={e => setForm({...form, attendance_score: e.target.value})} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold text-uppercase text-muted">TARGETS MET</label>
+                      <input type="number" className="form-control rounded-3" value={form.targets_met} onChange={e => setForm({...form, targets_met: e.target.value})} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold text-uppercase text-muted">TEAMWORK</label>
+                      <input type="number" className="form-control rounded-3" value={form.teamwork} onChange={e => setForm({...form, teamwork: e.target.value})} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold text-uppercase text-muted">RATING</label>
+                      <select className="form-select rounded-3" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})}>
+                        <option>Excellent</option>
+                        <option>Good</option>
+                        <option>Average</option>
+                        <option>Needs Improvement</option>
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold text-uppercase text-muted">APPRAISAL %</label>
+                      <input type="text" className="form-control rounded-3" value={form.appraisal} onChange={e => setForm({...form, appraisal: e.target.value})} />
+                    </div>
+                    <div className="col-12 mt-3">
+                      <input type="text" className="form-control rounded-3 bg-light" readOnly value={`Overall Score = ${Math.round((Number(form.kpi_score || 0) + Number(form.attendance_score || 0) + Number(form.targets_met || 0) + Number(form.teamwork || 0)) / 4) || 0} / 100`} />
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer border-0">
@@ -409,6 +525,69 @@ const PerformanceReviewsPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL FOR VIEWING REVIEW */}
+      {viewingReview && (
+        <div className="modal fade show d-block" style={{ background: 'rgba(44, 37, 32, 0.35)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4 border-0 shadow-lg">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="fw-bold modal-title" style={{ color: '#1e293b' }}>Performance Review Details</h5>
+                <button type="button" className="btn-close" onClick={() => setViewingReview(null)}></button>
+              </div>
+              <div className="modal-body py-4">
+                <div className="d-flex align-items-center gap-3 mb-4">
+                  <div className="emp-avatar-badge" style={{ width: 48, height: 48, fontSize: '1.2rem' }}>
+                    {getInitials(viewingReview.employee_name || `EMP-${viewingReview.employee_id}`)}
+                  </div>
+                  <div>
+                    <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>{viewingReview.employee_name || `Employee ${viewingReview.employee_id}`}</h5>
+                    <div className="text-muted small">{viewingReview.department || 'Sales'}</div>
+                  </div>
+                </div>
+                <div className="row g-3">
+                  <div className="col-6">
+                    <div className="p-3 rounded-3 bg-light border">
+                      <div className="text-muted small fw-bold text-uppercase mb-1">KPI Score</div>
+                      <div className="fw-bold fs-5">{viewingReview.kpi_score || 85}/100</div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="p-3 rounded-3 bg-light border">
+                      <div className="text-muted small fw-bold text-uppercase mb-1">Attendance</div>
+                      <div className="fw-bold fs-5 text-success">{viewingReview.attendance_score || 96}%</div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="p-3 rounded-3 bg-light border">
+                      <div className="text-muted small fw-bold text-uppercase mb-1">Targets Met</div>
+                      <div className="fw-bold fs-5">{viewingReview.targets_met || 88}%</div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="p-3 rounded-3 bg-light border">
+                      <div className="text-muted small fw-bold text-uppercase mb-1">Teamwork</div>
+                      <div className="fw-bold fs-5">{viewingReview.teamwork || 84}</div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="p-3 rounded-3 bg-light border">
+                      <div className="text-muted small fw-bold text-uppercase mb-1">Rating</div>
+                      <div className="fw-bold fs-5" style={{ color: COLORS.primary }}>{viewingReview.rating || 'Excellent'}</div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="p-3 rounded-3 bg-light border">
+                      <div className="text-muted small fw-bold text-uppercase mb-1">Appraisal</div>
+                      <div className="fw-bold fs-5" style={{ color: COLORS.emerald }}>{viewingReview.appraisal || '10%'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

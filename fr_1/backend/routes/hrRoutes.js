@@ -16,6 +16,18 @@ router.post(
   authorize('Admin', 'HR', 'Manager'),
   hrController.createPerformanceReview
 );
+router.put(
+  '/performance/:id',
+  protect,
+  authorize('Admin', 'HR', 'Manager'),
+  hrController.updatePerformanceReview
+);
+router.delete(
+  '/performance/:id',
+  protect,
+  authorize('Admin', 'HR', 'Manager'),
+  hrController.deletePerformanceReview
+);
 
 // Recruitment Candidates routes
 router.get(

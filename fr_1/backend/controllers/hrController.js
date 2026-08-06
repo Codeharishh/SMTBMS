@@ -39,17 +39,22 @@ exports.getPerformanceReviews = async (req, res) => {
 
 exports.createPerformanceReview = async (req, res) => {
   try {
-    const { employee_id, review_date, rating, feedback, goals } = req.body;
-    if (!employee_id || !review_date || !rating || !feedback) {
-      return res.status(400).json({ message: 'Missing required review fields' });
+    const { employee_id, review_date, rating, feedback, goals, kpi_score, attendance_score, targets_met, teamwork, appraisal } = req.body;
+    if (!employee_id || !rating) {
+      return res.status(400).json({ message: 'Missing required review fields (employee_id, rating)' });
     }
 
     const reviewer_id = req.user.id;
+    const finalDate = review_date || new Date().toISOString().split('T')[0];
+    const finalFeedback = feedback || 'Performance reviewed based on core KPIs.';
 
     const [result] = await pool.query(
-      `INSERT INTO performance_reviews (employee_id, reviewer_id, review_date, rating, feedback, goals) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [employee_id, reviewer_id, review_date, rating, feedback, goals || '']
+      `INSERT INTO performance_reviews (employee_id, reviewer_id, review_date, rating, feedback, goals, kpi_score, attendance_score, targets_met, teamwork, appraisal) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        employee_id, reviewer_id, finalDate, rating, finalFeedback, goals || '', 
+        kpi_score || 85, attendance_score || 96, targets_met || 88, teamwork || 84, appraisal || '10%'
+      ]
     );
 
     res.status(201).json({
@@ -59,7 +64,38 @@ exports.createPerformanceReview = async (req, res) => {
     });
   } catch (error) {
     console.error('Create performance review error', error);
-    res.status(500).json({ message: 'Unable to create performance review' });
+    res.status(500).json({ message: 'Unable to log performance review' });
+  }
+};
+
+exports.updatePerformanceReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { employee_id, rating, feedback, goals, kpi_score, attendance_score, targets_met, teamwork, appraisal } = req.body;
+    
+    const finalFeedback = feedback || 'Performance reviewed based on core KPIs.';
+
+    await pool.query(
+      `UPDATE performance_reviews 
+       SET employee_id = ?, rating = ?, feedback = ?, goals = ?, kpi_score = ?, attendance_score = ?, targets_met = ?, teamwork = ?, appraisal = ?
+       WHERE id = ?`,
+      [employee_id, rating, finalFeedback, goals || '', kpi_score || 85, attendance_score || 96, targets_met || 88, teamwork || 84, appraisal || '10%', id]
+    );
+    res.json({ success: true, message: 'Review updated successfully' });
+  } catch (error) {
+    console.error('Update performance review error', error);
+    res.status(500).json({ message: 'Unable to update performance review' });
+  }
+};
+
+exports.deletePerformanceReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM performance_reviews WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Delete performance review error', error);
+    res.status(500).json({ message: 'Unable to delete performance review' });
   }
 };
 

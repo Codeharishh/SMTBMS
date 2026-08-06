@@ -269,12 +269,12 @@ const ReportsPage = () => {
     const rev = chartData.datasets[0].data;
     const exp = chartData.datasets[1].data;
     const prof = chartData.datasets[2].data;
-    
+
     let csvContent = "Month,Revenue (INR),Expenses (INR),Net Profit (INR)\n";
-    for(let i = 0; i < labels.length; i++) {
+    for (let i = 0; i < labels.length; i++) {
       csvContent += `${labels[i]},${rev[i]},${exp[i]},${prof[i]}\n`;
     }
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -456,7 +456,7 @@ const ReportsPage = () => {
         <div className="print-content">
           <h1 className="print-title">Overview Report</h1>
           <h3 className="print-subtitle">Monthly Revenue, Expenses & Profit</h3>
-          
+
           <table className="print-table">
             <thead>
               <tr>
@@ -473,7 +473,7 @@ const ReportsPage = () => {
                 const exp = chartData.datasets[1].data[idx];
                 const profit = chartData.datasets[2].data[idx];
                 const margin = rev > 0 ? ((profit / rev) * 100).toFixed(1) : 0;
-                
+
                 return (
                   <tr key={month}>
                     <td>{month.split(' ')[0]}</td>
@@ -490,83 +490,83 @@ const ReportsPage = () => {
       </div>
 
       <div className="reports-dashboard">
-      {/* MATCHED MODERN NAVIGATION HEADER */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
-        <div className="d-flex align-items-center gap-3">
-          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
-            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
-            {THIN_ICONS.barChart}
+        {/* MATCHED MODERN NAVIGATION HEADER */}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
+          <div className="d-flex align-items-center gap-3">
+            <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+              style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+              {THIN_ICONS.barChart}
+            </div>
+            <div className="d-flex flex-column justify-content-center">
+              <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Reports & Analytics</h3>
+              <p style={{ color: '#94a3b8' }} className="small mb-0">6 of 6 report types accessible</p>
+            </div>
           </div>
-          <div className="d-flex flex-column justify-content-center">
-            <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Reports & Analytics</h3>
-            <p style={{ color: '#94a3b8' }} className="small mb-0">6 of 6 report types accessible</p>
+
+          {/* TOP RIGHT CONTROLS */}
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <div className="reports-ctrl-btn">
+              {THIN_ICONS.calendar}
+              <select
+                className="form-select border-0 p-0 fw-bold small shadow-none"
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value)}
+                style={{ background: 'transparent', cursor: 'pointer', color: '#475569' }}
+              >
+                <option value="Last 30 days">Last 30 days</option>
+                <option value="Last 6 months">Last 6 months</option>
+                <option value="This Year">This Year</option>
+              </select>
+            </div>
+
+            <button className="reports-ctrl-btn" onClick={handleExportPDF}>
+              {THIN_ICONS.fileText}
+              <span>Export PDF</span>
+            </button>
+
+            <button className="reports-ctrl-btn" onClick={handleExportCSV}>
+              {THIN_ICONS.download}
+              <span>Export CSV</span>
+            </button>
+
+            <button className="reports-ctrl-btn" onClick={() => window.location.reload()}>
+              {THIN_ICONS.refresh}
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
 
-        {/* TOP RIGHT CONTROLS */}
-        <div className="d-flex align-items-center gap-2 flex-wrap">
-          <div className="reports-ctrl-btn">
-            {THIN_ICONS.calendar}
-            <select
-              className="form-select border-0 p-0 fw-bold small shadow-none"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              style={{ background: 'transparent', cursor: 'pointer', color: '#475569' }}
-            >
-              <option value="Last 30 days">Last 30 days</option>
-              <option value="Last 6 months">Last 6 months</option>
-              <option value="This Year">This Year</option>
-            </select>
-          </div>
+        <div className="section-eyebrow">Overview</div>
 
-          <button className="reports-ctrl-btn" onClick={handleExportPDF}>
-            {THIN_ICONS.fileText}
-            <span>Export PDF</span>
-          </button>
-
-          <button className="reports-ctrl-btn" onClick={handleExportCSV}>
-            {THIN_ICONS.download}
-            <span>Export CSV</span>
-          </button>
-
-          <button className="reports-ctrl-btn" onClick={() => window.location.reload()}>
-            {THIN_ICONS.refresh}
-            <span>Refresh</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="section-eyebrow">Overview</div>
-
-      {/* METRICS ROW */}
-      <div className="row g-3 mb-4">
-        {[
-          { label: 'Total Revenue (6M)', value: computedMetrics.totalRevFormatted, sub: `+14.4% · Jan – Jun 2026`, icon: THIN_ICONS.rupee, color: COLORS.emerald },
-          { label: 'Net Profit (6M)', value: computedMetrics.netProfitFormatted, sub: `+18.2% · Margin ${computedMetrics.marginPct}`, icon: THIN_ICONS.trendingUp, color: COLORS.indigo },
-          { label: 'Total Materials', value: computedMetrics.totalMatCount, sub: '+12.5% · Across 5 locations', icon: THIN_ICONS.box, color: COLORS.sky },
-          { label: 'Total Employees', value: computedMetrics.totalEmpCount, sub: '+8.4% · 5 departments', icon: THIN_ICONS.users, color: COLORS.violet },
-          { label: 'Total Customers', value: computedMetrics.totalCustCount, sub: '+10.7% · Active accounts', icon: THIN_ICONS.handshake, color: COLORS.amber }
-        ].map((card, idx) => (
-          <div key={idx} className="col-12 col-sm-6 col-xl">
-            <MetricCard label={card.label} value={card.value} sub={card.sub} icon={card.icon} color={card.color} />
-          </div>
-        ))}
-      </div>
-
-      {/* REVENUE · EXPENSES · PROFIT MONTHLY TREND CHART CARD */}
-      <div className="card border-0 shadow-sm p-4 hover-premium-card" style={{ borderRadius: '22px', backgroundColor: '#ffffff' }}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div className="d-flex align-items-center gap-2">
-            <span style={{ width: '4px', height: '20px', background: COLORS.primary, borderRadius: '4px' }}></span>
-            <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>Revenue · Expenses · Profit — Monthly Trend</h5>
-          </div>
-          <button className="reports-ctrl-btn" onClick={handleExportCSV}>Export CSV</button>
+        {/* METRICS ROW */}
+        <div className="row g-3 mb-4">
+          {[
+            { label: 'Total Revenue (6M)', value: computedMetrics.totalRevFormatted, sub: `+14.4% · Jan – Jun 2026`, icon: THIN_ICONS.rupee, color: COLORS.emerald },
+            { label: 'Net Profit (6M)', value: computedMetrics.netProfitFormatted, sub: `+18.2% · Margin ${computedMetrics.marginPct}`, icon: THIN_ICONS.trendingUp, color: COLORS.indigo },
+            { label: 'Total Materials', value: computedMetrics.totalMatCount, sub: '+12.5% · Across 5 locations', icon: THIN_ICONS.box, color: COLORS.sky },
+            { label: 'Total Employees', value: computedMetrics.totalEmpCount, sub: '+8.4% · 5 departments', icon: THIN_ICONS.users, color: COLORS.violet },
+            { label: 'Total Customers', value: computedMetrics.totalCustCount, sub: '+10.7% · Active accounts', icon: THIN_ICONS.handshake, color: COLORS.amber }
+          ].map((card, idx) => (
+            <div key={idx} className="col-12 col-sm-6 col-xl">
+              <MetricCard label={card.label} value={card.value} sub={card.sub} icon={card.icon} color={card.color} />
+            </div>
+          ))}
         </div>
 
-        <div style={{ height: '340px' }}>
-          <Line data={chartData} options={chartOptions} />
+        {/* REVENUE · EXPENSES · PROFIT MONTHLY TREND CHART CARD */}
+        <div className="card border-0 shadow-sm p-4 hover-premium-card" style={{ borderRadius: '22px', backgroundColor: '#ffffff' }}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <span style={{ width: '4px', height: '20px', background: COLORS.primary, borderRadius: '4px' }}></span>
+              <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>Revenue · Expenses · Profit — Monthly Trend</h5>
+            </div>
+            <button className="reports-ctrl-btn" onClick={handleExportCSV}>Export CSV</button>
+          </div>
+
+          <div style={{ height: '340px' }}>
+            <Line data={chartData} options={chartOptions} />
+          </div>
         </div>
-      </div>
 
       </div>
     </div>

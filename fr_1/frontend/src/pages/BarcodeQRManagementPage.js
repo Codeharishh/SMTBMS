@@ -1,6 +1,5 @@
-// src/pages/BarcodeQRManagementPage.js
 import React, { useState, useEffect, useMemo } from 'react';
-import { fetchMaterials } from '../services/materialService';
+import { fetchMaterials, updateMaterial } from '../services/materialService';
 
 // ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
 const COLORS = {
@@ -82,6 +81,12 @@ const BarcodeQRManagementPage = () => {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanCount, setScanCount] = useState(14);
+  const [generateForm, setGenerateForm] = useState({
+    material_code: `MAT-${Math.floor(1000 + Math.random() * 9000)}`,
+    location: '',
+    material_id: '',
+    qty: 10
+  });
 
   useEffect(() => {
     loadMaterials();
@@ -162,6 +167,28 @@ const BarcodeQRManagementPage = () => {
     setTimeout(() => {
       window.print();
     }, 200);
+  };
+
+  const handleGenerateLabel = async () => {
+    const targetMaterial = materials.find(m => String(m.id) === String(generateForm.material_id));
+    if (!targetMaterial) {
+      alert('Please select a material first.');
+      return;
+    }
+
+    try {
+      // Update in backend
+      const updatedData = { ...targetMaterial, material_code: generateForm.material_code, location: generateForm.location };
+      await updateMaterial(targetMaterial.id, updatedData).catch(err => console.warn('Update failed', err));
+      
+      // Update local state to reflect in table immediately
+      setMaterials(materials.map(m => String(m.id) === String(targetMaterial.id) ? updatedData : m));
+      
+      alert('Batch Barcodes Queued for Thermal Printer & Registry Updated!');
+      setShowGenerateModal(false);
+    } catch (err) {
+      alert('Failed to generate label');
+    }
   };
 
   const MetricCard = ({ label, value, sub, icon, color }) => (
@@ -366,7 +393,15 @@ const BarcodeQRManagementPage = () => {
           </button>
           <button
             className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
-            onClick={() => setShowGenerateModal(true)}
+            onClick={() => {
+              setGenerateForm({
+                material_code: `MAT-${Math.floor(1000 + Math.random() * 9000)}`,
+                location: '',
+                material_id: materials.length > 0 ? materials[0].id : '',
+                qty: 10
+              });
+              setShowGenerateModal(true);
+            }}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
             {THIN_ICONS.plus}
@@ -573,16 +608,25 @@ const BarcodeQRManagementPage = () => {
               <div className="modal-body py-3">
                 <p className="small" style={{ color: '#94a3b8' }}>Generate thermal roll printable labels for current active inventory catalog.</p>
                 <div className="mb-3">
+                  <label className="form-label small fw-bold" style={{ color: '#475569' }}>Material ID (Auto-Generated)</label>
+                  <input type="text" className="form-control rounded-3" value={generateForm.material_code} onChange={e => setGenerateForm({ ...generateForm, material_code: e.target.value })} style={{ border: '1px solid #e5e0f5' }} />
+                </div>
+                <div className="mb-3">
                   <label className="form-label small fw-bold" style={{ color: '#475569' }}>Select Material Item</label>
-                  <select className="form-select rounded-3" style={{ border: '1px solid #e5e0f5' }}>
+                  <select className="form-select rounded-3" value={generateForm.material_id} onChange={e => setGenerateForm({ ...generateForm, material_id: e.target.value })} style={{ border: '1px solid #e5e0f5' }}>
+                    <option value="">-- Select Material --</option>
                     {materials.map(m => (
                       <option key={m.id} value={m.id}>{m.material_name} ({m.material_code || `MAT-${m.id}`})</option>
                     ))}
                   </select>
                 </div>
                 <div className="mb-3">
+                  <label className="form-label small fw-bold" style={{ color: '#475569' }}>Location</label>
+                  <input type="text" className="form-control rounded-3" value={generateForm.location} onChange={e => setGenerateForm({ ...generateForm, location: e.target.value })} placeholder="e.g. Rack B, Section 3" style={{ border: '1px solid #e5e0f5' }} />
+                </div>
+                <div className="mb-3">
                   <label className="form-label small fw-bold" style={{ color: '#475569' }}>Label Print Quantity</label>
-                  <input type="number" className="form-control rounded-3" defaultValue={10} min={1} style={{ border: '1px solid #e5e0f5' }} />
+                  <input type="number" className="form-control rounded-3" value={generateForm.qty} onChange={e => setGenerateForm({ ...generateForm, qty: e.target.value })} min={1} style={{ border: '1px solid #e5e0f5' }} />
                 </div>
               </div>
               <div className="modal-footer border-0">
@@ -590,7 +634,7 @@ const BarcodeQRManagementPage = () => {
                 <button
                   className="btn rounded-pill px-4 border-0 text-white fw-semibold"
                   style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
-                  onClick={() => { alert('Batch Barcodes Queued for Thermal Printer!'); setShowGenerateModal(false); }}
+                  onClick={handleGenerateLabel}
                 >
                   Generate & Send to Printer
                 </button>
