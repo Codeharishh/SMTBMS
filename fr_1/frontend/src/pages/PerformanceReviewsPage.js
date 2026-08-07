@@ -50,22 +50,24 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
     </svg>
   ),
+  // ── Matched EXACTLY to the edit/delete icon markup used in MaterialTable.js's action buttons (15x15, no vectorEffect) ──
   edit: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path vectorEffect="non-scaling-stroke" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   ),
   trash: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <polyline vectorEffect="non-scaling-stroke" points="3 6 5 6 21 6" />
-      <path vectorEffect="non-scaling-stroke" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   ),
+  // Sized to match the edit/trash icons above for visual consistency across all three action buttons
   eye: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle vectorEffect="non-scaling-stroke" cx="12" cy="12" r="3" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   )
 };
@@ -295,17 +297,48 @@ const PerformanceReviewsPage = () => {
           box-shadow: 0 8px 20px rgba(165, 175, 200, 0.12) !important;
         }
 
+        /* ── ACTION ICON BUTTONS (matched to MaterialTable.js) ── */
         .btn-action-icon {
-          width: 32px !important; height: 32px !important; border-radius: 10px !important;
-          border: none !important; display: inline-flex !important; align-items: center !important;
-          justify-content: center !important; transition: all 0.2s ease !important; cursor: pointer !important;
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
+          border: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
         }
-        .view-icon-btn { background-color: #ECFDF5 !important; color: #10B981 !important; }
-        .view-icon-btn:hover { background-color: #10B981 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important; transform: translateY(-1px); }
-        .edit-icon-btn { background-color: #EFF6FF !important; color: #3B82F6 !important; }
-        .edit-icon-btn:hover { background-color: #3B82F6 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important; transform: translateY(-1px); }
-        .del-icon-btn { background-color: #FFF1F2 !important; color: #F43F5E !important; }
-        .del-icon-btn:hover { background-color: #F43F5E !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important; transform: translateY(-1px); }
+        .view-icon-btn {
+          background-color: #ECFDF5 !important;
+          color: #10B981 !important;
+        }
+        .view-icon-btn:hover {
+          background-color: #10B981 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+          transform: translateY(-1px);
+        }
+        .edit-icon-btn {
+          background-color: #EFF6FF !important;
+          color: #3B82F6 !important;
+        }
+        .edit-icon-btn:hover {
+          background-color: #3B82F6 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+          transform: translateY(-1px);
+        }
+        .del-icon-btn {
+          background-color: #FFF1F2 !important;
+          color: #F43F5E !important;
+        }
+        .del-icon-btn:hover {
+          background-color: #F43F5E !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+          transform: translateY(-1px);
+        }
 
         .emp-avatar-badge {
           width: 38px; height: 38px;
@@ -486,23 +519,23 @@ const PerformanceReviewsPage = () => {
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label className="form-label small fw-bold text-uppercase text-muted">KPI SCORE (0-100)</label>
-                      <input type="number" className="form-control rounded-3" value={form.kpi_score} onChange={e => setForm({...form, kpi_score: e.target.value})} />
+                      <input type="number" className="form-control rounded-3" value={form.kpi_score} onChange={e => setForm({ ...form, kpi_score: e.target.value })} />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label small fw-bold text-uppercase text-muted">ATTENDANCE SCORE</label>
-                      <input type="number" className="form-control rounded-3" value={form.attendance_score} onChange={e => setForm({...form, attendance_score: e.target.value})} />
+                      <input type="number" className="form-control rounded-3" value={form.attendance_score} onChange={e => setForm({ ...form, attendance_score: e.target.value })} />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label small fw-bold text-uppercase text-muted">TARGETS MET</label>
-                      <input type="number" className="form-control rounded-3" value={form.targets_met} onChange={e => setForm({...form, targets_met: e.target.value})} />
+                      <input type="number" className="form-control rounded-3" value={form.targets_met} onChange={e => setForm({ ...form, targets_met: e.target.value })} />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label small fw-bold text-uppercase text-muted">TEAMWORK</label>
-                      <input type="number" className="form-control rounded-3" value={form.teamwork} onChange={e => setForm({...form, teamwork: e.target.value})} />
+                      <input type="number" className="form-control rounded-3" value={form.teamwork} onChange={e => setForm({ ...form, teamwork: e.target.value })} />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label small fw-bold text-uppercase text-muted">RATING</label>
-                      <select className="form-select rounded-3" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})}>
+                      <select className="form-select rounded-3" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })}>
                         <option>Excellent</option>
                         <option>Good</option>
                         <option>Average</option>
@@ -511,7 +544,7 @@ const PerformanceReviewsPage = () => {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label small fw-bold text-uppercase text-muted">APPRAISAL %</label>
-                      <input type="text" className="form-control rounded-3" value={form.appraisal} onChange={e => setForm({...form, appraisal: e.target.value})} />
+                      <input type="text" className="form-control rounded-3" value={form.appraisal} onChange={e => setForm({ ...form, appraisal: e.target.value })} />
                     </div>
                     <div className="col-12 mt-3">
                       <input type="text" className="form-control rounded-3 bg-light" readOnly value={`Overall Score = ${Math.round((Number(form.kpi_score || 0) + Number(form.attendance_score || 0) + Number(form.targets_met || 0) + Number(form.teamwork || 0)) / 4) || 0} / 100`} />

@@ -435,6 +435,7 @@ const AttendanceTrackerPage = () => {
                   <th>EMPLOYEE</th>
                   <th>EMP ID</th>
                   <th>DEPARTMENT</th>
+                  <th>DATE</th>
                   <th>CHECK IN</th>
                   <th>CHECK OUT</th>
                   <th>HOURS</th>
@@ -468,6 +469,7 @@ const AttendanceTrackerPage = () => {
                         </td>
                         <td className="small" style={{ color: '#94a3b8' }}>{empId}</td>
                         <td>{log.department || 'Operations'}</td>
+                        <td className="fw-semibold" style={{ color: '#64748b' }}>{log.attendance_date ? new Date(log.attendance_date).toLocaleDateString() : new Date().toLocaleDateString()}</td>
                         <td className="fw-semibold" style={{ color: '#64748b' }}>{formatTime(log.check_in, '09:00 AM')}</td>
                         <td className="fw-semibold" style={{ color: '#64748b' }}>{formatTime(log.check_out, '06:00 PM')}</td>
                         <td>

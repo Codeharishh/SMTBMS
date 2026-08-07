@@ -43,10 +43,12 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="2" y1="12" x2="22" y2="12" />
     </svg>
   ),
+  // ── FIXED: matched exactly to MaterialTable.js edit icon (no vectorEffect / overflow override,
+  // so the stroke scales down with the 24→15 viewBox the same way it does on the Materials page) ──
   pencil: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path vectorEffect="non-scaling-stroke" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   ),
   search: (
@@ -55,10 +57,11 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
+  // ── FIXED: matched exactly to MaterialTable.js delete icon ──
   trash: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <polyline vectorEffect="non-scaling-stroke" points="3 6 5 6 21 6" />
-      <path vectorEffect="non-scaling-stroke" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   )
 };
@@ -387,48 +390,135 @@ const UserManagementPage = () => {
 
       {/* SUBMIT / EDIT SYSTEM FORMS */}
       {showUserModal && (
-        <div className="card border-0 shadow-sm p-4 mb-4 hover-premium-card" style={{ borderRadius: '22px', borderLeft: `4px solid ${COLORS.primary}` }}>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
-              {editingUser ? '🔧 Modify User Credentials' : '✨ Register New User Profile'}
-            </h5>
-            <button className="btn-close" onClick={() => setShowUserModal(false)} aria-label="Close"></button>
-          </div>
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.55)', backdropFilter: 'blur(5px)', zIndex: 1050 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowUserModal(false);
+          }}
+        >
+          <div
+            className="card border-0 shadow-lg p-4 animate__animated animate__fadeInUp hide-scrollbar-lux"
+            style={{
+              width: '100%',
+              maxWidth: '580px',
+              borderRadius: '24px',
+              backgroundColor: '#ffffff',
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}
+          >
+            <style>{`
+              .hide-scrollbar-lux::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+              }
+              .modal-input-lux {
+                background-color: #F1F5F9 !important;
+                border: 1px solid #E2E8F0 !important;
+                border-radius: 12px !important;
+                padding: 0.5rem 0.85rem !important;
+                font-weight: 600 !important;
+                color: #334155 !important;
+                font-size: 0.86rem !important;
+              }
+              .modal-input-lux:focus {
+                border-color: #FF7A45 !important;
+                box-shadow: 0 0 0 3px rgba(255, 122, 69, 0.15) !important;
+              }
+              .modal-label-lux {
+                font-size: 0.68rem !important;
+                font-weight: 800 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.04em !important;
+                color: #64748B !important;
+                margin-bottom: 4px !important;
+              }
+            `}</style>
 
-          <form onSubmit={handleUserSubmit} className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label small fw-bold text-muted">Full Name</label>
-              <input type="text" className="form-control filter-input-lux" value={userForm.name} required onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} />
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <div className="d-flex align-items-center gap-2">
+                <span className="d-flex align-items-center justify-content-center rounded-3" style={{ width: '32px', height: '32px', background: '#F5F3FF', color: COLORS.indigo }}>
+                  {editingUser ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  )}
+                </span>
+                <h5 className="fw-bold mb-0" style={{ color: '#1e293b', fontSize: '1.25rem' }}>
+                  {editingUser ? 'Modify User Credentials' : 'Register New User Profile'}
+                </h5>
+              </div>
+              <button
+                type="button"
+                className="btn-close rounded-circle p-2"
+                style={{ backgroundColor: '#F1F5F9' }}
+                onClick={() => setShowUserModal(false)}
+                aria-label="Close"
+              ></button>
             </div>
-            <div className="col-md-6">
-              <label className="form-label small fw-bold text-muted">Email Address</label>
-              <input type="email" className="form-control filter-input-lux" value={userForm.email} required onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label small fw-bold text-muted">Password {editingUser && '(Leave blank to retain current)'}</label>
-              <input type="password" className="form-control filter-input-lux" value={userForm.password} required={!editingUser} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small fw-bold text-muted">Functional Role</label>
-              <select className="form-select filter-input-lux" value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}>
-                <option value="Admin">Admin</option>
-                <option value="HR">HR</option>
-                <option value="Manager">Manager</option>
-                <option value="Sales">Sales</option>
-                <option value="Employee">Employee</option>
-              </select>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small fw-bold text-muted">Department</label>
-              <input type="text" className="form-control filter-input-lux" value={userForm.department} onChange={(e) => setUserForm({ ...userForm, department: e.target.value })} />
-            </div>
-            <div className="col-12 d-flex justify-content-end gap-2 mt-4">
-              <button type="button" className="btn btn-light px-4 rounded-3 fw-semibold border" onClick={() => setShowUserModal(false)}>Cancel</button>
-              <button type="submit" className="btn text-white px-4 rounded-3 fw-semibold hover-btn-lux" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}>
-                {editingUser ? 'Save Updates' : 'Confirm Registration'}
-              </button>
-            </div>
-          </form>
+
+            <form onSubmit={handleUserSubmit} className="p-2">
+              <div className="row g-3">
+                <div className="col-12 col-md-6">
+                  <label className="modal-label-lux">FULL NAME *</label>
+                  <input type="text" className="form-control modal-input-lux" value={userForm.name} required onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} />
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="modal-label-lux">EMAIL ADDRESS *</label>
+                  <input type="email" className="form-control modal-input-lux" value={userForm.email} required onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} />
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="modal-label-lux">PASSWORD {editingUser && '(LEAVE BLANK TO RETAIN)'}</label>
+                  <input type="password" className="form-control modal-input-lux" value={userForm.password} required={!editingUser} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} />
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="modal-label-lux">FUNCTIONAL ROLE *</label>
+                  <select className="form-select modal-input-lux" value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}>
+                    <option value="Admin">Admin</option>
+                    <option value="HR">HR</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Employee">Employee</option>
+                  </select>
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="modal-label-lux">DEPARTMENT</label>
+                  <input type="text" className="form-control modal-input-lux" value={userForm.department} onChange={(e) => setUserForm({ ...userForm, department: e.target.value })} />
+                </div>
+              </div>
+              <div className="row g-3 mt-4 pt-2">
+                <div className="col-12 col-md-6">
+                  <button
+                    type="submit"
+                    className="btn w-100 py-2.5 rounded-3 fw-bold text-white border-0 shadow-sm hover-btn-lux"
+                    style={{ background: 'linear-gradient(135deg, #FF7A45 0%, #FFA36C 100%)' }}
+                  >
+                    {editingUser ? 'Save Updates' : 'Confirm Registration'}
+                  </button>
+                </div>
+                <div className="col-12 col-md-6">
+                  <button
+                    type="button"
+                    className="btn w-100 py-2.5 rounded-3 fw-bold border-0"
+                    style={{ background: '#F1F5F9', color: '#475569' }}
+                    onClick={() => setShowUserModal(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

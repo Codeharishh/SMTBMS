@@ -16,40 +16,41 @@ const COLORS = {
   alert: '#FF6B6B'
 };
 
+// ── Icons de-thickened to match MaterialTable.js (vectorEffect removed) ──
 const THIN_ICONS = {
   document: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline vectorEffect="non-scaling-stroke" points="14 2 14 8 20 8" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
     </svg>
   ),
   shield: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   ),
   download: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline vectorEffect="non-scaling-stroke" points="7 10 12 15 17 10" />
-      <line vectorEffect="non-scaling-stroke" x1="12" y1="15" x2="12" y2="3" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   ),
   folder: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <path vectorEffect="non-scaling-stroke" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   ),
   search: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <circle vectorEffect="non-scaling-stroke" cx="11" cy="11" r="8" />
-      <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
   plus: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
-      <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
-      <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   )
 };
@@ -366,7 +367,12 @@ const HRDocumentsPage = () => {
             <tbody>
               {filteredDocs.map((d, idx) => (
                 <tr key={d.id || idx}>
-                  <td className="fw-bold" style={{ color: '#1e293b' }}>📄 {d.title}</td>
+                  <td>
+                    <div className="fw-bold d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
+                      <span style={{ color: COLORS.indigo, display: 'flex' }}>{THIN_ICONS.document}</span>
+                      {d.title}
+                    </div>
+                  </td>
                   <td>
                     <span className="badge rounded-pill bg-success-subtle text-success px-3 py-1 fw-bold">
                       {d.category}
@@ -380,7 +386,12 @@ const HRDocumentsPage = () => {
                       {d.access_level || 'All Employees'}
                     </span>
                   </td>
-                  <td className="fw-bold">⬇️ {d.downloads || 0}</td>
+                  <td>
+                    <div className="fw-bold d-flex align-items-center gap-1">
+                      <span style={{ color: COLORS.emerald, display: 'flex', width: '16px', height: '16px' }}>{THIN_ICONS.download}</span>
+                      {d.downloads || 0}
+                    </div>
+                  </td>
                   <td>
                     <button className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onClick={() => handleDownload(d)}>
                       Download

@@ -142,6 +142,7 @@ const googleLogin = async (req, res) => {
         role: user.role,
         department: user.department,
         phone: user.phone,
+        avatar: user.avatar
       }
     });
 
@@ -155,7 +156,7 @@ const googleLogin = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, email, role, department, phone FROM users WHERE id = ?',
+      'SELECT id, name, email, role, department, phone, avatar FROM users WHERE id = ?',
       [req.user.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: 'User not found.' });
@@ -165,4 +166,17 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, googleLogin, getMe };
+const updateMe = async (req, res) => {
+  const { fullName, phone, department, avatar } = req.body;
+  try {
+    await pool.query(
+      'UPDATE users SET name = ?, phone = ?, department = ?, avatar = COALESCE(?, avatar) WHERE id = ?',
+      [fullName || null, phone || null, department || null, avatar || null, req.user.id]
+    );
+    return res.status(200).json({ success: true, message: 'Profile updated' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { register, login, googleLogin, getMe, updateMe };

@@ -1,6 +1,7 @@
 // src/pages/SettingsPage.js
 import React, { useState, useRef } from 'react';
 import { getCurrentUser } from '../utils/authHelpers';
+import api from '../services/api';
 
 // ── UNIFIED PRODUCTION PALETTE MATRIX (Matching MaterialsPage.js) ───────────
 const COLORS = {
@@ -87,7 +88,7 @@ const SettingsPage = () => {
   const currentDept = user.department || 'General';
 
   const fileInputRef = useRef(null);
-  const [avatarUrl, setAvatarUrl] = useState('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80');
+  const [avatarUrl, setAvatarUrl] = useState(user.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80');
 
   const [form, setForm] = useState({
     fullName: displayName,
@@ -105,21 +106,47 @@ const SettingsPage = () => {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const newUrl = URL.createObjectURL(file);
-      setAvatarUrl(newUrl);
-      setSuccessMsg('Profile picture updated!');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result);
+        setSuccessMsg('Profile picture updated locally! Don\'t forget to save.');
+        setTimeout(() => setSuccessMsg(''), 3000);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await api.put('/auth/me', {
+        fullName: form.fullName,
+        phone: form.phone,
+        department: form.department,
+        avatar: avatarUrl
+      });
+
+      // Update local storage so changes reflect across the app
+      const raw = localStorage.getItem('smtbms_user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        parsed.name = form.fullName;
+        parsed.phone = form.phone;
+        parsed.department = form.department;
+        parsed.avatar = avatarUrl;
+        localStorage.setItem('smtbms_user', JSON.stringify(parsed));
+        // dispatch storage event for Sidebar
+        window.dispatchEvent(new Event('storage'));
+      }
+
       setSuccessMsg('Personal information updated successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
-    }, 600);
+    } catch (err) {
+      alert('Failed to save settings: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

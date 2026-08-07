@@ -392,6 +392,17 @@ const LeaveManagementPage = () => {
                           statusBadge = <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: `${COLORS.alert}1A`, color: '#dc2626' }}>• Rejected</span>;
                         }
 
+                        let daysCount = 1;
+                        if (l.start_date && l.end_date) {
+                          const start = new Date(l.start_date);
+                          const end = new Date(l.end_date);
+                          if (!isNaN(start) && !isNaN(end)) {
+                            const diffTime = end.getTime() - start.getTime();
+                            daysCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                            if (daysCount < 1) daysCount = 1;
+                          }
+                        }
+
                         return (
                           <tr key={l.id}>
                             <td>
@@ -404,7 +415,7 @@ const LeaveManagementPage = () => {
                             <td><span className="leave-type-pill">{l.leave_type || 'Casual Leave'}</span></td>
                             <td>{l.start_date ? new Date(l.start_date).toLocaleDateString() : '2026-06-14'}</td>
                             <td>{l.end_date ? new Date(l.end_date).toLocaleDateString() : '2026-06-14'}</td>
-                            <td className="fw-bold">1d</td>
+                            <td className="fw-bold">{daysCount}d</td>
                             <td>{statusBadge}</td>
                             <td className="text-center">
                               {l.status === 'Pending' ? (

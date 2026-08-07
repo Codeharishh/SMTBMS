@@ -379,9 +379,20 @@ exports.updateUser = async (req, res) => {
       return res.status(404).json({ message: 'User account not found' });
     }
 
+    let passwordQuery = '';
+    let queryParams = [name, email, role, department, phone];
+
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+      passwordQuery = ', password = ?';
+      queryParams.push(hashedPassword);
+    }
+    queryParams.push(id);
+
     await connection.query(
-      'UPDATE users SET name = ?, email = ?, role = ?, department = ?, phone = ? WHERE id = ?',
-      [name, email, role, department, phone, id]
+      `UPDATE users SET name = ?, email = ?, role = ?, department = ?, phone = ?${passwordQuery} WHERE id = ?`,
+      queryParams
     );
 
     // Sync with corresponding employee table entry — and backfill it if the
@@ -430,16 +441,27 @@ exports.deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User account not found' });
     }
 
-    // Delete attendance/leave requests referencing employee if necessary (or rely on CASCADE if defined, otherwise handle safely)
+    // Disable foreign key checks to safely delete without hitting reference constraints
+    // in reports, sales, payroll, notifications, audit_logs etc.
+    await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+
+    // Delete attendance/leave requests referencing employee if necessary
     const [empRows] = await connection.query('SELECT id FROM employees WHERE user_id = ?', [id]);
     if (empRows.length > 0) {
       const empId = empRows[0].id;
       await connection.query('DELETE FROM attendance WHERE employee_id = ?', [empId]);
       await connection.query('DELETE FROM leave_requests WHERE employee_id = ?', [empId]);
+      await connection.query('DELETE FROM payroll WHERE employee_id = ?', [empId]);
+      await connection.query('DELETE FROM sales WHERE sales_person_id = ?', [empId]);
       await connection.query('DELETE FROM employees WHERE id = ?', [empId]);
     }
 
+    await connection.query('DELETE FROM audit_logs WHERE user_id = ?', [id]);
+    await connection.query('DELETE FROM notifications WHERE user_id = ?', [id]);
+    await connection.query('DELETE FROM reports WHERE generated_by = ?', [id]);
     await connection.query('DELETE FROM users WHERE id = ?', [id]);
+
+    await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
     await connection.commit();
     await logAdminAction(req.user.id, 'USER_MANAGEMENT', `Deleted user account: ${userRows[0].email}`, req.ip);

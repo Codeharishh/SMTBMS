@@ -283,7 +283,7 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
-  const user = getCurrentUser();
+  const [localUser, setLocalUser] = useState(getCurrentUser());
   const navigate = useNavigate();
   const location = useLocation();
   const [hasPayrollAlert, setHasPayrollAlert] = useState(false);
@@ -322,13 +322,13 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!user?.role) { setHasPayrollAlert(false); return; }
+    if (!localUser?.role) { setHasPayrollAlert(false); return; }
     const checkPayrollStatus = async () => {
       try {
         const history = await fetchPayrollHistory();
         if (!history || !Array.isArray(history)) return;
 
-        const currentUpperRole = user.role.toUpperCase();
+        const currentUpperRole = localUser.role.toUpperCase();
         if (currentUpperRole === 'ADMIN') {
           setHasPayrollAlert(history.some(i => i.payment_status === 'Pending'));
         } else if (currentUpperRole === 'EMPLOYEE' || currentUpperRole === 'SALES') {
@@ -341,7 +341,15 @@ const Sidebar = () => {
     checkPayrollStatus();
     const interval = setInterval(checkPayrollStatus, 15000);
     return () => clearInterval(interval);
-  }, [user?.role, user?.id]);
+  }, [localUser?.role, localUser?.id]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setLocalUser(getCurrentUser());
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('smtbms_token');
@@ -351,7 +359,7 @@ const Sidebar = () => {
 
   // Maps parent items case-insensitively based on user authentication token criteria 
   const allowedMenuItems = menuItems.filter(
-    item => user && item.roles.map(r => r.toUpperCase()).includes(user.role.toUpperCase())
+    item => localUser && item.roles.map(r => r.toUpperCase()).includes(localUser.role.toUpperCase())
   );
 
   // Get initials from name
@@ -366,7 +374,7 @@ const Sidebar = () => {
     MANAGER: 'Manager',
     EMPLOYEE: 'Employee',
     SALES: 'Sales Rep',
-  }[user?.role?.toUpperCase()] || 'User';
+  }[localUser?.role?.toUpperCase()] || 'User';
 
   return (
     <>
@@ -422,6 +430,8 @@ const Sidebar = () => {
           font-size: 0.88rem; font-weight: 800; color: #fff !important;
           flex-shrink: 0;
           border: 2px solid rgba(255,255,255,0.2) !important;
+          overflow: hidden;
+          padding: 0;
         }
         .smtbms-sidebar .smtbms-profile-name {
           font-size: 0.95rem !important;
@@ -640,10 +650,14 @@ const Sidebar = () => {
 
         <div className="smtbms-profile">
           <div className="smtbms-avatar">
-            {getInitials(user?.name)}
+            {localUser?.avatar ? (
+              <img src={localUser.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              getInitials(localUser?.name)
+            )}
           </div>
           <div>
-            <p className="smtbms-profile-name">{user?.name || 'User'}</p>
+            <p className="smtbms-profile-name">{localUser?.name || 'User'}</p>
             <p className="smtbms-profile-role">
               <span className="smtbms-online-dot"></span>
               {roleLabel}
@@ -660,7 +674,7 @@ const Sidebar = () => {
 
               // 🟢 Filters specific submenu items case-insensitively based on user profile privileges
               const allowedSubItems = item.subItems.filter(sub =>
-                sub.roles.map(r => r.toUpperCase()).includes(user.role.toUpperCase())
+                sub.roles.map(r => r.toUpperCase()).includes(localUser.role.toUpperCase())
               );
 
               // Hide empty dropdown headers completely if current role doesn't match any subItems

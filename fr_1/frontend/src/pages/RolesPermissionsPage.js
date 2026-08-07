@@ -24,6 +24,73 @@ const ICONS = {
   )
 };
 
+// ── CRISP-OPTIMIZED VECTOR SVG MATRIX ────────────────────
+const THIN_ICONS = {
+  materials: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2" style={{ color: COLORS.indigo }}>
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  ),
+  hrms: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2" style={{ color: COLORS.emerald }}>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  payroll: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2" style={{ color: COLORS.amber }}>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M6 12h.01M18 12h.01" />
+    </svg>
+  ),
+  logs: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2" style={{ color: COLORS.slate }}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  ),
+  backups: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2" style={{ color: COLORS.rose }}>
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+      <path d="M3 12A9 3 0 0 0 21 12" />
+    </svg>
+  ),
+  integrations: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2" style={{ color: COLORS.sky }}>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  ),
+  alertTriangle: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#92400e' }}>
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  lock: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="me-2">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  ),
+  success: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="me-2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  )
+};
+
 const RolesPermissionsPage = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [saving, setSaving] = useState(false);
@@ -38,12 +105,12 @@ const RolesPermissionsPage = () => {
   });
 
   const modules = [
-    { key: 'materials', label: '📦 Materials Tracking', ops: ['Read', 'Create', 'Edit', 'Delete'] },
-    { key: 'hrms', label: '👥 HRMS Employee Directory', ops: ['Read', 'Create', 'Edit', 'Delete'] },
-    { key: 'payroll', label: '💰 Payroll & Financials', ops: ['Read', 'Create', 'Edit', 'Delete'] },
-    { key: 'logs', label: '📋 System Audit Logs', ops: ['Read', 'Export'] },
-    { key: 'backups', label: '💾 Database Backups', ops: ['Create', 'Restore'] },
-    { key: 'integrations', label: '🔌 Webhook Integrations', ops: ['Toggle', 'Test'] }
+    { key: 'materials', icon: THIN_ICONS.materials, label: 'Materials Tracking', ops: ['Read', 'Create', 'Edit', 'Delete'] },
+    { key: 'hrms', icon: THIN_ICONS.hrms, label: 'HRMS Employee Directory', ops: ['Read', 'Create', 'Edit', 'Delete'] },
+    { key: 'payroll', icon: THIN_ICONS.payroll, label: 'Payroll & Financials', ops: ['Read', 'Create', 'Edit', 'Delete'] },
+    { key: 'logs', icon: THIN_ICONS.logs, label: 'System Audit Logs', ops: ['Read', 'Export'] },
+    { key: 'backups', icon: THIN_ICONS.backups, label: 'Database Backups', ops: ['Create', 'Restore'] },
+    { key: 'integrations', icon: THIN_ICONS.integrations, label: 'Webhook Integrations', ops: ['Toggle', 'Test'] }
   ];
 
   const handleToggle = (role, moduleKey, operation) => {
@@ -199,8 +266,8 @@ const RolesPermissionsPage = () => {
       {/* SUCCESS TOAST STREAM */}
       {successMsg && (
         <div className="alert border-0 text-white shadow-sm mb-4 p-3 d-flex align-items-center justify-content-between rounded-4" style={{ background: `linear-gradient(135deg, ${COLORS.emerald} 0%, #10B981 100%)`, borderRadius: '16px' }}>
-          <div className="d-flex align-items-center gap-2">
-            <span>✨</span> <small className="fw-bold">{successMsg}</small>
+          <div className="d-flex align-items-center gap-1">
+            {THIN_ICONS.success} <small className="fw-bold">{successMsg}</small>
           </div>
           <button className="btn-close btn-close-white" onClick={() => setSuccessMsg('')}></button>
         </div>
@@ -208,7 +275,7 @@ const RolesPermissionsPage = () => {
 
       {/* ADMINISTRATIVE SECURITY WARNING */}
       <div className="alert border-0 rounded-4 p-3 mb-4 d-flex align-items-start gap-3 shadow-sm" style={{ backgroundColor: '#fffbeb', color: '#92400e', border: '1px solid #fef3c7', borderRadius: '22px' }}>
-        <span className="fs-4">⚠️</span>
+        <div className="pt-1">{THIN_ICONS.alertTriangle}</div>
         <div>
           <h6 className="fw-bold mb-1" style={{ color: '#92400e', fontSize: '0.9rem' }}>Administrative Gateway Warning</h6>
           <p className="mb-0 small" style={{ color: '#b45309', lineHeight: 1.4 }}>Modifying these parameters alters granular route gateways. Changing permissions does not impact active session cookies until next worker re-authentication cycle.</p>
@@ -239,7 +306,9 @@ const RolesPermissionsPage = () => {
             <tbody>
               {modules.map(mod => (
                 <tr key={mod.key}>
-                  <td className="text-start fw-bold text-dark ps-4" style={{ fontSize: '0.92rem' }}>{mod.label}</td>
+                  <td className="text-start fw-bold text-dark ps-4 d-flex align-items-center" style={{ fontSize: '0.92rem', minHeight: '68px' }}>
+                    {mod.icon} {mod.label}
+                  </td>
                   {Object.keys(permissions).map(role => {
                     const roleModPerms = permissions[role][mod.key] || [];
                     return (
@@ -289,7 +358,11 @@ const RolesPermissionsPage = () => {
                 <span className="spinner-border spinner-border-sm me-2" role="status"></span>
                 Saving Policies...
               </>
-            ) : '🔒 Save Role Configurations'}
+            ) : (
+              <span className="d-flex align-items-center justify-content-center">
+                {THIN_ICONS.lock} Save Role Configurations
+              </span>
+            )}
           </button>
         </div>
       </div>
