@@ -49,6 +49,12 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="12" y1="9" x2="12" y2="13" />
       <line vectorEffect="non-scaling-stroke" x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
+  ),
+  plus: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
+      <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
+    </svg>
   )
 };
 
@@ -317,11 +323,12 @@ const MaterialsPage = () => {
         </div>
         <div className="d-flex align-items-center justify-content-end">
           <button
-            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white"
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
             onClick={() => setActiveMaterial({})}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
-            + Add Item
+            {THIN_ICONS.plus}
+            <span>Add Item</span>
           </button>
         </div>
       </div>

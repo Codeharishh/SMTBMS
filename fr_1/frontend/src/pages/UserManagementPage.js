@@ -57,6 +57,12 @@ const THIN_ICONS = {
       <line vectorEffect="non-scaling-stroke" x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
+  plus: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: 'visible' }}>
+      <line vectorEffect="non-scaling-stroke" x1="12" y1="5" x2="12" y2="19" />
+      <line vectorEffect="non-scaling-stroke" x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
   // ── FIXED: matched exactly to MaterialTable.js delete icon ──
   trash: (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -363,11 +369,12 @@ const UserManagementPage = () => {
         </div>
         <div className="d-flex align-items-center gap-2">
           <button
-            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white"
+            className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white d-flex align-items-center gap-2"
             onClick={() => handleOpenUserModal()}
             style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, #FFA36C 100%)` }}
           >
-            + Add User
+            {THIN_ICONS.plus}
+            <span>Add User</span>
           </button>
         </div>
       </div>
