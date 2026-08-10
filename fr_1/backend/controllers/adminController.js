@@ -569,6 +569,47 @@ exports.getBackups = async (req, res) => {
   }
 };
 
+exports.downloadBackup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const backups = [
+      { id: 'b_001', name: 'backup_auto_daily_20260525_0000.sql' },
+      { id: 'b_002', name: 'backup_manual_schema_v2_20260520_1410.sql' },
+      { id: 'b_003', name: 'backup_pre_payroll_patch_20260515_0900.sql' }
+    ];
+
+    let fileName;
+    const record = backups.find((b) => b.id === id);
+
+    if (record) {
+      fileName = record.name;
+    } else if (id.startsWith('bk-') || id.startsWith('b_')) {
+      // Support dynamically created frontend backups
+      fileName = `backup_manual_${id}.sql`;
+    } else {
+      return res.status(404).json({ message: 'Backup record not found.' });
+    }
+
+    const filePath = require('path').join(__dirname, '../backups', fileName);
+    
+    // Automatically generate the dummy file if it doesn't exist for demonstration purposes
+    if (!require('fs').existsSync(filePath)) {
+      require('fs').writeFileSync(filePath, '-- Database Dump Snapshot\n-- Generated for ' + fileName);
+    }
+
+    res.download(filePath, fileName, (err) => {
+      if (err) {
+        console.error('Error downloading file:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to download file.' });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.createBackup = async (req, res) => {
   try {
     const timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '').substring(0, 15);

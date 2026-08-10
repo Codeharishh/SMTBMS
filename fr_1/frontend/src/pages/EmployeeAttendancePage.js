@@ -63,6 +63,7 @@ const THIN_ICONS = {
 };
 
 const EmployeeAttendancePage = () => {
+  const user = JSON.parse(localStorage.getItem('smtbms_user') || '{}');
   const [profile, setProfile] = useState(null);
   const [todayRecord, setTodayRecord] = useState(null);
   const [history, setHistory] = useState([]);
@@ -444,7 +445,7 @@ const EmployeeAttendancePage = () => {
             </div>
             <div>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</div>
-              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>{profile?.role || 'Employee'}</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>{profile?.role || user?.role || 'Employee'}</div>
             </div>
           </div>
 

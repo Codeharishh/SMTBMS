@@ -28,14 +28,6 @@ const BRAND_LOGOS = {
       <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
     </svg>
   ),
-  microsoft: (
-    <svg width="15" height="15" viewBox="0 0 23 23">
-      <rect x="1" y="1" width="10" height="10" fill="#F25022" />
-      <rect x="12" y="1" width="10" height="10" fill="#7FBA00" />
-      <rect x="1" y="12" width="10" height="10" fill="#00A4EF" />
-      <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
-    </svg>
-  ),
   // Dashboard UI Vector Controls
   email: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -403,16 +395,10 @@ const LoginPage = () => {
 
             {/* OAUTH GRID */}
             <div className="row g-2 mb-2">
-              <div className="col-6">
-                <button type="button" onClick={() => handleGoogleLoginSuccess()} className="btn social-btn-lux">
+              <div className="col-12">
+                <button type="button" onClick={() => handleGoogleLoginSuccess()} className="btn social-btn-lux w-100">
                   {BRAND_LOGOS.google}
-                  Google
-                </button>
-              </div>
-              <div className="col-6">
-                <button type="button" onClick={() => alert('Microsoft integration placeholder active')} className="btn social-btn-lux">
-                  {BRAND_LOGOS.microsoft}
-                  Microsoft
+                  Continue with Google
                 </button>
               </div>
             </div>

@@ -59,6 +59,13 @@ export const restoreDatabaseFromBackup = async (id) => {
   return response.data;
 };
 
+export const downloadBackupSQL = async (id) => {
+  const response = await api.get(`/admin/backups/${id}/download`, {
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
 // Downloads the raw database .zip stream directly
 export const downloadBackupZip = async (id, fileName) => {
   const response = await api.get(`/admin/backups/${id}/download`, {

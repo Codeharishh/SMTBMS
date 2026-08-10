@@ -9,7 +9,7 @@ const signToken = (user) =>
   jwt.sign(
     { id: user.id, role: user.role },
     process.env.JWT_SECRET || 'secret',
-    { expiresIn: '1d' }
+    { expiresIn: '30d' }
   );
 
 // ─── 1. REGISTER ──────────────────────────────────────────────────────────────

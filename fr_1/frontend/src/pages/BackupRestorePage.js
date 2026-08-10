@@ -1,7 +1,7 @@
 // src/pages/BackupRestorePage.js
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  fetchBackups, triggerBackupCreation, restoreDatabaseFromBackup
+  fetchBackups, triggerBackupCreation, restoreDatabaseFromBackup, downloadBackupSQL
 } from '../services/adminService';
 
 // ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
@@ -81,6 +81,13 @@ const THIN_ICONS = {
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
+  ),
+  downloadAction: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
   )
 };
 
@@ -144,8 +151,25 @@ const BackupRestorePage = () => {
     }, 1200);
   };
 
-  const handleDownloadLatest = () => {
-    alert('Downloading latest backup archive (BK-2206)...');
+  const handleDownloadLatest = async () => {
+    if (backups.length === 0) return;
+    await handleDownloadSQLFile(backups[0]);
+  };
+
+  const handleDownloadSQLFile = async (backup) => {
+    try {
+      const blob = await downloadBackupSQL(backup.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${backup.code || backup.name}.sql`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to download the requested SQL backup snapshot.');
+    }
   };
 
   const handleRestore = (bk) => {
@@ -297,6 +321,16 @@ const BackupRestorePage = () => {
           box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
           transform: translateY(-1px);
         }
+        .download-icon-btn {
+          background-color: #ECFDF5 !important;
+          color: #10B981 !important;
+        }
+        .download-icon-btn:hover {
+          background-color: #10B981 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+          transform: translateY(-1px);
+        }
 
         .switch {
           position: relative; display: inline-block; width: 44px; height: 24px;
@@ -415,6 +449,13 @@ const BackupRestorePage = () => {
                             onClick={() => handleRestore(bk)}
                           >
                             {THIN_ICONS.restore}
+                          </button>
+                          <button
+                            className="btn-action-icon download-icon-btn"
+                            title="Download SQL"
+                            onClick={() => handleDownloadSQLFile(bk)}
+                          >
+                            {THIN_ICONS.downloadAction}
                           </button>
                           <button
                             className="btn-action-icon del-icon-btn"

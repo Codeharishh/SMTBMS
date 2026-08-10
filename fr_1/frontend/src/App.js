@@ -409,11 +409,10 @@ function App() {
               </RoleBasedRoute>
             }
           />
-          {/* Employee Personal Features */}
           <Route
             path="employee/attendance"
             element={
-              <RoleBasedRoute allowedRoles={['Employee', 'Sales']}>
+              <RoleBasedRoute allowedRoles={['Employee', 'Sales', 'HR', 'Manager', 'Admin']}>
                 <EmployeeAttendancePage />
               </RoleBasedRoute>
             }

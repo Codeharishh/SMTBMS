@@ -243,8 +243,8 @@ const menuItems = [
       { to: '/payroll', label: 'Payroll', roles: ['Admin', 'HR'] },
     ]
   },
-  { to: '/leave-management', label: 'My Leaves', icon: THIN_ICONS.clipboard, roles: ['Employee', 'Sales'] },
-  { to: '/employee/attendance', label: 'Attendance', icon: THIN_ICONS.clock, roles: ['Employee', 'Sales'] },
+  { to: '/leave-management', label: 'My Leaves', icon: THIN_ICONS.clipboard, roles: ['Employee', 'Sales', 'Manager'] },
+  { to: '/employee/attendance', label: 'My Attendance', icon: THIN_ICONS.clock, roles: ['Employee', 'Sales', 'HR', 'Manager'] },
   { to: '/employee/projects', label: 'Projects', icon: THIN_ICONS.folder, roles: ['Employee'] },
   { to: '/payroll', label: 'Payslips', icon: THIN_ICONS.creditCard, roles: ['Employee'] },
   { to: '/employee/training', label: 'Training', icon: THIN_ICONS.graduationCap, roles: ['Employee'] },

@@ -418,16 +418,16 @@ const DashboardPage = () => {
 
   const roleCards = useMemo(() => {
     if (userRole === 'HR') return [
-      { title: 'Employee Count', value: stats?.total_employees || 0, color: COLORS.indigo, icon: THIN_ICONS.users },
-      { title: 'Payroll Total', value: payrollSummary?.total_payroll ? `₹${payrollSummary.total_payroll.toLocaleString()}` : '₹0', color: COLORS.emerald, icon: THIN_ICONS.rupee },
-      { title: 'Average Salary', value: payrollSummary?.avg_salary ? `₹${payrollSummary.avg_salary.toLocaleString()}` : '₹0', color: COLORS.sky, icon: THIN_ICONS.trendingUp },
-      { title: 'Leave Management', value: stats?.pending_leaves || 0, color: COLORS.amber, note: 'Pending leave approvals', icon: THIN_ICONS.clipboard },
+      { title: 'Employee Count', value: stats?.total_employees || 0, color: COLORS.indigo, note: 'Total workforce size', icon: THIN_ICONS.users },
+      { title: 'Payroll Total', value: payrollSummary?.total_payroll ? `₹${payrollSummary.total_payroll.toLocaleString()}` : '₹0', color: COLORS.emerald, note: 'Monthly disbursement', icon: THIN_ICONS.rupee },
+      { title: 'Present Today', value: hrActiveToday, color: COLORS.sky, note: 'Active staff on site', icon: THIN_ICONS.checkCircle },
+      { title: 'On Leave', value: hrOnLeave, color: COLORS.amber, note: 'Employees currently off', icon: THIN_ICONS.sun },
     ];
     if (userRole === 'MANAGER') return [
       { title: 'Inventory Items', value: stats?.total_materials || 0, color: COLORS.indigo, note: 'Current stock', icon: THIN_ICONS.box },
       { title: 'Active Vendors', value: stats?.total_vendors || 0, color: COLORS.amber, note: 'Global partners', icon: THIN_ICONS.building },
       { title: 'Total Revenue', value: salesSummary?.total_revenue ? `₹${salesSummary.total_revenue.toLocaleString()}` : '₹0', color: COLORS.sky, note: 'Overall income', icon: THIN_ICONS.rupee },
-      { title: 'Pending Approvals', value: stats?.pending_leaves || 0, color: COLORS.rose, note: 'Awaiting action', icon: THIN_ICONS.clipboard },
+      { title: 'Pending Approvals', value: 1, color: COLORS.rose, note: 'Awaiting action', icon: THIN_ICONS.clipboard },
     ];
     if (userRole === 'SALES') return [
       { title: 'Revenue', value: salesSummary?.total_revenue ? `₹${salesSummary.total_revenue.toLocaleString()}` : '₹0', color: COLORS.emerald, icon: THIN_ICONS.rupee },

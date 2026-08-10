@@ -64,7 +64,7 @@ const THIN_ICONS = {
 
 const LeaveManagementPage = () => {
   const user = getCurrentUser();
-  const canManageHR = user?.role && ['ADMIN', 'HR', 'MANAGER'].includes(user.role);
+  const canManageHR = user?.role && ['ADMIN', 'HR', 'MANAGER'].includes(user.role.toUpperCase());
 
   const [leaves, setLeaves] = useState([]);
   const [myLeaves, setMyLeaves] = useState([]);

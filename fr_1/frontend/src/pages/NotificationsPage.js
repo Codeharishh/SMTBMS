@@ -1,6 +1,12 @@
 // src/pages/NotificationsPage.js
 import React, { useEffect, useState } from 'react';
-import { fetchNotifications, markNotificationRead } from '../services/notificationService';
+import { 
+  fetchNotifications, 
+  markNotificationRead, 
+  fetchNotificationPreferences, 
+  updateNotificationPreferences, 
+  markAllNotificationsRead 
+} from '../services/notificationService';
 
 // ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
 const COLORS = {
@@ -110,6 +116,8 @@ const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [markingAll, setMarkingAll] = useState(false);
 
   const [channels, setChannels] = useState({
     email: true,
@@ -131,25 +139,47 @@ const NotificationsPage = () => {
 
   const loadNotifications = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetchNotifications();
       const data = Array.isArray(response) ? response : (response.notifications || []);
       const unread = response.unread !== undefined ? response.unread : data.filter(n => !n.is_read).length;
       setNotifications(data);
       setUnreadCount(unread);
-    } catch (error) {
-      setNotifications([
-        { id: 1, title: 'Low Stock Alert', message: 'Steel Rods stock has fallen below reorder threshold (8 units remaining).', is_read: false, created_at: new Date().toISOString() },
-        { id: 2, title: 'Payroll Processed', message: 'May 2026 salary disbursement for 24 employees completed successfully.', is_read: false, created_at: new Date(Date.now() - 3600000).toISOString() },
-        { id: 3, title: 'Material Movement', message: 'Rubber Compound batch IN — 500 units received at Warehouse B.', is_read: true, created_at: new Date(Date.now() - 86400000).toISOString() },
-      ]);
-      setUnreadCount(2);
+    } catch (err) {
+      setError("Couldn't load notifications — check your connection");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadNotifications(); }, []);
+  const loadPreferences = async () => {
+    try {
+      const prefs = await fetchNotificationPreferences();
+      if (prefs) {
+        setChannels({
+          email: !!prefs.email,
+          sms: !!prefs.sms,
+          inApp: !!prefs.inApp
+        });
+        setAlertTypes({
+          lowStock: !!prefs.lowStock,
+          movements: !!prefs.movements,
+          hrEvents: !!prefs.hrEvents,
+          payroll: !!prefs.payroll,
+          crm: !!prefs.crm,
+          reports: !!prefs.reports
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load preferences:', err);
+    }
+  };
+
+  useEffect(() => { 
+    loadNotifications(); 
+    loadPreferences();
+  }, []);
 
   const handleMarkRead = async (id) => {
     try {
@@ -162,17 +192,30 @@ const NotificationsPage = () => {
     }
   };
 
-  const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    setUnreadCount(0);
+  const handleMarkAllRead = async () => {
+    setMarkingAll(true);
+    try {
+      await markAllNotificationsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      alert('Failed to mark all notifications as read. Please try again.');
+    } finally {
+      setMarkingAll(false);
+    }
   };
 
   const handleSavePreferences = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      await updateNotificationPreferences({ channels, alertTypes });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      alert('Failed to save notification preferences.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getNotifAccent = (title = '') => {
@@ -425,8 +468,8 @@ const NotificationsPage = () => {
             )}
           </h5>
           {unreadCount > 0 && (
-            <button className="btn-action-clear" onClick={handleMarkAllRead}>
-              Mark all read
+            <button className="btn-action-clear" onClick={handleMarkAllRead} disabled={markingAll}>
+              {markingAll ? 'Marking...' : 'Mark all read'}
             </button>
           )}
         </div>
@@ -436,6 +479,13 @@ const NotificationsPage = () => {
           <div className="p-5 text-center" style={{ color: '#94a3b8' }}>
             <div className="spinner-border spinner-border-sm me-2" role="status" style={{ color: COLORS.primary }} />
             Synchronizing live system notifications...
+          </div>
+        ) : error ? (
+          <div className="p-5 text-center">
+            <p style={{ color: COLORS.alert, fontWeight: '600' }}>{error}</p>
+            <button className="btn btn-sm px-4 py-2 rounded-3 border-0 fw-semibold text-white shadow-sm" style={{ background: COLORS.primary }} onClick={loadNotifications}>
+              Retry
+            </button>
           </div>
         ) : notifications.length ? (
           <div>

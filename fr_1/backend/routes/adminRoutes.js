@@ -21,6 +21,7 @@ router.post('/integrations/test', protect, authorize('Admin'), adminController.t
 router.get('/backups', protect, authorize('Admin'), adminController.getBackups);
 router.post('/backups', protect, authorize('Admin'), adminController.createBackup);
 router.post('/backups/:id/restore', protect, authorize('Admin'), adminController.restoreBackup);
+router.get('/backups/:id/download', protect, authorize('Admin'), adminController.downloadBackup);
 
 // ── 5. HELP & SUPPORT TICKETS (OPEN TO ALL AUTHENTICATED ROLES) ──────────────
 router.get('/tickets', protect, authorize('Admin', 'HR', 'Manager', 'Employee', 'Sales'), adminController.getTickets);

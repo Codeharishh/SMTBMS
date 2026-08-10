@@ -63,6 +63,17 @@ const THIN_ICONS = {
   )
 };
 
+const FAQS_LIST = [
+  { q: 'How do I register a new employee under SMTBMS?', a: 'Navigate to the "HRMS" workspace tab. In the employee directory table, select "Add Employee Profile". If the user does not have a system login, navigate first to the "User Management" tab to create their credentials.' },
+  { q: 'What is the "Low Stock Alert" trigger threshold?', a: 'By default, the Material Tracking Dashboard flags any materials with a stock volume of 10 units or less with a critical "Red" indicator. Administrators can replenish materials directly under the "Materials Tracking" catalog page.' },
+  { q: 'How can I connect the Slack Notifications workspace integration?', a: 'In the "Integrations" tab, configure the webhook credentials, enter your Slack hook service URL, and click "Save". Then toggle the integration switch to active and test the handshake connectivity.' },
+  { q: 'How do I generate a payroll report for the previous month?', a: 'Go to the "Reports" tab and select "Payroll Report". Choose the desired month and year from the date picker, then click "Generate". You can export this report as a PDF or Excel file.' },
+  { q: 'Why is my dashboard not updating in real-time?', a: 'The dashboard fetches live data on load. If you suspect data is stale, simply refresh the page. Background sync runs every 5 minutes.' },
+  { q: 'Can I customize the columns in the tables?', a: 'Currently, the tables display a fixed set of columns to ensure consistent data viewing. Custom column configurations are planned for an upcoming release.' },
+  { q: 'How do I reset my password if I am locked out?', a: 'If you are locked out, contact your HR or System Administrator to trigger a password reset link to your registered email address.' },
+  { q: 'Where can I find the system version and release notes?', a: 'Your current system version is displayed at the bottom of the sidebar. Detailed release notes are distributed via the internal notification center.' }
+];
+
 const HelpSupportPage = () => {
   const [tickets, setTickets] = useState([]);
   const [faqSearch, setFaqSearch] = useState('');
@@ -124,17 +135,15 @@ const HelpSupportPage = () => {
     setTicketSubmitting(false);
   };
 
-  const faqs = [
-    { q: 'How do I register a new employee under SMTBMS?', a: 'Navigate to the "HRMS" workspace tab. In the employee directory table, select "Add Employee Profile". If the user does not have a system login, navigate first to the "User Management" tab to create their credentials.' },
-    { q: 'What is the "Low Stock Alert" trigger threshold?', a: 'By default, the Material Tracking Dashboard flags any materials with a stock volume of 10 units or less with a critical "Red" indicator. Administrators can replenish materials directly under the "Materials Tracking" catalog page.' },
-    { q: 'How can I connect the Slack Notifications workspace integration?', a: 'In the "Integrations" tab, configure the webhook credentials, enter your Slack hook service URL, and click "Save". Then toggle the integration switch to active and test the handshake connectivity.' }
-  ];
-
   const filteredFaqs = useMemo(() => {
-    return faqs.filter(f =>
-      f.q.toLowerCase().includes(faqSearch.toLowerCase()) ||
-      f.a.toLowerCase().includes(faqSearch.toLowerCase())
-    );
+    if (!faqSearch.trim()) return FAQS_LIST;
+    const searchTerms = faqSearch.toLowerCase().trim().split(/\s+/);
+    
+    return FAQS_LIST.filter(f => {
+      const textToSearch = `${f.q} ${f.a}`.toLowerCase();
+      // Ensure ALL search terms are found in either the question or the answer
+      return searchTerms.every(term => textToSearch.includes(term));
+    });
   }, [faqSearch]);
 
   return (
