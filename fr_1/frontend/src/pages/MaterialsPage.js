@@ -86,9 +86,9 @@ const MaterialsPage = () => {
       if (qty === 0 || status.includes('out')) {
         outOfStock += 1;
       } else if (status === 'in transit' || status === 'transit') {
-        inTransit += qty;
+        inTransit += 1;
       } else {
-        inStock += qty;
+        inStock += 1;
       }
 
       if (qty <= minQty && qty > 0 && !status.includes('transit')) {
