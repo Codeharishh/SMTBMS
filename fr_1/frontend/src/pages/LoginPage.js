@@ -181,6 +181,11 @@ const LoginPage = () => {
           background-color: #ffffff !important;
           outline: none;
         }
+        /* Hide browser default password reveal eye (Edge/IE) */
+        .input-container-lux input::-ms-reveal,
+        .input-container-lux input::-ms-clear {
+          display: none;
+        }
         .btn-blue-submit {
           background: linear-gradient(135deg, ${COLORS.indigo} 0%, #6FA6FF 100%) !important;
           border: none !important;
