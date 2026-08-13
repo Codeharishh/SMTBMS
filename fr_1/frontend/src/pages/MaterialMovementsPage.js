@@ -269,6 +269,10 @@ const MaterialMovementsPage = () => {
           font-size: 0.92rem !important;
           text-align: left !important;
         }
+        
+        .theme-materials th.text-center, .theme-materials td.text-center {
+          text-align: center !important;
+        }
 
         .theme-materials tbody tr {
           transition: background-color 0.15s ease !important;
@@ -654,8 +658,8 @@ const MaterialMovementsPage = () => {
                     <th className="py-3 border-0">Material Profile</th>
                     <th className="py-3 border-0">Qty</th>
                     <th className="py-3 border-0">Path Logistics</th>
-                    <th className="py-3 border-0">Timestamp</th>
-                    <th className="text-center py-3 border-0" style={{ textAlign: 'center' }}>Actions</th>
+                    <th className="text-center py-3 border-0">Timestamp</th>
+                    <th className="text-center py-3 border-0">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -686,7 +690,7 @@ const MaterialMovementsPage = () => {
                             </div>
                             {item.notes && <div className="mat-subtitle">Memo: {item.notes}</div>}
                           </td>
-                          <td>
+                          <td className="text-center">
                             <div className="fw-medium text-dark" style={{ fontSize: '0.85rem' }}>
                               {new Date(item.created_at).toLocaleDateString()}
                             </div>
