@@ -118,6 +118,7 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [markingAll, setMarkingAll] = useState(false);
+  const [hiddenNotifIds, setHiddenNotifIds] = useState(new Set());
 
   const [channels, setChannels] = useState({
     email: true,
@@ -143,9 +144,13 @@ const NotificationsPage = () => {
     try {
       const response = await fetchNotifications();
       const data = Array.isArray(response) ? response : (response.notifications || []);
-      const unread = response.unread !== undefined ? response.unread : data.filter(n => !n.is_read).length;
-      setNotifications(data);
-      setUnreadCount(unread);
+      
+      // We only care about unread notifications now, so filter out the read ones
+      const unreadData = data.filter(n => n.status === 'Unread' || !n.is_read);
+      const unreadCount = unreadData.length;
+      
+      setNotifications(unreadData);
+      setUnreadCount(unreadCount);
     } catch (err) {
       setError("Couldn't load notifications — check your connection");
     } finally {
@@ -182,22 +187,23 @@ const NotificationsPage = () => {
   }, []);
 
   const handleMarkRead = async (id) => {
+    // Immediately remove from the UI state
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    setUnreadCount(prev => Math.max(0, prev - 1));
     try {
       await markNotificationRead(id);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch {
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      console.error('Failed to mark read');
     }
   };
 
   const handleMarkAllRead = async () => {
     setMarkingAll(true);
+    // Clear all from UI immediately
+    setNotifications([]);
+    setUnreadCount(0);
     try {
       await markAllNotificationsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
     } catch (err) {
       alert('Failed to mark all notifications as read. Please try again.');
     } finally {
@@ -355,15 +361,6 @@ const NotificationsPage = () => {
           </div>
         </div>
         <div className="d-flex align-items-center gap-2">
-          {unreadCount > 0 && (
-            <button
-              className="btn px-3 py-2 rounded-3 fw-semibold border-0 text-white hover-btn-lux"
-              onClick={handleMarkAllRead}
-              style={{ background: `linear-gradient(135deg, ${COLORS.indigo} 0%, #8BAFF5 100%)`, fontSize: '0.85rem' }}
-            >
-              Mark All Read
-            </button>
-          )}
           <button
             className="btn px-4 py-2 rounded-3 fw-semibold shadow-sm border-0 hover-btn-lux text-white"
             onClick={handleSavePreferences}
@@ -467,11 +464,6 @@ const NotificationsPage = () => {
               </span>
             )}
           </h5>
-          {unreadCount > 0 && (
-            <button className="btn-action-clear" onClick={handleMarkAllRead} disabled={markingAll}>
-              {markingAll ? 'Marking...' : 'Mark all read'}
-            </button>
-          )}
         </div>
 
         {/* FEED BODY */}
@@ -490,16 +482,16 @@ const NotificationsPage = () => {
         ) : notifications.length ? (
           <div>
             {notifications.map(notif => {
-              const isRead = !!notif.is_read;
+              const isRead = !!notif.is_read || notif.status === 'Read';
               const accent = getNotifAccent(notif.title);
               return (
-                <div key={notif.id} className="notif-feed-row" style={{ opacity: isRead ? 0.6 : 1 }}>
+                <div key={notif.id} className="notif-feed-row">
                   {/* ACCENT DOT */}
                   <div className="flex-shrink-0 mt-1">
                     <div style={{
                       width: '10px', height: '10px', borderRadius: '50%',
-                      background: isRead ? '#cbd5e1' : accent,
-                      boxShadow: isRead ? 'none' : `0 0 0 3px ${accent}22`
+                      background: accent,
+                      boxShadow: `0 0 0 3px ${accent}22`
                     }} />
                   </div>
 
@@ -521,13 +513,6 @@ const NotificationsPage = () => {
                       {new Date(notif.created_at || notif.createdAt || Date.now()).toLocaleString()}
                     </span>
                   </div>
-
-                  {/* ACTION */}
-                  {!isRead && (
-                    <button className="btn-action-clear" onClick={() => handleMarkRead(notif.id)}>
-                      Clear
-                    </button>
-                  )}
                 </div>
               );
             })}

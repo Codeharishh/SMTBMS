@@ -39,6 +39,13 @@ const register = async (req, res) => {
       [name, email, hashedPassword, role || 'Employee', department, phone || null]
     );
 
+    // Create default notification preferences
+    await connection.query(`
+      INSERT INTO notification_preferences 
+      (user_id, email, sms, inApp, lowStock, movements, hrEvents, payroll, crm, reports) 
+      VALUES (?, 1, 0, 1, 1, 1, 1, 1, 1, 1)
+    `, [userResult.insertId]);
+
     await connection.commit();
     console.log(`Registered: ${email} | ID: ${userResult.insertId}`);
     return res.status(201).json({ success: true, message: 'User profile registered successfully!' });
@@ -122,6 +129,13 @@ const googleLogin = async (req, res) => {
     if (!user.google_id) {
       await pool.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
       console.log(`Linked Google account to existing user: ${email} (ID: ${user.id})`);
+      
+      // Also ensure they have a preferences row since they are logging in for the first time
+      await pool.query(`
+        INSERT IGNORE INTO notification_preferences 
+        (user_id, email, sms, inApp, lowStock, movements, hrEvents, payroll, crm, reports) 
+        VALUES (?, 1, 0, 1, 1, 1, 1, 1, 1, 1)
+      `, [user.id]);
     } else if (user.google_id !== googleId) {
       return res.status(403).json({
         success: false,
