@@ -1,5 +1,22 @@
 const pool = require('../config/db');
 
+const ensurePreferencesTable = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS notification_preferences (
+      user_id INT PRIMARY KEY,
+      email BOOLEAN DEFAULT 1,
+      sms BOOLEAN DEFAULT 0,
+      inApp BOOLEAN DEFAULT 1,
+      lowStock BOOLEAN DEFAULT 1,
+      movements BOOLEAN DEFAULT 1,
+      hrEvents BOOLEAN DEFAULT 1,
+      payroll BOOLEAN DEFAULT 1,
+      crm BOOLEAN DEFAULT 1,
+      reports BOOLEAN DEFAULT 1
+    )
+  `);
+};
+
 /**
  * Send notifications, factoring in user preferences.
  * @param {number[]} userIds Array of target user IDs
@@ -9,7 +26,12 @@ const pool = require('../config/db');
  */
 const sendNotification = async (userIds, title, message, category) => {
   try {
-    if (!userIds || userIds.length === 0) return;
+    console.log(`[sendNotification] Triggered for category: '${category}'`);
+    console.log(`[sendNotification] Initial Recipients:`, userIds);
+    if (!userIds || userIds.length === 0) {
+      console.log(`[sendNotification] No initial recipients, aborting.`);
+      return;
+    }
 
     // Map the system 'category' to the preference column name
     const categoryToPrefMap = {
@@ -27,10 +49,13 @@ const sendNotification = async (userIds, title, message, category) => {
 
     // If it's a categorizable alert, filter out users who opted out
     if (prefCol) {
+      await ensurePreferencesTable(); // MUST run before SELECT to avoid ER_NO_SUCH_TABLE in production
       const [prefs] = await pool.query(
         `SELECT user_id, ?? AS is_enabled FROM notification_preferences WHERE user_id IN (?)`, 
         [prefCol, userIds]
       );
+      
+      console.log(`[sendNotification] Preference checks from DB for ${prefCol}:`, prefs);
 
       // Create a map of user_id -> is_enabled
       const prefMap = {};
@@ -41,19 +66,26 @@ const sendNotification = async (userIds, title, message, category) => {
         if (prefMap[id] === 0) return false;
         return true;
       });
+      console.log(`[sendNotification] Recipients after preference filter:`, finalRecipients);
     }
 
-    if (finalRecipients.length === 0) return;
+    if (finalRecipients.length === 0) {
+      console.log(`[sendNotification] No recipients left after preference filter, aborting.`);
+      return;
+    }
 
     // Batch Insert Notifications
     const values = finalRecipients.map(id => [title, message, id, 'Unread', category]);
+    console.log(`[sendNotification] Attempting INSERT into notifications with values:`, values);
+    
     await pool.query(
       'INSERT INTO notifications (title, message, user_id, status, category, created_at) VALUES ?',
       [values.map(v => [...v, new Date()])]
     );
+    console.log(`[sendNotification] Successfully inserted notifications.`);
 
   } catch (error) {
-    console.error(`[Notification Engine Error] Failed to send '${category}' notification:`, error.message);
+    console.error(`[Notification Engine Error] Failed to send '${category}' notification:`, error);
   }
 };
 

@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+// ensurePreferencesTable is defined below to lazily initialize the table
 
 const ensurePreferencesTable = async () => {
   await pool.query(`
