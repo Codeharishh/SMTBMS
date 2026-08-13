@@ -1,11 +1,11 @@
 // src/pages/NotificationsPage.js
 import React, { useEffect, useState } from 'react';
-import { 
-  fetchNotifications, 
-  markNotificationRead, 
-  fetchNotificationPreferences, 
-  updateNotificationPreferences, 
-  markAllNotificationsRead 
+import {
+  fetchNotifications,
+  markNotificationRead,
+  fetchNotificationPreferences,
+  updateNotificationPreferences,
+  markAllNotificationsRead
 } from '../services/notificationService';
 
 // ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
@@ -128,9 +128,9 @@ const NotificationsPage = () => {
   const [alertTypes, setAlertTypes] = useState({
     lowStock: true,
     movements: true,
-    hrEvents: false,
+    hrEvents: true,
     payroll: true,
-    crm: false,
+    crm: true,
     reports: true
   });
 
@@ -176,8 +176,8 @@ const NotificationsPage = () => {
     }
   };
 
-  useEffect(() => { 
-    loadNotifications(); 
+  useEffect(() => {
+    loadNotifications();
     loadPreferences();
   }, []);
 
@@ -335,7 +335,7 @@ const NotificationsPage = () => {
 
       {/* TOAST */}
       {saved && (
-        <div className="alert d-flex align-items-center justify-content-between p-3 rounded-4 shadow border-0 position-fixed top-0 end-0 m-4 z-3"
+        <div className="alert d-flex align-items-center justify-content-between p-3 rounded-4 shadow border-0 position-fixed bottom-0 end-0 m-4 z-3"
           style={{ maxWidth: '380px', backgroundColor: '#ffffff', border: '1px solid #10b981', color: '#065f46' }}>
           <div><span className="me-2">✅</span><strong>Saved:</strong> Notification preferences updated.</div>
           <button className="btn-close" onClick={() => setSaved(false)} />

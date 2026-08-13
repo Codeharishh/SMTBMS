@@ -1,5 +1,6 @@
 // backend/controllers/materialMovementController.js
 const pool = require('../config/db');
+const { sendNotification, getUsersByRoles } = require('../utils/notificationUtils');
 
 // ==========================================
 // 1. GET ALL MATERIAL MOVEMENTS LOGS
@@ -82,6 +83,10 @@ exports.createMovement = async (req, res) => {
         notes || ''
       ]);
 
+    // Movement Trigger
+    const movementIds = await getUsersByRoles(['Admin', 'Manager']);
+    await sendNotification(movementIds, `Material Movement: ${type || 'Inbound'}`, `${clean_quantity} units of ${material_name || 'Item'} recorded.`, 'movement');
+
     res.status(201).json({
       success: true,
       message: 'Material transit parameters logged successfully into historical ledger.'
@@ -141,6 +146,10 @@ exports.updateMovement = async (req, res) => {
       notes || '',
       id
     ]);
+
+    // Movement Trigger
+    const movementIds = await getUsersByRoles(['Admin', 'Manager']);
+    await sendNotification(movementIds, `Material Movement Updated: ${type || 'Inbound'}`, `${clean_quantity} units of ${material_name || 'Item'} updated.`, 'movement');
 
     res.status(200).json({
       success: true,

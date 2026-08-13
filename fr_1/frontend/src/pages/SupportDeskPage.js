@@ -424,7 +424,7 @@ const SupportDeskPage = () => {
             <div className="modal-content rounded-4 border-0 shadow-lg" style={{ borderLeft: `4px solid ${COLORS.primary}` }}>
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-                  🎫 Create Support Ticket
+                  <span style={{ color: COLORS.indigo }}>{THIN_ICONS.messageSquare}</span> Create Support Ticket
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>

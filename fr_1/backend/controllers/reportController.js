@@ -110,3 +110,18 @@ exports.getStats = async (req, res) => {
 
   }
 };
+
+exports.generateReport = async (req, res) => {
+  try {
+    const { format, report_type } = req.body;
+    const { sendNotification } = require('../utils/notificationUtils');
+    
+    // Send a notification to the user who requested the report
+    await sendNotification([req.user.id], 'Report Generated', `Your ${report_type || 'system'} report has been generated in ${format || 'PDF'} format.`, 'report');
+
+    res.json({ message: 'Report generation logged successfully' });
+  } catch (error) {
+    console.error('Report generation error:', error);
+    res.status(500).json({ message: 'Failed to log report generation' });
+  }
+};

@@ -1,5 +1,6 @@
 // backend/controllers/leadController.js
 const pool = require('../config/db');
+const { sendNotification, getUsersByRoles } = require('../utils/notificationUtils');
 
 exports.getAllLeads = async (req, res) => {
     try {
@@ -69,6 +70,10 @@ exports.updateLead = async (req, res) => {
 
         const safeClosingDate = closing_date && closing_date.trim() !== '' ? closing_date : null;
 
+        // Fetch old lead to compare stage
+        const [oldRows] = await pool.query('SELECT stage FROM leads WHERE id = ?', [req.params.id]);
+        const oldStage = oldRows.length ? oldRows[0].stage : null;
+
         await pool.query(
             `UPDATE leads 
        SET contact_name = ?, company = ?, email = ?, phone = ?, stage = ?, 
@@ -91,6 +96,21 @@ exports.updateLead = async (req, res) => {
 
         const [rows] = await pool.query('SELECT * FROM leads WHERE id = ?', [req.params.id]);
         if (!rows.length) return res.status(404).json({ message: 'Lead not found.' });
+        
+        // CRM Trigger - Stage Changed
+        const newStage = stage || 'New Lead';
+        if (oldStage && oldStage !== newStage) {
+          const title = newStage === 'Closed Won' ? 'Deal Won!' : 'Lead Stage Updated';
+          const message = newStage === 'Closed Won' 
+            ? `The deal with ${contact_name.trim()} has been successfully closed!`
+            : `The lead ${contact_name.trim()} has moved to stage: ${newStage}.`;
+          
+          const crmIds = await getUsersByRoles(['Admin', 'Manager', 'Sales']);
+          const numericAssignedTo = parseInt(assigned_to, 10);
+          const recipients = [...new Set([...crmIds, !isNaN(numericAssignedTo) ? numericAssignedTo : null].filter(Boolean))];
+          await sendNotification(recipients, title, message, 'crm');
+        }
+
         res.json(rows[0]);
 
     } catch (error) {

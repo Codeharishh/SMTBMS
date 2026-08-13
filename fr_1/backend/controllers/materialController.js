@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendNotification, getUsersByRoles } = require('../utils/notificationUtils');
 
 exports.getAllMaterials = async (req, res) => {
   try {
@@ -135,32 +136,17 @@ exports.createMaterial = async (req, res) => {
 
     // NOTIFICATIONS
 
-    if (quantity <= 5 && quantity > 0) {
-
-      await pool.query(
-        `INSERT INTO notifications
-        (title, message, type)
-        VALUES (?, ?, ?)`,
-        [
-          'Low Stock Alert',
-          `${material_name} stock is running low`,
-          'warning'
-        ]
-      );
-    }
-
-    if (quantity === 0) {
-
-      await pool.query(
-        `INSERT INTO notifications
-        (title, message, type)
-        VALUES (?, ?, ?)`,
-        [
-          'Out Of Stock',
-          `${material_name} is out of stock`,
-          'danger'
-        ]
-      );
+    if (quantity <= 5) {
+      try {
+        const title = quantity === 0 ? 'Out Of Stock' : 'Low Stock Alert';
+        const message = quantity === 0 
+          ? `${material_name} is out of stock`
+          : `${material_name} stock is running low`;
+        const lowStockRecipients = await getUsersByRoles(['Admin', 'Manager', 'Employee']);
+        await sendNotification(lowStockRecipients, title, message, 'low_stock');
+      } catch (notifErr) {
+        console.error('[Notification Trigger Error] Low stock notification failed:', notifErr.message);
+      }
     }
 
     const [rows] = await pool.query(
@@ -231,32 +217,17 @@ exports.updateMaterial = async (req, res) => {
 
     // NOTIFICATIONS
 
-    if (quantity <= 5 && quantity > 0) {
-
-      await pool.query(
-        `INSERT INTO notifications
-        (title, message, type)
-        VALUES (?, ?, ?)`,
-        [
-          'Low Stock Alert',
-          `${material_name} stock is running low`,
-          'warning'
-        ]
-      );
-    }
-
-    if (quantity === 0) {
-
-      await pool.query(
-        `INSERT INTO notifications
-        (title, message, type)
-        VALUES (?, ?, ?)`,
-        [
-          'Out Of Stock',
-          `${material_name} is out of stock`,
-          'danger'
-        ]
-      );
+    if (quantity <= 5) {
+      try {
+        const title = quantity === 0 ? 'Out Of Stock' : 'Low Stock Alert';
+        const message = quantity === 0 
+          ? `${material_name} is out of stock`
+          : `${material_name} stock is running low`;
+        const lowStockRecipients = await getUsersByRoles(['Admin', 'Manager', 'Employee']);
+        await sendNotification(lowStockRecipients, title, message, 'low_stock');
+      } catch (notifErr) {
+        console.error('[Notification Trigger Error] Low stock notification failed:', notifErr.message);
+      }
     }
 
     const [rows] = await pool.query(

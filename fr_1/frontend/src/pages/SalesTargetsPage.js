@@ -288,9 +288,15 @@ const SalesTargetsPage = () => {
 
       {/* MATCHED MODERN NAVIGATION HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
-        <div className="d-flex flex-column justify-content-center">
-          <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Sales Targets</h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Track quarterly sales goals and individual rep performance</p>
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+            {THIN_ICONS.target}
+          </div>
+          <div className="d-flex flex-column justify-content-center">
+            <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Sales Targets</h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Track quarterly sales goals and individual rep performance</p>
+          </div>
         </div>
         <div className="d-flex align-items-center gap-2">
           <button
@@ -372,7 +378,11 @@ const SalesTargetsPage = () => {
             <div className="modal-content rounded-4 border-0 shadow-lg p-3" style={{ borderLeft: `4px solid ${COLORS.primary}` }}>
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-                  {editingTarget ? '🔧 Modify Sales Target' : '✨ Set New Sales Target'}
+                  {editingTarget ? (
+                    <><span style={{ color: COLORS.indigo }}>{THIN_ICONS.edit}</span> Modify Sales Target</>
+                  ) : (
+                    <><span style={{ color: COLORS.indigo }}>{THIN_ICONS.target}</span> Set New Sales Target</>
+                  )}
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>

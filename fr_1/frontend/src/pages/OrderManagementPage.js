@@ -80,6 +80,16 @@ const THIN_ICONS = {
 // 🟢 STATUS PROGRESSION SEQUENCE — arrow button advances through these in order
 const STATUS_FLOW = ['Confirmed', 'Processing', 'Dispatched', 'Delivered'];
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
 const OrderManagementPage = () => {
   const user = getCurrentUser();
   const canManage = true; // 🟢 Ensure button renders unconditionally for all users
@@ -455,8 +465,8 @@ const OrderManagementPage = () => {
                     <td className="fw-bold" style={{ color: '#1e293b' }}>{ord.customer_name || 'Apex Constructions'}</td>
                     <td className="fw-bold">{ord.items_count || ord.items || 2}</td>
                     <td className="fw-bold">₹{(Number(ord.total_amount) || Number(ord.amount) || 43000).toLocaleString()}</td>
-                    <td>{ord.ordered_date ? new Date(ord.ordered_date).toLocaleDateString() : '28 May 2026'}</td>
-                    <td>{ord.delivery_date || '5 Jun 2026'}</td>
+                    <td>{formatDate(ord.ordered_date || '2026-05-28')}</td>
+                    <td>{formatDate(ord.delivery_date || '2026-06-05')}</td>
                     <td>
                       <span className={`badge rounded-pill px-3 py-1 fw-bold ${ord.priority === 'High' || ord.priority === 'Critical' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`}>
                         {ord.priority || 'Normal'}
@@ -516,7 +526,7 @@ const OrderManagementPage = () => {
             <div className="modal-content rounded-4 border-0 shadow-lg">
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-                  📦 Create New Sales Order
+                  <span style={{ color: COLORS.indigo }}>{THIN_ICONS.box}</span> Create New Sales Order
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
@@ -582,9 +592,8 @@ const OrderManagementPage = () => {
                     <div className="col-6">
                       <label className="form-label small fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>DELIVERY DATE</label>
                       <input
-                        type="text"
+                        type="date"
                         className="form-control rounded-3"
-                        placeholder="e.g. 5 Jun 2026"
                         value={orderForm.delivery_date}
                         onChange={(e) => setOrderForm({ ...orderForm, delivery_date: e.target.value })}
                         style={{ background: '#FAF8FF', border: '1px solid #E5E0F5' }}
@@ -657,11 +666,11 @@ const OrderManagementPage = () => {
                   </div>
                   <div className="col-6">
                     <label className="small text-muted fw-bold text-uppercase d-block">Ordered Date</label>
-                    <span className="fw-semibold">{viewOrder.ordered_date ? new Date(viewOrder.ordered_date).toLocaleDateString() : '28 May 2026'}</span>
+                    <span className="fw-semibold">{formatDate(viewOrder.ordered_date || '2026-05-28')}</span>
                   </div>
                   <div className="col-6">
                     <label className="small text-muted fw-bold text-uppercase d-block">Expected Delivery</label>
-                    <span className="fw-semibold">{viewOrder.delivery_date || '5 Jun 2026'}</span>
+                    <span className="fw-semibold">{formatDate(viewOrder.delivery_date || '2026-06-05')}</span>
                   </div>
                   <div className="col-6">
                     <label className="small text-muted fw-bold text-uppercase d-block">Priority</label>

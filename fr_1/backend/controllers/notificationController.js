@@ -10,17 +10,17 @@ const ensurePreferencesTable = async () => {
       lowStock BOOLEAN DEFAULT 1,
       movements BOOLEAN DEFAULT 1,
       hrEvents BOOLEAN DEFAULT 1,
-      payroll BOOLEAN DEFAULT 0,
-      crm BOOLEAN DEFAULT 0,
-      reports BOOLEAN DEFAULT 0
+      payroll BOOLEAN DEFAULT 1,
+      crm BOOLEAN DEFAULT 1,
+      reports BOOLEAN DEFAULT 1
     )
   `);
 };
 
 exports.getNotifications = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM notifications ORDER BY created_at DESC');
-    const unread = rows.filter((item) => item.is_read === 0 || item.is_read === false).length;
+    const [rows] = await pool.query('SELECT * FROM notifications WHERE user_id = ? OR user_id IS NULL ORDER BY created_at DESC', [req.user.id]);
+    const unread = rows.filter((item) => item.status === 'Unread').length;
     res.json({ notifications: rows, unread });
   } catch (error) {
     console.error('Get notifications error', error);
@@ -30,7 +30,7 @@ exports.getNotifications = async (req, res) => {
 
 exports.markRead = async (req, res) => {
   try {
-    await pool.query('UPDATE notifications SET is_read = 1 WHERE id = ?', [req.params.id]);
+    await pool.query("UPDATE notifications SET status = 'Read' WHERE id = ?", [req.params.id]);
     res.json({ message: 'Notification marked as read' });
   } catch (error) {
     console.error('Mark notification read error', error);
@@ -42,8 +42,8 @@ exports.createNotification = async (req, res) => {
   try {
     const { title, message, user_id, is_read } = req.body;
     const [result] = await pool.query(
-      'INSERT INTO notifications (title, message, user_id, is_read, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [title, message, user_id || null, is_read ? 1 : 0]
+      'INSERT INTO notifications (title, message, user_id, status, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [title, message, user_id || null, is_read ? 'Read' : 'Unread']
     );
     const [rows] = await pool.query('SELECT * FROM notifications WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -72,7 +72,7 @@ exports.updatePreferences = async (req, res) => {
   try {
     await ensurePreferencesTable();
     const { channels, alertTypes } = req.body;
-    
+
     await pool.query(`
       INSERT INTO notification_preferences 
       (user_id, email, sms, inApp, lowStock, movements, hrEvents, payroll, crm, reports)
@@ -99,7 +99,7 @@ exports.updatePreferences = async (req, res) => {
       alertTypes.crm ? 1 : 0,
       alertTypes.reports ? 1 : 0
     ]);
-    
+
     res.json({ message: 'Preferences updated successfully' });
   } catch (error) {
     console.error('Update preferences error', error);
@@ -109,7 +109,7 @@ exports.updatePreferences = async (req, res) => {
 
 exports.markAllRead = async (req, res) => {
   try {
-    await pool.query('UPDATE notifications SET is_read = 1 WHERE is_read = 0 AND (user_id = ? OR user_id IS NULL)', [req.user.id]);
+    await pool.query("UPDATE notifications SET status = 'Read' WHERE status = 'Unread' AND (user_id = ? OR user_id IS NULL)", [req.user.id]);
     res.json({ message: 'All notifications marked as read' });
   } catch (error) {
     console.error('Mark all read error', error);

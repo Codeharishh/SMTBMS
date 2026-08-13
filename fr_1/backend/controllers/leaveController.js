@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendNotification, getUsersByRoles } = require('../utils/notificationUtils');
 
 
 // APPLY LEAVE
@@ -65,6 +66,9 @@ exports.applyLeave = async (req, res) => {
     res.status(201).json({
       message: 'Leave applied successfully',
     });
+
+    const hrIds = await getUsersByRoles(['Admin', 'HR', 'Manager']);
+    await sendNotification(hrIds, 'New Leave Request', `A new ${leave_type} leave request requires approval.`, 'hr_event');
 
   } catch (error) {
 
@@ -184,6 +188,15 @@ exports.updateLeaveStatus = async (req, res) => {
     res.json({
       message: 'Leave updated successfully',
     });
+
+    // Notify employee of status update
+    const [leaveRows] = await pool.query('SELECT employee_id FROM leave_requests WHERE id = ?', [req.params.id]);
+    if (leaveRows.length > 0) {
+      const [empRows] = await pool.query('SELECT user_id FROM employees WHERE id = ?', [leaveRows[0].employee_id]);
+      if (empRows.length > 0 && empRows[0].user_id) {
+         await sendNotification([empRows[0].user_id], 'Leave Request Updated', `Your leave request status is now: ${status}`, 'hr_event');
+      }
+    }
 
   } catch (error) {
 

@@ -1,5 +1,5 @@
-// backend/controllers/payrollController.js
 const pool = require('../config/db');
+const { sendNotification, getUsersByRoles } = require('../utils/notificationUtils');
 
 // 1. [HR / MANAGER] Create a single custom payroll allocation entry
 const createPayrollEntry = async (req, res) => {
@@ -28,6 +28,9 @@ const createPayrollEntry = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, 'Pending')
     `;
     await pool.query(query, [employee_id, basic_salary, bonus || 0, deductions || 0, net_salary, payroll_month]);
+
+    const adminIds = await getUsersByRoles(['Admin', 'HR']);
+    await sendNotification(adminIds, 'Payroll Initialization', `Payroll for employee ID ${employee_id} initialized and pending approval.`, 'payroll');
 
     return res.status(201).json({ success: true, message: 'Payroll initialized and forwarded to Admin approval queue!' });
   } catch (error) {
@@ -96,6 +99,13 @@ const updatePayrollStatus = async (req, res) => {
 
     const query = `UPDATE payroll SET payment_status = ?, bonus = ?, deductions = ?, net_salary = ? WHERE id = ?`;
     await pool.query(query, [payment_status, bonus, deductions, net_salary, id]);
+
+    if (payment_status === 'Paid') {
+      const [empRows] = await pool.query('SELECT user_id FROM employees WHERE id = (SELECT employee_id FROM payroll WHERE id = ?)', [id]);
+      if (empRows.length > 0 && empRows[0].user_id) {
+         await sendNotification([empRows[0].user_id], 'Salary Processed', `Your salary for the month has been marked as Paid.`, 'payroll');
+      }
+    }
 
     return res.status(200).json({ success: true, message: 'Ledger record status updated successfully!' });
   } catch (error) {

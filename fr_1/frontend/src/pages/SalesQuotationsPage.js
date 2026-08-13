@@ -335,9 +335,15 @@ const SalesQuotationsPage = () => {
 
       {/* MATCHED MODERN NAVIGATION HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-4 gap-3 pt-2">
-        <div className="d-flex flex-column justify-content-center">
-          <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Quotations</h3>
-          <p style={{ color: '#94a3b8' }} className="small mb-0">Create, manage, and dispatch commercial sales quotes</p>
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm"
+            style={{ width: '48px', height: '48px', borderRadius: '14px', background: `linear-gradient(135deg, ${COLORS.indigo} 0%, ${COLORS.sky} 100%)` }}>
+            {THIN_ICONS.fileText}
+          </div>
+          <div className="d-flex flex-column justify-content-center">
+            <h3 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Quotations</h3>
+            <p style={{ color: '#94a3b8' }} className="small mb-0">Create, manage, and dispatch commercial sales quotes</p>
+          </div>
         </div>
         <div className="d-flex align-items-center gap-2">
           <button
@@ -453,7 +459,11 @@ const SalesQuotationsPage = () => {
             <div className="modal-content rounded-4 border-0 shadow-lg p-3" style={{ borderLeft: `4px solid ${COLORS.primary}` }}>
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-                  {editingQuote ? '🔧 Modify Quotation' : '✨ Register New Quotation'}
+                  {editingQuote ? (
+                    <><span style={{ color: COLORS.indigo }}>{THIN_ICONS.edit}</span> Modify Quotation</>
+                  ) : (
+                    <><span style={{ color: COLORS.indigo }}>{THIN_ICONS.fileText}</span> Register New Quotation</>
+                  )}
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>

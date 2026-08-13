@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { getCurrentUser } from '../utils/authHelpers';
 import { fetchEmployees } from '../services/employeeService';
-import { fetchTasks, createTask, deleteTask } from '../services/managerService';
+import { fetchTasks, createTask, deleteTask, updateTaskStatus } from '../services/managerService';
 
 // ── SAME PALETTE AS MaterialsPage.js FOR VISUAL CONSISTENCY ────────────────
 const COLORS = {
@@ -126,7 +126,7 @@ const TaskAssignmentPage = () => {
 
       const rawTasks = taskData && taskData.length ? taskData : defaultMockTasks;
       const formattedTasks = rawTasks.map(t => {
-        const assigneeName = t.assignee || t.employee_name || t.assigned_to_name || 'Staff Member';
+        const assigneeName = t.assignee_name || t.assignee || t.employee_name || t.assigned_to_name || 'Staff Member';
         const initials = assigneeName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
         return {
           ...t,
@@ -226,8 +226,7 @@ const TaskAssignmentPage = () => {
     setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
 
     try {
-      // API call to update status would go here
-      // await updateTask(task.id, { status: nextStatus });
+      await updateTaskStatus(task.id, nextStatus);
     } catch (error) {
       alert('Failed to update status. Reverting change.');
       setTasks(tasks.map(t => t.id === task.id ? { ...t, status: task.status } : t));
@@ -528,7 +527,9 @@ const TaskAssignmentPage = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow-lg p-3" style={{ borderLeft: `4px solid ${COLORS.primary}` }}>
               <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold modal-title" style={{ color: '#1e293b' }}>✨ Assign New Task</h5>
+                <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
+                  <span style={{ color: COLORS.indigo }}>{THIN_ICONS.clipboard}</span> Assign New Task
+                </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <form onSubmit={handleCreateTask}>

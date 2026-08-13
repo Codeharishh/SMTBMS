@@ -424,7 +424,7 @@ const LeadManagementCenterPage = () => {
             <div className="modal-content rounded-4 border-0 shadow-lg">
               <div className="modal-header border-0 pb-0">
                 <h5 className="fw-bold modal-title d-flex align-items-center gap-2" style={{ color: '#1e293b' }}>
-                  ➕ Add New Lead
+                  <span style={{ color: COLORS.indigo }}>{THIN_ICONS.target}</span> Add New Lead
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>

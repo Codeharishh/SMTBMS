@@ -1,7 +1,7 @@
 // src/pages/LoginPage.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { login, googleLogin } from '../services/authService';
 
 // ── BRAND PALETTE MATRIX ─────────────────────────────────────────────────
@@ -121,20 +121,17 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleLoginSuccess = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setError('');
-      try {
-        const data = await googleLogin({ token: tokenResponse.access_token });
-        localStorage.setItem('smtbms_token', data.token);
-        localStorage.setItem('smtbms_user', JSON.stringify(data.user));
-        navigate('/');
-      } catch (err) {
-        setError(err.response?.data?.message || 'Google verification failed.');
-      }
-    },
-    onError: () => setError('Google Sign-In process aborted.'),
-  });
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    try {
+      const data = await googleLogin({ token: credentialResponse.credential });
+      localStorage.setItem('smtbms_token', data.token);
+      localStorage.setItem('smtbms_user', JSON.stringify(data.user));
+      navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google verification failed.');
+    }
+  };
 
   return (
     <div className="container-fluid p-0 overflow-hidden" style={{ height: '100vh', maxHeight: '100vh', fontFamily: '"Inter", sans-serif', background: 'radial-gradient(circle at 40% 30%, #1d4ed8 0%, #0f172a 55%, #090d1f 100%)' }}>
@@ -401,10 +398,15 @@ const LoginPage = () => {
             {/* OAUTH GRID */}
             <div className="row g-2 mb-2">
               <div className="col-12">
-                <button type="button" onClick={() => handleGoogleLoginSuccess()} className="btn social-btn-lux w-100">
-                  {BRAND_LOGOS.google}
-                  Continue with Google
-                </button>
+                <div className="w-100 d-flex justify-content-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google Sign-In process aborted.')}
+                    text="continue_with"
+                    width="100%"
+                    shape="rectangular"
+                  />
+                </div>
               </div>
             </div>
 

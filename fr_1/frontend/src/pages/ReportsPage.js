@@ -260,11 +260,21 @@ const ReportsPage = () => {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    try {
+      await api.post('/reports/generate', { format: 'PDF', report_type: 'Financial Trend' });
+    } catch (e) {
+      console.error(e);
+    }
     window.print();
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
+    try {
+      await api.post('/reports/generate', { format: 'CSV', report_type: 'Financial Trend' });
+    } catch (e) {
+      console.error(e);
+    }
     const labels = chartData.labels;
     const rev = chartData.datasets[0].data;
     const exp = chartData.datasets[1].data;

@@ -281,6 +281,10 @@ const VendorsPage = () => {
           font-size: 0.92rem !important;
           text-align: left !important;
         }
+        .theme-materials th.text-center,
+        .theme-materials td.text-center {
+          text-align: center !important;
+        }
         .theme-materials tbody tr {
           transition: background-color 0.15s ease !important;
         }

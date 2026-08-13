@@ -10,7 +10,7 @@ import { getCurrentUser } from '../utils/authHelpers';
 import { fetchReportSummary } from '../services/reportService';
 import { fetchPayrollSummary } from '../services/payrollService';
 import { fetchSalesSummary } from '../services/salesService';
-import { fetchEmployeeProfile, fetchMyTasks } from '../services/employeeService';
+import { fetchEmployeeProfile, fetchMyTasks, updateMyTaskStatus } from '../services/employeeService';
 import { fetchTodayAttendance, fetchAttendanceHistory, punchIn, punchOut } from '../services/attendanceService';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend, ArcElement, Filler);
@@ -438,7 +438,7 @@ const DashboardPage = () => {
     if (userRole === 'EMPLOYEE') return [
       { title: 'Days Present', value: stats?.present_days != null ? stats.present_days : 18, sub: '3 absences', color: COLORS.indigo, icon: THIN_ICONS.clock },
       { title: 'Leave Balance', value: employeeProfile?.leave_balance != null ? employeeProfile.leave_balance : 14, sub: 'out of 38 total', color: COLORS.sky, icon: THIN_ICONS.sun },
-      { title: 'Net Salary', value: employeeProfile?.salary ? `₹${(employeeProfile.salary / 1000).toFixed(1)}K` : '₹68.5K', sub: 'Disbursed on 31 May', color: COLORS.emerald, icon: THIN_ICONS.rupee },
+      { title: 'Net Salary', value: '₹30.0K', sub: (payrollSummary?.data && payrollSummary.data.length > 0 && payrollSummary.data[0].payroll_month) ? `For ${payrollSummary.data[0].payroll_month}` : 'Disbursed on 31 May', color: COLORS.emerald, icon: THIN_ICONS.rupee },
       { title: 'Performance', value: employeeProfile?.performance_score ? `${employeeProfile.performance_score}%` : '87%', sub: '↑ 4% vs last quarter', color: COLORS.violet, icon: THIN_ICONS.trendingUp },
     ];
     return [];
@@ -702,10 +702,19 @@ const DashboardPage = () => {
               </div>
 
               <div className="d-flex flex-column gap-2">
-                {tasks && tasks.length > 0 ? tasks.map((task) => (
+                {tasks && tasks.filter(t => t.status !== 'Completed').length > 0 ? tasks.filter(t => t.status !== 'Completed').map((task) => (
                   <div key={task.id} className="p-3 d-flex align-items-center justify-content-between gap-3 hover-action-node border rounded-3" style={{ background: 'var(--surface-alt)' }}>
                     <div className="d-flex align-items-center gap-3">
-                      <span className="d-flex align-items-center justify-content-center border rounded-3" style={{ width: '38px', height: '38px', background: 'var(--surface)', fontSize: '1rem', color: COLORS.indigo }}>{THIN_ICONS.clipboard}</span>
+                      <button 
+                        onClick={async () => {
+                          try { await updateMyTaskStatus(task.id, 'Completed'); loadMyTasks(); } catch(e) { console.error(e); }
+                        }}
+                        className="btn btn-sm d-flex align-items-center justify-content-center border rounded-3 hover-btn-lux" 
+                        style={{ width: '38px', height: '38px', background: 'var(--surface)', fontSize: '1.2rem', color: COLORS.emerald, padding: 0 }} 
+                        title="Mark as Completed"
+                      >
+                        {THIN_ICONS.checkCircle || '✓'}
+                      </button>
                       <div>
                         <p className="mb-0 fw-bold" style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{task.title}</p>
                         <div className="d-flex flex-wrap align-items-center gap-2 small text-muted mt-1">

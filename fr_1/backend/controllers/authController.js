@@ -91,9 +91,7 @@ const googleLogin = async (req, res) => {
   try {
     let googleProfile;
     try {
-      const { data } = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
       googleProfile = data;
     } catch {
       return res.status(401).json({ success: false, message: 'Google token verification failed. Please try again.' });

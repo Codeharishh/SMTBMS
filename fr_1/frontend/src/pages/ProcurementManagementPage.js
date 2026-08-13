@@ -59,6 +59,16 @@ const THIN_ICONS = {
   )
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
 const ProcurementManagementPage = () => {
   const user = getCurrentUser();
   const canManage = true; // 🟢 Allow all roles (Admin, Manager, Employee, Sales, HR, Finance) to access + Raise PO button
@@ -362,8 +372,8 @@ const ProcurementManagementPage = () => {
                   <td>{po.item_name || 'Grease Cartridge × 60 pcs'}</td>
                   <td className="fw-bold">{po.quantity || po.qty || 60} pcs</td>
                   <td className="fw-bold">₹{(Number(po.total_cost) || Number(po.amount) || 15000).toLocaleString()}</td>
-                  <td>{po.procurement_date ? new Date(po.procurement_date).toLocaleDateString() : '31 May 2026'}</td>
-                  <td>05 Jun 2026</td>
+                  <td>{formatDate(po.procurement_date || po.raised_date || '2026-05-31')}</td>
+                  <td>{formatDate(po.delivery_date || '2026-06-05')}</td>
                   <td>
                     <span className={`badge rounded-pill px-3 py-1 fw-bold ${po.status === 'Approved' || po.status === 'Received' || po.status === 'Dispatched' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}`}>
                       • {po.status || 'Dispatched'}
